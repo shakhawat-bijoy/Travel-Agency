@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+/* React Slick CSS */
+@import "slick-carousel/slick/slick.css";
+@import "slick-carousel/slick/slick-theme.css";
+
+/* Global Font Styles */
