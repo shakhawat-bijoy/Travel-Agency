@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from 'react'
 import {
   User, Mail, Phone, MapPin, Calendar, Camera,
   X, Check, CreditCard, History, Settings,
-  Edit3, Bell, Shield, Globe, LogOut, Trash2, AlertTriangle, Plus, Star, Trash
+  Edit3, Bell, Shield, Globe, LogOut, Trash2, AlertTriangle, Plus, Star, Trash,
+  Plane, Clock, Download, Eye, RefreshCw
 } from 'lucide-react'
-import { auth, authAPI, userAPI, paymentAPI } from '../utils/api'
+import { auth, authAPI, userAPI, paymentAPI, flightAPI } from '../utils/api'
 import { Link } from 'react-router-dom'
 
 const Account = () => {
@@ -30,6 +31,11 @@ const Account = () => {
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [paymentMethods, setPaymentMethods] = useState([])
   const [loadingPayments, setLoadingPayments] = useState(false)
+  const [bookings, setBookings] = useState([])
+  const [loadingBookings, setLoadingBookings] = useState(false)
+  const [bookingError, setBookingError] = useState('')
+  const [selectedBooking, setSelectedBooking] = useState(null)
+  const [showBookingDetails, setShowBookingDetails] = useState(false)
 
   const profileImageRef = useRef(null)
   const coverImageRef = useRef(null)
@@ -76,6 +82,13 @@ const Account = () => {
     }
   }, [activeTab])
 
+  // Load bookings when history tab is active
+  useEffect(() => {
+    if (activeTab === 'history') {
+      loadBookings()
+    }
+  }, [activeTab])
+
   // Reload payment methods when user returns to the page (e.g., after adding a card)
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -103,6 +116,34 @@ const Account = () => {
       setTimeout(() => setSaveMessage(''), 3000)
     } finally {
       setLoadingPayments(false)
+    }
+  }
+
+  const loadBookings = async () => {
+    try {
+      setLoadingBookings(true)
+      setBookingError('')
+
+      const userData = auth.getUserData()
+      if (!userData.user?.id) {
+        setBookingError('User not found. Please log in again.')
+        return
+      }
+
+      console.log('Loading bookings for user:', userData.user.id)
+      const response = await flightAPI.getUserBookings(userData.user.id)
+
+      if (response.success) {
+        console.log('Bookings loaded:', response.data)
+        setBookings(response.data || [])
+      } else {
+        setBookingError(response.message || 'Failed to load booking history')
+      }
+    } catch (error) {
+      console.error('Error loading bookings:', error)
+      setBookingError('Error loading booking history. Please try again.')
+    } finally {
+      setLoadingBookings(false)
     }
   }
 
@@ -144,6 +185,35 @@ const Account = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleViewBookingDetails = (booking) => {
+    setSelectedBooking(booking)
+    setShowBookingDetails(true)
+  }
+
+  const handleCloseBookingDetails = () => {
+    setSelectedBooking(null)
+    setShowBookingDetails(false)
+  }
+
+  const handleDownloadTicket = (booking) => {
+    // Create a simple ticket download (you can enhance this with PDF generation)
+    const ticketData = {
+      bookingReference: booking.bookingReference,
+      passenger: booking.passenger,
+      flight: booking.flight,
+      bookingDate: booking.bookingDate
+    }
+
+    const dataStr = JSON.stringify(ticketData, null, 2)
+    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `ticket-${booking.bookingReference}.json`
+    link.click()
+    URL.revokeObjectURL(url)
   }
 
   const handleImageUpload = async (file, type) => {
@@ -718,13 +788,153 @@ const Account = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Booking History</h2>
-        <div className="text-center py-12">
-          <History className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">No booking history available</p>
-          <p className="text-sm text-gray-400 mt-2">Your past bookings will appear here</p>
+      {/* Booking History Content */}
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Booking History</h2>
+            <p className="text-gray-500 mt-1">View and manage your flight bookings</p>
+          </div>
+          <button
+            onClick={loadBookings}
+            className="flex items-center gap-2 px-4 py-2 bg-teal-50 text-teal-600 rounded-lg hover:bg-teal-100 transition-colors"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </button>
         </div>
+
+        {/* Loading State */}
+        {loadingBookings ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your bookings...</p>
+          </div>
+        ) : bookingError ? (
+          /* Error State */
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <X className="w-8 h-8 text-red-500" />
+            </div>
+            <p className="text-red-600 font-medium mb-2">Error Loading Bookings</p>
+            <p className="text-gray-500 text-sm mb-4">{bookingError}</p>
+            <button
+              onClick={loadBookings}
+              className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : bookings.length === 0 ? (
+          /* Empty State */
+          <div className="text-center py-12">
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <History className="w-12 h-12 text-gray-400" />
+            </div>
+            <p className="text-gray-500 text-lg mb-2">No bookings found</p>
+            <p className="text-gray-400 text-sm mb-6">Your flight bookings will appear here after you make a reservation</p>
+            <Link
+              to="/flights"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors font-medium"
+            >
+              <Plane className="w-5 h-5" />
+              Book Your First Flight
+            </Link>
+          </div>
+        ) : (
+          /* Bookings List */
+          <div className="space-y-6">
+            {bookings.map((booking) => (
+              <div key={booking._id} className="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300">
+                {/* Booking Header */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center">
+                      <Plane className="w-6 h-6 text-teal-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {booking.flight?.departureAirport} → {booking.flight?.arrivalAirport}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Booking Reference: <span className="font-medium text-gray-700">{booking.bookingReference}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xl font-bold text-teal-600">
+                      ৳{booking.totalAmount} {booking.currency}
+                    </div>
+                    <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${booking.status === 'confirmed'
+                      ? 'bg-green-100 text-green-800'
+                      : booking.status === 'cancelled'
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                      {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Flight Details */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Flight</div>
+                    <div className="font-semibold text-gray-900">{booking.flight?.flightNumber}</div>
+                    <div className="text-sm text-gray-600">{booking.flight?.airlineName || booking.flight?.airline}</div>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Departure</div>
+                    <div className="font-semibold text-gray-900">
+                      {booking.flight?.departureTime ? new Date(booking.flight.departureTime).toLocaleDateString() : 'N/A'}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {booking.flight?.departureTime ? new Date(booking.flight.departureTime).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }) : 'N/A'}
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Passenger</div>
+                    <div className="font-semibold text-gray-900">
+                      {booking.passenger?.firstName} {booking.passenger?.lastName}
+                    </div>
+                    <div className="text-sm text-gray-600">{booking.passenger?.email}</div>
+                  </div>
+                </div>
+
+                {/* Booking Date */}
+                <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <Calendar className="w-4 h-4" />
+                    Booked on {new Date(booking.bookingDate).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleViewBookingDetails(booking)}
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+                    >
+                      <Eye className="w-4 h-4" />
+                      View Details
+                    </button>
+                    <button
+                      onClick={() => handleDownloadTicket(booking)}
+                      className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors text-sm font-medium"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -1076,6 +1286,226 @@ const Account = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Booking Details Modal */}
+      {showBookingDetails && selectedBooking && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900">Flight Ticket</h3>
+                  <p className="text-gray-500">Booking Reference: {selectedBooking.bookingReference}</p>
+                </div>
+                <button
+                  onClick={handleCloseBookingDetails}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-6 h-6 text-gray-500" />
+                </button>
+              </div>
+
+              {/* Ticket Design */}
+              <div className="bg-gradient-to-r from-teal-500 to-blue-600 rounded-2xl p-8 text-white mb-6">
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <h4 className="text-2xl font-bold">Dream Holidays</h4>
+                    <p className="text-teal-100">Electronic Ticket</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-bold">{selectedBooking.flight?.flightNumber}</div>
+                    <div className="text-teal-100">{selectedBooking.flight?.airlineName || selectedBooking.flight?.airline}</div>
+                  </div>
+                </div>
+
+                {/* Flight Route */}
+                <div className="flex items-center justify-between mb-8">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold mb-2">
+                      {selectedBooking.flight?.departureTime ? new Date(selectedBooking.flight.departureTime).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }) : 'N/A'}
+                    </div>
+                    <div className="text-xl font-semibold mb-1">{selectedBooking.flight?.departureAirport}</div>
+                    <div className="text-teal-100">
+                      {selectedBooking.flight?.departureTime ? new Date(selectedBooking.flight.departureTime).toLocaleDateString() : 'N/A'}
+                    </div>
+                  </div>
+
+                  <div className="flex-1 mx-8">
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t-2 border-white/30"></div>
+                      </div>
+                      <div className="relative flex justify-center">
+                        <div className="bg-white/20 px-4 py-2 rounded-full">
+                          <Plane className="w-8 h-8 text-white transform rotate-90" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-center mt-3">
+                      <div className="text-sm text-teal-100">
+                        {selectedBooking.flight?.duration?.replace('PT', '').replace('H', 'h ').replace('M', 'm') || 'N/A'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-center">
+                    <div className="text-3xl font-bold mb-2">
+                      {selectedBooking.flight?.arrivalTime ? new Date(selectedBooking.flight.arrivalTime).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }) : 'N/A'}
+                    </div>
+                    <div className="text-xl font-semibold mb-1">{selectedBooking.flight?.arrivalAirport}</div>
+                    <div className="text-teal-100">
+                      {selectedBooking.flight?.arrivalTime ? new Date(selectedBooking.flight.arrivalTime).toLocaleDateString() : 'N/A'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Passenger Info */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <div className="text-teal-100 text-sm mb-1">PASSENGER</div>
+                    <div className="font-semibold text-lg">
+                      {selectedBooking.passenger?.firstName} {selectedBooking.passenger?.lastName}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-teal-100 text-sm mb-1">BOOKING DATE</div>
+                    <div className="font-semibold">
+                      {new Date(selectedBooking.bookingDate).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-teal-100 text-sm mb-1">STATUS</div>
+                    <div className="font-semibold">
+                      {selectedBooking.status.charAt(0).toUpperCase() + selectedBooking.status.slice(1)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Detailed Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {/* Passenger Details */}
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <h5 className="font-semibold text-gray-900 mb-4">Passenger Information</h5>
+                  <div className="space-y-3">
+                    <div>
+                      <div className="text-sm text-gray-500">Full Name</div>
+                      <div className="font-medium">{selectedBooking.passenger?.firstName} {selectedBooking.passenger?.lastName}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-500">Email</div>
+                      <div className="font-medium">{selectedBooking.passenger?.email}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-500">Phone</div>
+                      <div className="font-medium">{selectedBooking.passenger?.phone || 'N/A'}</div>
+                    </div>
+                    {selectedBooking.passenger?.dateOfBirth && (
+                      <div>
+                        <div className="text-sm text-gray-500">Date of Birth</div>
+                        <div className="font-medium">
+                          {new Date(selectedBooking.passenger.dateOfBirth).toLocaleDateString()}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Flight Details */}
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <h5 className="font-semibold text-gray-900 mb-4">Flight Information</h5>
+                  <div className="space-y-3">
+                    <div>
+                      <div className="text-sm text-gray-500">Aircraft</div>
+                      <div className="font-medium">{selectedBooking.flight?.aircraftModel || 'N/A'}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-500">Duration</div>
+                      <div className="font-medium">
+                        {selectedBooking.flight?.duration?.replace('PT', '').replace('H', 'h ').replace('M', 'm') || 'N/A'}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-500">Stops</div>
+                      <div className="font-medium">
+                        {selectedBooking.flight?.stops === 0 ? 'Direct Flight' : `${selectedBooking.flight?.stops} stop(s)`}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-500">Total Amount</div>
+                      <div className="font-medium text-teal-600">
+                        ৳{selectedBooking.totalAmount} {selectedBooking.currency}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Search Parameters */}
+              {selectedBooking.searchParams && (
+                <div className="bg-blue-50 rounded-lg p-6 mb-6">
+                  <h5 className="font-semibold text-gray-900 mb-4">Booking Details</h5>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {(() => {
+                      try {
+                        const searchParams = typeof selectedBooking.searchParams === 'string'
+                          ? JSON.parse(selectedBooking.searchParams)
+                          : selectedBooking.searchParams;
+                        return (
+                          <>
+                            <div>
+                              <div className="text-sm text-gray-500">Trip Type</div>
+                              <div className="font-medium">{searchParams.type || 'N/A'}</div>
+                            </div>
+                            <div>
+                              <div className="text-sm text-gray-500">Travel Class</div>
+                              <div className="font-medium">{searchParams.travel_class || 'N/A'}</div>
+                            </div>
+                            <div>
+                              <div className="text-sm text-gray-500">Adults</div>
+                              <div className="font-medium">{searchParams.adults || 'N/A'}</div>
+                            </div>
+                            <div>
+                              <div className="text-sm text-gray-500">Children</div>
+                              <div className="font-medium">{searchParams.children || 0}</div>
+                            </div>
+                          </>
+                        );
+                      } catch {
+                        return <div className="text-sm text-gray-500">Search details not available</div>;
+                      }
+                    })()}
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-4">
+                <button
+                  onClick={() => handleDownloadTicket(selectedBooking)}
+                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors font-medium"
+                >
+                  <Download className="w-5 h-5" />
+                  Download Ticket
+                </button>
+                <button
+                  onClick={handleCloseBookingDetails}
+                  className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Delete Account Popup */}
       {showDeletePopup && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

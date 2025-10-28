@@ -62,43 +62,157 @@ const paymentSchema = new mongoose.Schema({
 });
 
 const flightDetailsSchema = new mongoose.Schema({
+  // Basic flight information
+  id: String,
   flightNumber: String,
   airline: String,
+  airlineName: String,
   aircraftModel: String,
+  aircraftCode: String,
+
+  // Route information
   departureAirport: String,
   arrivalAirport: String,
   departureTime: Date,
   arrivalTime: Date,
   duration: String,
   stops: Number,
+  oneWay: Boolean,
+
+  // Location details
+  departureLocation: {
+    iataCode: String,
+    name: String,
+    city: String,
+    country: String,
+    fullName: String,
+    cityCountry: String
+  },
+  arrivalLocation: {
+    iataCode: String,
+    name: String,
+    city: String,
+    country: String,
+    fullName: String,
+    cityCountry: String
+  },
+
+  // Stop locations for layover flights
+  stopLocations: [{
+    iataCode: String,
+    name: String,
+    city: String,
+    country: String,
+    fullName: String,
+    cityCountry: String
+  }],
+
+  // Comprehensive price information
   price: {
     total: String,
-    currency: String
+    currency: String,
+    base: String,
+    grandTotal: String,
+    originalCurrency: String,
+    originalTotal: String,
+    conversionRate: Number,
+
+    // Price breakdown
+    breakdown: {
+      basePrice: String,
+      taxes: String,
+      supplierFees: String,
+      otherFees: String,
+      totalFees: String
+    },
+
+    // Discount information
+    discount: {
+      hasDiscount: Boolean,
+      amount: String,
+      percentage: Number,
+      originalPrice: String,
+      savings: String
+    },
+
+    // Per traveler pricing
+    perTraveler: [{
+      travelerId: String,
+      travelerType: String,
+      price: {
+        total: String,
+        base: String,
+        currency: String
+      }
+    }]
   },
+
+  // Complete itinerary information
   itineraries: [{
+    duration: String,
     segments: [{
+      id: String,
       carrierCode: String,
+      carrierName: String,
       number: String,
       aircraft: {
-        code: String
+        code: String,
+        name: String
       },
       departure: {
         iataCode: String,
-        at: Date
+        terminal: String,
+        at: Date,
+        name: String,
+        city: String,
+        country: String,
+        fullName: String,
+        cityCountry: String
       },
       arrival: {
         iataCode: String,
-        at: Date
+        terminal: String,
+        at: Date,
+        name: String,
+        city: String,
+        country: String,
+        fullName: String,
+        cityCountry: String
       },
-      duration: String
+      duration: String,
+      numberOfStops: Number,
+      blacklistedInEU: Boolean,
+      operating: mongoose.Schema.Types.Mixed
     }]
+  }],
+
+  // Additional flight metadata
+  travelerPricings: [mongoose.Schema.Types.Mixed],
+  validatingAirlineCodes: [String],
+  lastTicketingDate: Date,
+  numberOfBookableSeats: Number,
+  instantTicketingRequired: Boolean,
+  nonHomogeneous: Boolean,
+  paymentCardRequired: Boolean,
+
+  // Fare details by segment
+  fareDetailsBySegment: [{
+    segmentId: String,
+    cabin: String,
+    fareBasis: String,
+    class: String,
+    brandedFare: String,
+    includedCheckedBags: {
+      quantity: Number,
+      weight: Number,
+      weightUnit: String
+    }
   }]
 });
 
 const bookingSchema = new mongoose.Schema({
   bookingReference: {
     type: String,
-    required: true,
     unique: true
   },
   userId: {
@@ -118,15 +232,8 @@ const bookingSchema = new mongoose.Schema({
     required: true
   },
   searchParams: {
-    departure_id: String,
-    arrival_id: String,
-    outbound_date: String,
-    return_date: String,
-    adults: Number,
-    children: Number,
-    infants: Number,
-    travel_class: String,
-    type: String
+    type: String,
+    default: '{}'
   },
   status: {
     type: String,
@@ -152,7 +259,9 @@ const bookingSchema = new mongoose.Schema({
     type: String
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
 // Generate booking reference before saving
@@ -161,6 +270,23 @@ bookingSchema.pre('save', function (next) {
     this.bookingReference = 'BK' + Date.now().toString().slice(-8) + Math.random().toString(36).substr(2, 4).toUpperCase();
   }
   next();
+});
+
+// Also generate on validation to ensure it's always present
+bookingSchema.pre('validate', function (next) {
+  if (!this.bookingReference) {
+    this.bookingReference = 'BK' + Date.now().toString().slice(-8) + Math.random().toString(36).substr(2, 4).toUpperCase();
+  }
+  next();
+});
+
+// Virtual to parse searchParams as object
+bookingSchema.virtual('searchParamsObject').get(function () {
+  try {
+    return JSON.parse(this.searchParams || '{}');
+  } catch (error) {
+    return {};
+  }
 });
 
 // Index for efficient queries

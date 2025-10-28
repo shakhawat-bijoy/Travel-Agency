@@ -158,6 +158,39 @@ const flightSlice = createSlice({
         },
         setConversionRate: (state, action) => {
             state.conversionRate = action.payload
+        },
+
+        // Persistence actions
+        persistSearchResults: (state) => {
+            if (state.searchResults && state.searchParams) {
+                localStorage.setItem('flightSearchResults', JSON.stringify({
+                    searchResults: state.searchResults,
+                    searchParams: state.searchParams,
+                    timestamp: Date.now()
+                }))
+            }
+        },
+        restoreSearchResults: (state) => {
+            try {
+                const stored = localStorage.getItem('flightSearchResults')
+                if (stored) {
+                    const { searchResults, searchParams, timestamp } = JSON.parse(stored)
+                    // Only restore if data is less than 30 minutes old
+                    if (Date.now() - timestamp < 30 * 60 * 1000) {
+                        state.searchResults = searchResults
+                        state.searchParams = searchParams
+                    } else {
+                        // Clear expired data
+                        localStorage.removeItem('flightSearchResults')
+                    }
+                }
+            } catch (error) {
+                console.error('Error restoring search results:', error)
+                localStorage.removeItem('flightSearchResults')
+            }
+        },
+        clearPersistedResults: (state) => {
+            localStorage.removeItem('flightSearchResults')
         }
     },
     extraReducers: (builder) => {
@@ -171,6 +204,14 @@ const flightSlice = createSlice({
                 state.searchLoading = false
                 state.searchResults = action.payload
                 state.searchError = null
+                // Auto-persist search results
+                if (state.searchResults && state.searchParams) {
+                    localStorage.setItem('flightSearchResults', JSON.stringify({
+                        searchResults: state.searchResults,
+                        searchParams: state.searchParams,
+                        timestamp: Date.now()
+                    }))
+                }
             })
             .addCase(searchFlights.rejected, (state, action) => {
                 state.searchLoading = false
@@ -207,7 +248,10 @@ export const {
     hideBookingModal,
     clearBookingState,
     setCurrency,
-    setConversionRate
+    setConversionRate,
+    persistSearchResults,
+    restoreSearchResults,
+    clearPersistedResults
 } = flightSlice.actions
 
 export default flightSlice.reducer

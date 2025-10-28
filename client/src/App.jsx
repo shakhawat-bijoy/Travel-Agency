@@ -9,6 +9,8 @@ import Account from './pages/Account'
 import BookingTest from './components/test/BookingTest'
 import ProtectedRoute from './components/common/ProtectedRoute'
 import FlightBooking from './components/flights/FlightBooking'
+import ConfirmBooking from './pages/ConfirmBooking'
+import BookingSuccess from './components/flights/BookingSuccess'
 
 import {
   createRoutesFromElements,
@@ -19,6 +21,7 @@ import {
 
 import RootLayout from './components/common/RootLayout'
 import Flights from './pages/Flights'
+import FlightResults from './components/flights/FlightResults'
 
 
 const App = () => {
@@ -41,7 +44,12 @@ const App = () => {
         }></Route>
         <Route path="/test-booking" element={<BookingTest />}></Route>
         <Route path="/flights" element={<Flights />}></Route>
+        <Route path="/flight-results" element={<FlightResults />}></Route>
         <Route path="/book-flight" element={<FlightBooking />}></Route>
+        <Route path="/confirm-booking" element={<ProtectedRoute>
+            <ConfirmBooking />
+          </ProtectedRoute>}></Route>
+        <Route path="/booking-success" element={<BookingSuccess />}></Route>
 
       </Route>
     )

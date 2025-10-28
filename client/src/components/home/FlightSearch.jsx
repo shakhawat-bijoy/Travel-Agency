@@ -138,7 +138,7 @@ const FlightSearch = () => {
 
     if (searchFlights.fulfilled.match(result)) {
       // Navigate to results page on success
-      navigate('/flights')
+      navigate('/flight-results')
     }
   }
 
@@ -519,9 +519,9 @@ const FlightSearch = () => {
                   onClick={handleFlightSearch}
                   disabled={searchLoading || !searchData.departure_id || !searchData.arrival_id || !searchData.outbound_date}
                   className={`${searchResults && searchResults.flights && searchResults.flights.length > 0
-                      ? 'bg-blue-500 hover:bg-blue-600'
-                      : 'bg-teal-500 hover:bg-teal-600'
-                    } disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-12 py-4 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 text-lg shadow-lg hover:shadow-xl disabled:shadow-none`}
+                    ? 'bg-blue-500 hover:bg-blue-600'
+                    : 'bg-teal-500 hover:bg-teal-600'
+                    } disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-8 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 text-lg shadow-lg hover:shadow-xl disabled:shadow-none`}
                 >
                   {searchLoading ? (
                     <>

@@ -10,13 +10,15 @@ const RootLayout = () => {
   const shouldHideNavbar = hideNavbarRoutes.includes(location.pathname)
   const shouldHideFooter = hideFooterRoutes.includes(location.pathname)
   const isHomePage = location.pathname === '/'
+  const isAccountPage = location.pathname === '/account'
+  const isOtherRoute = !isHomePage && !isAccountPage
 
   return (
     <div>
 
       {!shouldHideNavbar && <Navbar />}
 
-      <div className={isHomePage ? 'mt-0' : 'mt-20'}>
+      <div className={isOtherRoute ? 'mt-0' : isHomePage ? 'mt-0' : 'mt-20'}>
         <Outlet />
       </div>
 

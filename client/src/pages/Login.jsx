@@ -81,9 +81,20 @@ const Login = () => {
         window.dispatchEvent(new Event('storage'))
 
         alert('Login successful!')
+
         // Navigate to intended destination or home
         const from = location.state?.from?.pathname || '/'
-        navigate(from, { replace: true })
+        const fromState = location.state?.from?.state || {}
+
+        // If redirecting to confirm-booking, preserve the flight and search data
+        if (from === '/confirm-booking' && fromState) {
+          navigate(from, {
+            replace: true,
+            state: fromState // Preserve the original flight and searchParams data
+          })
+        } else {
+          navigate(from, { replace: true })
+        }
       }
     } catch (error) {
       console.error('Login error:', error)

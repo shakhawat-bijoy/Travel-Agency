@@ -363,7 +363,11 @@ router.post("/book", async (req, res) => {
   try {
     const { flight, passengers, searchParams } = req.body;
 
-    console.log("Flight booking request:", { flight: flight?.flightNumber, passenger: passengers?.passenger?.email });
+    console.log("Flight booking request:", {
+      flight: flight?.flightNumber,
+      passenger: passengers?.passenger?.email,
+      searchParams: searchParams
+    });
 
     // Validate required data
     if (!flight || !passengers || !passengers.passenger || !passengers.payment) {
@@ -405,6 +409,11 @@ router.post("/book", async (req, res) => {
     const taxesAndFees = 45.00; // Fixed for demo
     const totalAmount = flightPrice + taxesAndFees;
 
+    // Log searchParams before processing
+    console.log("SearchParams received:", searchParams);
+    console.log("SearchParams type:", typeof searchParams);
+    console.log("SearchParams stringified:", JSON.stringify(searchParams));
+
     // Create booking record
     const booking = new Booking({
       userId: req.user?.id || null, // If user is authenticated
@@ -418,17 +427,43 @@ router.post("/book", async (req, res) => {
         nationality: passenger.nationality || ''
       },
       flight: {
+        // Basic flight information
+        id: flight.id,
         flightNumber: flight.flightNumber,
         airline: flight.airline,
+        airlineName: flight.airlineName,
         aircraftModel: flight.aircraftModel,
+        aircraftCode: flight.aircraftCode,
+
+        // Route information
         departureAirport: flight.departureAirport,
         arrivalAirport: flight.arrivalAirport,
         departureTime: new Date(flight.departureTime),
         arrivalTime: new Date(flight.arrivalTime),
         duration: flight.duration,
         stops: flight.stops,
+        oneWay: flight.oneWay,
+
+        // Location details
+        departureLocation: flight.departureLocation,
+        arrivalLocation: flight.arrivalLocation,
+        stopLocations: flight.stopLocations || [],
+
+        // Complete price information
         price: flight.price,
-        itineraries: flight.itineraries
+
+        // Complete itinerary information
+        itineraries: flight.itineraries || [],
+
+        // Additional flight metadata
+        travelerPricings: flight.travelerPricings || [],
+        validatingAirlineCodes: flight.validatingAirlineCodes || [],
+        lastTicketingDate: flight.lastTicketingDate ? new Date(flight.lastTicketingDate) : null,
+        numberOfBookableSeats: flight.numberOfBookableSeats,
+        instantTicketingRequired: flight.instantTicketingRequired,
+        nonHomogeneous: flight.nonHomogeneous,
+        paymentCardRequired: flight.paymentCardRequired,
+        fareDetailsBySegment: flight.fareDetailsBySegment || []
       },
       payment: {
         cardNumber: maskCardNumber(payment.cardNumber),
@@ -436,11 +471,25 @@ router.post("/book", async (req, res) => {
         expiryDate: payment.expiryDate,
         transactionId: paymentProcessed.transactionId
       },
-      searchParams: searchParams || {},
+      searchParams: searchParams ? JSON.stringify(searchParams) : '{}',
       totalAmount,
       currency: flight.price.currency || 'USD',
       status: 'confirmed'
     });
+
+    console.log("=== ATTEMPTING TO SAVE BOOKING ===");
+    console.log("Booking Reference:", booking.bookingReference);
+    console.log("Passenger Email:", booking.passenger.email);
+    console.log("Flight Number:", booking.flight.flightNumber);
+    console.log("Flight ID:", booking.flight.id);
+    console.log("Flight Price:", booking.flight.price);
+    console.log("Flight Itineraries Count:", booking.flight.itineraries?.length);
+    console.log("Flight Stop Locations Count:", booking.flight.stopLocations?.length);
+    console.log("SearchParams:", booking.searchParams);
+    console.log("SearchParams Type:", typeof booking.searchParams);
+    console.log("Total Amount:", booking.totalAmount);
+    console.log("Currency:", booking.currency);
+    console.log("=== END BOOKING DATA ===");
 
     await booking.save();
 
@@ -465,6 +514,22 @@ router.post("/book", async (req, res) => {
 
   } catch (error) {
     console.error('Flight booking error:', error);
+
+    // Handle validation errors specifically
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.keys(error.errors).map(key => ({
+        field: key,
+        message: error.errors[key].message
+      }));
+
+      return res.status(400).json({
+        success: false,
+        message: 'Booking validation failed',
+        errors: validationErrors,
+        error: error.message
+      });
+    }
+
     res.status(500).json({
       success: false,
       message: 'Error processing flight booking',

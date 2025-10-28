@@ -41,27 +41,30 @@ const Navbar = () => {
         window.location.href = '/'
     }
 
+    const isHomePage = location.pathname === '/'
+    const isOtherRoute = !isHomePage && !isAccountPage
+
     return (
-        <nav className={`absolute ${isAccountPage ? 'top-0' : 'md:top-5 top-0'} left-0 right-0 z-50 bg-transparent`}>
+        <nav className={`${isOtherRoute ? '' : isAccountPage ? 'absolute top-0' : 'absolute md:top-5 top-0'} ${!isOtherRoute ? 'absolute' : ''} left-0 right-0 z-50 bg-transparent`}>
             <Container className='px-2'>
                 <div className="relative z-10 flex items-center justify-between py-4">
                     {/* Left Side - Navigation Tabs (Desktop) */}
                     <div className="hidden lg:flex items-center gap-4">
-                        <Link to={'/'} className={`flex items-center gap-1 px-4 py-2 rounded-lg transition-all duration-300 ${isAccountPage ? 'hover:bg-gray-100' : 'hover:bg-white/10'}`}>
-                            <Plane className={`w-4 h-4 ${isAccountPage ? 'text-black' : 'text-white'}`} />
-                            <span className={isAccountPage ? 'text-black' : 'text-white'}>Find Flights</span>
+                        <Link to={'/flights'} className={`flex items-center gap-1 px-4 py-2 rounded-lg transition-all duration-300 ${isOtherRoute ? 'hover:bg-gray-100' : isAccountPage ? 'hover:bg-gray-100' : 'hover:bg-white/10'}`}>
+                            <Plane className={`w-4 h-4 ${isOtherRoute ? 'text-black' : isAccountPage ? 'text-black' : 'text-white'}`} />
+                            <span className={isOtherRoute ? 'text-black' : isAccountPage ? 'text-black' : 'text-white'}>Find Flights</span>
                         </Link>
 
-                        <Link to={'/'} className={`flex items-center gap-1 px-4 py-2 rounded-lg transition-all duration-300 ${isAccountPage ? 'hover:bg-gray-100' : 'hover:bg-white/10'}`}>
-                            <Building2 className={`w-4 h-4 ${isAccountPage ? 'text-black' : 'text-white'}`} />
-                            <span className={isAccountPage ? 'text-black' : 'text-white'}>Find Stays</span>
+                        <Link to={'/'} className={`flex items-center gap-1 px-4 py-2 rounded-lg transition-all duration-300 ${isOtherRoute ? 'hover:bg-gray-100' : isAccountPage ? 'hover:bg-gray-100' : 'hover:bg-white/10'}`}>
+                            <Building2 className={`w-4 h-4 ${isOtherRoute ? 'text-black' : isAccountPage ? 'text-black' : 'text-white'}`} />
+                            <span className={isOtherRoute ? 'text-black' : isAccountPage ? 'text-black' : 'text-white'}>Find Stays</span>
                         </Link>
                     </div>
 
                     {/* Mobile Menu Button */}
                     <button
                         onClick={toggleMobileMenu}
-                        className={`lg:hidden p-2 rounded-lg transition-all duration-300 ${isAccountPage ? 'text-black hover:bg-gray-100' : 'text-white hover:bg-white/10'}`}
+                        className={`lg:hidden p-2 rounded-lg transition-all duration-300 ${isOtherRoute ? 'text-black hover:bg-gray-100' : isAccountPage ? 'text-black hover:bg-gray-100' : 'text-white hover:bg-white/10'}`}
                         aria-label="Toggle mobile menu"
                     >
                         {isMobileMenuOpen ? (
@@ -88,11 +91,11 @@ const Navbar = () => {
                                 <Button
                                     text="My Account"
                                     to="/account"
-                                    className={isAccountPage ? 'text-black hover:bg-gray-100 font-medium px-4 py-2 transition-all duration-500 rounded-lg' : 'text-white hover:text-black hover:bg-white font-medium px-4 py-2 transition-all duration-500 rounded-lg'}
+                                    className={isOtherRoute ? 'text-black hover:bg-gray-100 font-medium px-4 py-2 transition-all duration-500 rounded-lg' : isAccountPage ? 'text-black hover:bg-gray-100 font-medium px-4 py-2 transition-all duration-500 rounded-lg' : 'text-white hover:text-black hover:bg-white font-medium px-4 py-2 transition-all duration-500 rounded-lg'}
                                 />
                                 <button
                                     onClick={handleLogout}
-                                    className={isAccountPage ? 'text-black hover:bg-gray-100 font-medium px-4 py-2 transition-all duration-500 rounded-lg' : 'text-white hover:text-black hover:bg-white font-medium px-4 py-2 transition-all duration-500 rounded-lg'}
+                                    className={isOtherRoute ? 'text-black hover:bg-gray-100 font-medium px-4 py-2 transition-all duration-500 rounded-lg' : isAccountPage ? 'text-black hover:bg-gray-100 font-medium px-4 py-2 transition-all duration-500 rounded-lg' : 'text-white hover:text-black hover:bg-white font-medium px-4 py-2 transition-all duration-500 rounded-lg'}
                                 >
                                     Logout
                                 </button>
@@ -102,13 +105,13 @@ const Navbar = () => {
                                 <Button
                                     text="Login"
                                     to="/login"
-                                    className={isAccountPage ? 'text-black hover:bg-gray-100 font-medium px-4 py-2 transition-all duration-500 rounded-lg' : 'text-white hover:text-black hover:bg-white font-medium px-4 py-2 transition-all duration-500 rounded-lg'}
+                                    className={isOtherRoute ? 'text-black hover:bg-gray-100 font-medium px-4 py-2 transition-all duration-500 rounded-lg' : isAccountPage ? 'text-black hover:bg-gray-100 font-medium px-4 py-2 transition-all duration-500 rounded-lg' : 'text-white hover:text-black hover:bg-white font-medium px-4 py-2 transition-all duration-500 rounded-lg'}
                                 />
 
                                 <Button
                                     text="Sign up"
                                     to="/register"
-                                    className={isAccountPage ? 'text-black hover:bg-gray-100 font-medium px-4 py-2 transition-all duration-500 rounded-lg' : 'text-white hover:text-black hover:bg-white font-medium px-4 py-2 transition-all duration-500 rounded-lg'}
+                                    className={isOtherRoute ? 'text-black hover:bg-gray-100 font-medium px-4 py-2 transition-all duration-500 rounded-lg' : isAccountPage ? 'text-black hover:bg-gray-100 font-medium px-4 py-2 transition-all duration-500 rounded-lg' : 'text-white hover:text-black hover:bg-white font-medium px-4 py-2 transition-all duration-500 rounded-lg'}
                                 />
                             </>
                         )}
@@ -121,11 +124,11 @@ const Navbar = () => {
                                 <Button
                                     text="My Account"
                                     to="/account"
-                                    className={isAccountPage ? 'text-black hover:text-white hover:bg-black font-medium px-3 py-2 text-sm transition-all duration-500 rounded-lg' : 'text-white hover:text-black hover:bg-white font-medium px-3 py-2 text-sm transition-all duration-500 rounded-lg'}
+                                    className={isOtherRoute ? 'text-black hover:text-white hover:bg-black font-medium px-3 py-2 text-sm transition-all duration-500 rounded-lg' : isAccountPage ? 'text-black hover:text-white hover:bg-black font-medium px-3 py-2 text-sm transition-all duration-500 rounded-lg' : 'text-white hover:text-black hover:bg-white font-medium px-3 py-2 text-sm transition-all duration-500 rounded-lg'}
                                 />
                                 <button
                                     onClick={handleLogout}
-                                    className={isAccountPage ? 'text-black hover:text-white hover:bg-black font-medium px-3 py-2 text-sm transition-all duration-500 rounded-lg' : 'text-white hover:text-black hover:bg-white font-medium px-3 py-2 text-sm transition-all duration-500 rounded-lg'}
+                                    className={isOtherRoute ? 'text-black hover:text-white hover:bg-black font-medium px-3 py-2 text-sm transition-all duration-500 rounded-lg' : isAccountPage ? 'text-black hover:text-white hover:bg-black font-medium px-3 py-2 text-sm transition-all duration-500 rounded-lg' : 'text-white hover:text-black hover:bg-white font-medium px-3 py-2 text-sm transition-all duration-500 rounded-lg'}
                                 >
                                     Logout
                                 </button>
@@ -135,13 +138,13 @@ const Navbar = () => {
                                 <Button
                                     text="Login"
                                     to="/login"
-                                    className={isAccountPage ? 'text-black hover:text-white hover:bg-black font-medium px-3 py-2 text-sm transition-all duration-500 rounded-lg' : 'text-white hover:text-black hover:bg-white font-medium px-3 py-2 text-sm transition-all duration-500 rounded-lg'}
+                                    className={isOtherRoute ? 'text-black hover:text-white hover:bg-black font-medium px-3 py-2 text-sm transition-all duration-500 rounded-lg' : isAccountPage ? 'text-black hover:text-white hover:bg-black font-medium px-3 py-2 text-sm transition-all duration-500 rounded-lg' : 'text-white hover:text-black hover:bg-white font-medium px-3 py-2 text-sm transition-all duration-500 rounded-lg'}
                                 />
 
                                 <Button
                                     text="Sign up"
                                     to="/register"
-                                    className={isAccountPage ? 'text-black hover:text-white hover:bg-black font-medium px-3 py-2 text-sm transition-all duration-500 rounded-lg' : 'text-white hover:text-black hover:bg-white font-medium px-3 py-2 text-sm transition-all duration-500 rounded-lg'}
+                                    className={isOtherRoute ? 'text-black hover:text-white hover:bg-black font-medium px-3 py-2 text-sm transition-all duration-500 rounded-lg' : isAccountPage ? 'text-black hover:text-white hover:bg-black font-medium px-3 py-2 text-sm transition-all duration-500 rounded-lg' : 'text-white hover:text-black hover:bg-white font-medium px-3 py-2 text-sm transition-all duration-500 rounded-lg'}
                                 />
                             </>
                         )}
