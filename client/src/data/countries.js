@@ -255,6 +255,7 @@ export const popularCountries = [
     { code: 'US', name: 'United States' },
     { code: 'CA', name: 'Canada' },
     { code: 'GB', name: 'United Kingdom' },
+    { code: 'BD', name: 'Bangladesh' },
     { code: 'AU', name: 'Australia' },
     { code: 'DE', name: 'Germany' },
     { code: 'FR', name: 'France' },

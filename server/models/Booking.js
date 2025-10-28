@@ -1,128 +1,171 @@
-import { Schema, model } from 'mongoose';
+import mongoose from 'mongoose';
 
-const bookingSchema = new Schema({
-  user: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  bookingType: {
+const passengerSchema = new mongoose.Schema({
+  firstName: {
     type: String,
-    enum: ['tour', 'hotel', 'flight'],
+    required: true,
+    trim: true
+  },
+  lastName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  email: {
+    type: String,
+    required: true,
+    trim: true,
+    lowercase: true
+  },
+  phone: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  dateOfBirth: {
+    type: Date,
     required: true
   },
-  // Tour booking details
-  tour: {
-    type: Schema.Types.ObjectId,
-    ref: 'Tour'
+  passportNumber: {
+    type: String,
+    trim: true
   },
-  tourDate: Date,
-  
-  // Hotel booking details
-  hotel: {
-    type: Schema.Types.ObjectId,
-    ref: 'Hotel'
-  },
-  roomType: String,
-  checkIn: Date,
-  checkOut: Date,
-  
-  // Flight booking details
-  flightDetails: {
-    airline: String,
-    flightNumber: String,
-    departure: {
-      airport: String,
-      city: String,
-      date: Date
-    },
-    arrival: {
-      airport: String,
-      city: String,
-      date: Date
-    },
-    class: String
-  },
-  
-  // Guest information
-  guests: [{
-    name: String,
-    age: Number,
-    email: String,
-    phone: String,
-    passportNumber: String
-  }],
-  numberOfGuests: {
-    type: Number,
+  nationality: {
+    type: String,
+    trim: true
+  }
+});
+
+const paymentSchema = new mongoose.Schema({
+  cardNumber: {
+    type: String,
     required: true
   },
-  
-  // Payment details
+  cardholderName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  expiryDate: {
+    type: String,
+    required: true
+  },
+  // CVV is not stored for security reasons
+  paymentMethod: {
+    type: String,
+    default: 'credit_card'
+  },
+  transactionId: {
+    type: String,
+    unique: true
+  }
+});
+
+const flightDetailsSchema = new mongoose.Schema({
+  flightNumber: String,
+  airline: String,
+  aircraftModel: String,
+  departureAirport: String,
+  arrivalAirport: String,
+  departureTime: Date,
+  arrivalTime: Date,
+  duration: String,
+  stops: Number,
+  price: {
+    total: String,
+    currency: String
+  },
+  itineraries: [{
+    segments: [{
+      carrierCode: String,
+      number: String,
+      aircraft: {
+        code: String
+      },
+      departure: {
+        iataCode: String,
+        at: Date
+      },
+      arrival: {
+        iataCode: String,
+        at: Date
+      },
+      duration: String
+    }]
+  }]
+});
+
+const bookingSchema = new mongoose.Schema({
+  bookingReference: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  passenger: {
+    type: passengerSchema,
+    required: true
+  },
+  flight: {
+    type: flightDetailsSchema,
+    required: true
+  },
+  payment: {
+    type: paymentSchema,
+    required: true
+  },
+  searchParams: {
+    departure_id: String,
+    arrival_id: String,
+    outbound_date: String,
+    return_date: String,
+    adults: Number,
+    children: Number,
+    infants: Number,
+    travel_class: String,
+    type: String
+  },
+  status: {
+    type: String,
+    enum: ['confirmed', 'cancelled', 'pending', 'failed'],
+    default: 'confirmed'
+  },
   totalAmount: {
     type: Number,
     required: true
   },
-  paymentStatus: {
+  currency: {
     type: String,
-    enum: ['pending', 'paid', 'failed', 'refunded'],
-    default: 'pending'
+    default: 'USD'
   },
-  paymentMethod: {
-    type: String,
-    enum: ['bkash', 'sslcommerz', 'card', 'cash'],
-    required: true
+  bookingDate: {
+    type: Date,
+    default: Date.now
   },
-  transactionId: String,
-  paidAt: Date,
-  
-  // Booking status
-  status: {
-    type: String,
-    enum: ['pending', 'confirmed', 'cancelled', 'completed'],
-    default: 'pending'
+  cancellationDate: {
+    type: Date
   },
-  
-  // Special requests
-  specialRequests: String,
-  
-  // Reward points
-  rewardPointsEarned: {
-    type: Number,
-    default: 0
-  },
-  rewardPointsUsed: {
-    type: Number,
-    default: 0
-  },
-  
-  // Cancellation
-  cancellationReason: String,
-  cancelledAt: Date,
-  refundAmount: Number,
-  
-  // Confirmation
-  confirmationCode: {
-    type: String,
-    unique: true
+  cancellationReason: {
+    type: String
   }
 }, {
   timestamps: true
 });
 
-// Generate confirmation code before saving
-bookingSchema.pre('save', function(next) {
-  if (!this.confirmationCode) {
-    this.confirmationCode = 'DH' + Date.now() + Math.random().toString(36).substr(2, 9).toUpperCase();
+// Generate booking reference before saving
+bookingSchema.pre('save', function (next) {
+  if (!this.bookingReference) {
+    this.bookingReference = 'BK' + Date.now().toString().slice(-8) + Math.random().toString(36).substr(2, 4).toUpperCase();
   }
   next();
 });
 
-// Calculate reward points (1% of total amount)
-bookingSchema.pre('save', function(next) {
-  if (this.paymentStatus === 'paid' && !this.rewardPointsEarned) {
-    this.rewardPointsEarned = Math.floor(this.totalAmount * 0.01);
-  }
-  next();
-});
+// Index for efficient queries
+bookingSchema.index({ userId: 1, bookingDate: -1 });
+bookingSchema.index({ bookingReference: 1 });
+bookingSchema.index({ status: 1 });
 
-export default model('Booking', bookingSchema);
+export default mongoose.model('Booking', bookingSchema);

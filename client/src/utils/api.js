@@ -136,10 +136,10 @@ export const userAPI = {
 
 // Flight API functions
 export const flightAPI = {
-    // Search flights
-    searchFlights: (searchParams) => {
+    // Search flights directly from Amadeus (no database storage)
+    searchFlightsDirect: (searchParams) => {
         const queryString = new URLSearchParams(searchParams).toString();
-        return apiCall(`/flights/search?${queryString}`);
+        return apiCall(`/flights/search-direct?${queryString}`);
     },
 
     // Search airports
@@ -147,11 +147,81 @@ export const flightAPI = {
         return apiCall(`/flights/airports?query=${encodeURIComponent(query)}&limit=${limit}`);
     },
 
+    // Book a flight (only booking data goes to database)
+    bookFlight: (bookingData) => {
+        return apiCall('/flights/book', {
+            method: 'POST',
+            body: JSON.stringify(bookingData),
+        });
+    },
+
+    // Get user bookings
+    getUserBookings: (userId, page = 1, limit = 20) => {
+        return apiCall(`/flights/bookings/${userId}?page=${page}&limit=${limit}`);
+    },
+
+    // Get booking details
+    getBookingDetails: (bookingId) => {
+        return apiCall(`/flights/booking/${bookingId}`);
+    },
+
+    // Cancel booking
+    cancelBooking: (bookingId) => {
+        return apiCall(`/flights/booking/${bookingId}/cancel`, {
+            method: 'PUT',
+        });
+    },
+
+    // Bangladesh airports
+    getBangladeshAirports: () => {
+        return apiCall('/flights/airports/bangladesh');
+    },
 
 
-    // Test SerpAPI connection
-    testSerpAPI: () => {
-        return apiCall('/flights/test');
+};
+
+// Saved Cards API functions
+export const savedCardsAPI = {
+    // Get user's saved cards
+    getSavedCards: (userId) => {
+        return apiCall(`/saved-cards/${userId}`);
+    },
+
+    // Save a new card
+    saveCard: (cardData) => {
+        return apiCall('/saved-cards', {
+            method: 'POST',
+            body: JSON.stringify(cardData),
+        });
+    },
+
+    // Update saved card
+    updateCard: (cardId, cardData) => {
+        return apiCall(`/saved-cards/${cardId}`, {
+            method: 'PUT',
+            body: JSON.stringify(cardData),
+        });
+    },
+
+    // Delete saved card
+    deleteCard: (cardId) => {
+        return apiCall(`/saved-cards/${cardId}`, {
+            method: 'DELETE',
+        });
+    },
+
+    // Set card as default
+    setDefaultCard: (cardId) => {
+        return apiCall(`/saved-cards/${cardId}/set-default`, {
+            method: 'PUT',
+        });
+    },
+
+    // Update last used timestamp
+    updateLastUsed: (cardId) => {
+        return apiCall(`/saved-cards/${cardId}/update-last-used`, {
+            method: 'PUT',
+        });
     },
 };
 

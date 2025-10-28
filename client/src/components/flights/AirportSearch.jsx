@@ -40,7 +40,8 @@ const AirportSearch = ({
     }
 
     const handleAirportSelect = (airport) => {
-        onChange(`${airport.name} (${airport.id})`)
+        const airportCode = airport.iataCode || airport.id;
+        onChange(`${airport.name} (${airportCode})`)
         setShowDropdown(false)
         setAirports([])
     }
@@ -76,7 +77,10 @@ const AirportSearch = ({
                             className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 focus:outline-none focus:bg-gray-50"
                         >
                             <div className="font-medium">{airport.name}</div>
-                            <div className="text-sm text-gray-500">{airport.city}, {airport.country} ({airport.id})</div>
+                            <div className="text-sm text-gray-500">
+                                {airport.city}, {airport.country} ({airport.iataCode || airport.id})
+                                {airport.type && <span className="ml-2 text-xs bg-gray-200 px-2 py-1 rounded">{airport.type}</span>}
+                            </div>
                         </button>
                     ))}
                 </div>

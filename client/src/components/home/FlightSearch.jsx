@@ -1,9 +1,16 @@
-import { useState } from 'react'
-import { Plane, Hotel, ArrowLeftRight, Calendar, Search, MapPin, Clock, DollarSign } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import { Plane, Hotel, ArrowLeftRight, Calendar, Search, MapPin, Edit3 } from 'lucide-react'
+import { searchFlights, setSearchParams, clearSearchResults } from '../../store/slices/flightSlice'
 import { flightAPI } from '../../utils/api'
 import Container from '../common/Container'
 
 const FlightSearch = () => {
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const { searchLoading, searchError, searchResults } = useSelector(state => state.flights)
+
   const [activeTab, setActiveTab] = useState('flights')
   const [tripType, setTripType] = useState('round_trip')
   const [searchData, setSearchData] = useState({
@@ -14,42 +21,67 @@ const FlightSearch = () => {
     adults: 1,
     children: 0,
     infants: 0,
-    travel_class: 'economy'
+    travel_class: 'ECONOMY'
   })
   const [airports, setAirports] = useState([])
-  const [searchResults, setSearchResults] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [bangladeshAirports, setBangladeshAirports] = useState([])
   const [showFromDropdown, setShowFromDropdown] = useState(false)
   const [showToDropdown, setShowToDropdown] = useState(false)
   const [fromQuery, setFromQuery] = useState('')
   const [toQuery, setToQuery] = useState('')
+  const [showBangladeshAirports, setShowBangladeshAirports] = useState(false)
 
 
 
-  // Search airports when user types
+  // Load Bangladesh airports on component mount
+  useEffect(() => {
+    const loadBangladeshAirports = async () => {
+      try {
+        const response = await flightAPI.getBangladeshAirports()
+        if (response.success) {
+          setBangladeshAirports(response.data)
+          console.log('Bangladesh airports loaded:', response.data.length)
+        }
+      } catch (error) {
+        console.error('Failed to load Bangladesh airports:', error)
+      }
+    }
+
+    loadBangladeshAirports()
+  }, [])
+
+  // Airport search using Amadeus API
   const searchAirports = async (query) => {
-    if (query.length < 2) return
+    if (query.length < 2) {
+      setAirports([])
+      return
+    }
 
     try {
       const response = await flightAPI.searchAirports(query)
       if (response.success) {
         setAirports(response.data)
+      } else {
+        setAirports([])
       }
     } catch (error) {
       console.error('Airport search error:', error)
+      setAirports([])
     }
   }
 
   // Handle airport selection
   const handleAirportSelect = (airport, type) => {
+    const airportCode = airport.iataCode || airport.id
+    const airportName = airport.name
+
     if (type === 'from') {
-      setSearchData(prev => ({ ...prev, departure_id: airport.id }))
-      setFromQuery(`${airport.name} (${airport.id})`)
+      setSearchData(prev => ({ ...prev, departure_id: airportCode }))
+      setFromQuery(`${airportName} (${airportCode})`)
       setShowFromDropdown(false)
     } else {
-      setSearchData(prev => ({ ...prev, arrival_id: airport.id }))
-      setToQuery(`${airport.name} (${airport.id})`)
+      setSearchData(prev => ({ ...prev, arrival_id: airportCode }))
+      setToQuery(`${airportName} (${airportCode})`)
       setShowToDropdown(false)
     }
   }
@@ -66,41 +98,51 @@ const FlightSearch = () => {
     setToQuery(tempQuery)
   }
 
-  // Handle flight search
+  // Enhanced flight search with Redux
   const handleFlightSearch = async () => {
+    // Clear previous results
+    dispatch(clearSearchResults())
+
+    // Validation
     if (!searchData.departure_id || !searchData.arrival_id || !searchData.outbound_date) {
-      setError('Please fill in all required fields')
       return
     }
 
-    setLoading(true)
-    setError('')
+    if (tripType === 'round_trip' && !searchData.return_date) {
+      return
+    }
 
-    try {
-      const searchParams = {
-        ...searchData,
-        type: tripType
-      }
+    if (tripType === 'round_trip' && new Date(searchData.return_date) <= new Date(searchData.outbound_date)) {
+      return
+    }
 
-      // Remove return_date for one-way trips
-      if (tripType === 'one_way') {
-        delete searchParams.return_date
-      }
+    if (searchData.departure_id === searchData.arrival_id) {
+      return
+    }
 
-      const response = await flightAPI.searchFlights(searchParams)
+    const searchParams = {
+      ...searchData,
+      type: tripType
+    }
 
-      if (response.success) {
-        setSearchResults(response.data)
-      } else {
-        setError(response.message || 'Failed to search flights')
-      }
-    } catch (error) {
-      console.error('Flight search error:', error)
-      setError('Failed to search flights. Please try again.')
-    } finally {
-      setLoading(false)
+    // Remove return_date for one-way trips
+    if (tripType === 'one_way') {
+      delete searchParams.return_date
+    }
+
+    // Store search params in Redux
+    dispatch(setSearchParams(searchParams))
+
+    // Dispatch search action
+    const result = await dispatch(searchFlights(searchParams))
+
+    if (searchFlights.fulfilled.match(result)) {
+      // Navigate to results page on success
+      navigate('/flights')
     }
   }
+
+
 
   // Format date for input
   const formatDateForInput = (date) => {
@@ -111,8 +153,38 @@ const FlightSearch = () => {
 
 
   return (
-    <div className="bg-gray-50 py-12">
+    <div className="">
       <Container>
+        {/* Bangladesh Airports Quick Info */}
+        {/* {bangladeshAirports.length > 0 && (
+          <div className="bg-gradient-to-r from-teal-50 to-blue-50 rounded-2xl p-6 mb-6 border border-teal-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="text-2xl">🇧🇩</div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Bangladesh Airports</h3>
+                  <p className="text-sm text-gray-600">{bangladeshAirports.length} airports available</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-sm text-gray-600">
+                  {bangladeshAirports.filter(a => a.isInternational).length} International • {bangladeshAirports.filter(a => !a.isInternational).length} Domestic
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {bangladeshAirports.filter(a => a.isInternational).map((airport, index) => (
+                <div key={index} className="bg-white rounded-lg p-3 border border-gray-200 hover:border-teal-300 transition-colors">
+                  <div className="font-medium text-sm text-gray-900">{airport.iataCode}</div>
+                  <div className="text-xs text-gray-600 mt-1">{airport.city}</div>
+                  <div className="text-xs text-blue-600 mt-1">International</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )} */}
+
         {/* Search Form */}
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
           {/* Tab Navigation */}
@@ -188,18 +260,80 @@ const FlightSearch = () => {
                     <MapPin className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
 
                     {/* Airport Dropdown */}
-                    {showFromDropdown && airports.length > 0 && (
+                    {showFromDropdown && (
                       <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                        {airports.map((airport, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleAirportSelect(airport, 'from')}
-                            className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
-                          >
-                            <div className="font-medium">{airport.name}</div>
-                            <div className="text-sm text-gray-500">{airport.city}, {airport.country} ({airport.id})</div>
-                          </button>
-                        ))}
+                        {/* Bangladesh Airports Section */}
+                        {!fromQuery && bangladeshAirports.length > 0 && (
+                          <>
+                            <div className="px-4 py-2 bg-teal-50 border-b border-teal-100">
+                              <div className="text-sm font-semibold text-teal-700">🇧🇩 Bangladesh Airports</div>
+                            </div>
+                            {bangladeshAirports.slice(0, 4).map((airport, index) => (
+                              <button
+                                key={`bd-${index}`}
+                                onClick={() => handleAirportSelect(airport, 'from')}
+                                className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100"
+                              >
+                                <div className="font-medium">{airport.name}</div>
+                                <div className="text-sm text-gray-500">
+                                  {airport.city}, {airport.country} ({airport.iataCode})
+                                  {airport.isInternational && <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded">International</span>}
+                                </div>
+                              </button>
+                            ))}
+                            {bangladeshAirports.length > 4 && (
+                              <button
+                                onClick={() => setShowBangladeshAirports(!showBangladeshAirports)}
+                                className="w-full px-4 py-2 text-left text-sm text-teal-600 hover:bg-teal-50 border-b border-gray-100"
+                              >
+                                {showBangladeshAirports ? 'Show Less' : `Show ${bangladeshAirports.length - 4} More Bangladesh Airports`}
+                              </button>
+                            )}
+                            {showBangladeshAirports && bangladeshAirports.slice(4).map((airport, index) => (
+                              <button
+                                key={`bd-more-${index}`}
+                                onClick={() => handleAirportSelect(airport, 'from')}
+                                className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100"
+                              >
+                                <div className="font-medium">{airport.name}</div>
+                                <div className="text-sm text-gray-500">
+                                  {airport.city}, {airport.country} ({airport.iataCode})
+                                  {airport.isInternational && <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded">International</span>}
+                                </div>
+                              </button>
+                            ))}
+                          </>
+                        )}
+
+                        {/* Search Results */}
+                        {airports.length > 0 && (
+                          <>
+                            {fromQuery && (
+                              <div className="px-4 py-2 bg-gray-50 border-b border-gray-100">
+                                <div className="text-sm font-semibold text-gray-700">Search Results</div>
+                              </div>
+                            )}
+                            {airports.map((airport, index) => (
+                              <button
+                                key={`search-${index}`}
+                                onClick={() => handleAirportSelect(airport, 'from')}
+                                className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                              >
+                                <div className="font-medium">{airport.name}</div>
+                                <div className="text-sm text-gray-500">
+                                  {airport.city}, {airport.country} ({airport.iataCode || airport.id})
+                                </div>
+                              </button>
+                            ))}
+                          </>
+                        )}
+
+                        {/* No results message */}
+                        {fromQuery && airports.length === 0 && (
+                          <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                            No airports found for "{fromQuery}"
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -234,18 +368,59 @@ const FlightSearch = () => {
                     </button>
 
                     {/* Airport Dropdown */}
-                    {showToDropdown && airports.length > 0 && (
+                    {showToDropdown && (
                       <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                        {airports.map((airport, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleAirportSelect(airport, 'to')}
-                            className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
-                          >
-                            <div className="font-medium">{airport.name}</div>
-                            <div className="text-sm text-gray-500">{airport.city}, {airport.country} ({airport.id})</div>
-                          </button>
-                        ))}
+                        {/* Bangladesh Airports Section */}
+                        {!toQuery && bangladeshAirports.length > 0 && (
+                          <>
+                            <div className="px-4 py-2 bg-teal-50 border-b border-teal-100">
+                              <div className="text-sm font-semibold text-teal-700">🇧🇩 Bangladesh Airports</div>
+                            </div>
+                            {bangladeshAirports.slice(0, 4).map((airport, index) => (
+                              <button
+                                key={`bd-to-${index}`}
+                                onClick={() => handleAirportSelect(airport, 'to')}
+                                className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100"
+                              >
+                                <div className="font-medium">{airport.name}</div>
+                                <div className="text-sm text-gray-500">
+                                  {airport.city}, {airport.country} ({airport.iataCode})
+                                  {airport.isInternational && <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded">International</span>}
+                                </div>
+                              </button>
+                            ))}
+                          </>
+                        )}
+
+                        {/* Search Results */}
+                        {airports.length > 0 && (
+                          <>
+                            {toQuery && (
+                              <div className="px-4 py-2 bg-gray-50 border-b border-gray-100">
+                                <div className="text-sm font-semibold text-gray-700">Search Results</div>
+                              </div>
+                            )}
+                            {airports.map((airport, index) => (
+                              <button
+                                key={`search-to-${index}`}
+                                onClick={() => handleAirportSelect(airport, 'to')}
+                                className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                              >
+                                <div className="font-medium">{airport.name}</div>
+                                <div className="text-sm text-gray-500">
+                                  {airport.city}, {airport.country} ({airport.iataCode || airport.id})
+                                </div>
+                              </button>
+                            ))}
+                          </>
+                        )}
+
+                        {/* No results message */}
+                        {toQuery && airports.length === 0 && (
+                          <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                            No airports found for "{toQuery}"
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -298,7 +473,7 @@ const FlightSearch = () => {
                       onChange={(e) => setSearchData(prev => ({ ...prev, adults: parseInt(e.target.value) }))}
                       className="flex-1 px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                     >
-                      {[1, 2, 3, 4, 5, 6].map(num => (
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
                         <option key={num} value={num}>{num} Adult{num > 1 ? 's' : ''}</option>
                       ))}
                     </select>
@@ -315,41 +490,73 @@ const FlightSearch = () => {
                     onChange={(e) => setSearchData(prev => ({ ...prev, travel_class: e.target.value }))}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                   >
-                    <option value="economy">Economy</option>
-                    <option value="premium_economy">Premium Economy</option>
-                    <option value="business">Business</option>
-                    <option value="first">First Class</option>
+                    <option value="ECONOMY">Economy</option>
+                    <option value="PREMIUM_ECONOMY">Premium Economy</option>
+                    <option value="BUSINESS">Business</option>
+                    <option value="FIRST">First Class</option>
                   </select>
                 </div>
               </div>
 
               {/* Error Message */}
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                  {error}
+              {searchError && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start gap-3">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-1">Search Error</h4>
+                    <p className="text-sm">{searchError}</p>
+                  </div>
                 </div>
               )}
 
               {/* Search Button */}
-              <div className="flex justify-center pt-4">
+              <div className="flex justify-center pt-4 gap-4">
                 <button
                   onClick={handleFlightSearch}
-                  disabled={loading}
-                  className="bg-teal-500 hover:bg-teal-600 disabled:bg-gray-400 text-white px-12 py-4 rounded-lg font-semibold transition-colors flex items-center gap-2 text-lg"
+                  disabled={searchLoading || !searchData.departure_id || !searchData.arrival_id || !searchData.outbound_date}
+                  className={`${searchResults && searchResults.flights && searchResults.flights.length > 0
+                      ? 'bg-blue-500 hover:bg-blue-600'
+                      : 'bg-teal-500 hover:bg-teal-600'
+                    } disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-12 py-4 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 text-lg shadow-lg hover:shadow-xl disabled:shadow-none`}
                 >
-                  {loading ? (
+                  {searchLoading ? (
                     <>
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      Searching...
+                      Searching Flights...
                     </>
                   ) : (
                     <>
-                      <Search className="w-5 h-5" />
-                      Search Flights
+                      {searchResults && searchResults.flights && searchResults.flights.length > 0 ? (
+                        <Edit3 className="w-5 h-5" />
+                      ) : (
+                        <Search className="w-5 h-5" />
+                      )}
+                      {searchResults && searchResults.flights && searchResults.flights.length > 0
+                        ? 'Modify Search'
+                        : 'Search Flights'
+                      }
                     </>
                   )}
                 </button>
+
+
               </div>
+
+              {/* Loading Progress */}
+              {searchLoading && (
+                <div className="mt-4 text-center">
+                  <div className="text-sm text-gray-600 mb-2">
+                    Searching flights from Bangladesh and worldwide...
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 max-w-md mx-auto">
+                    <div className="bg-teal-500 h-2 rounded-full animate-pulse" style={{ width: '60%' }}></div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -362,58 +569,7 @@ const FlightSearch = () => {
           )}
         </div>
 
-        {/* Search Results */}
-        {searchResults && (
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Flight Results</h2>
 
-            {searchResults.flights && searchResults.flights.length > 0 ? (
-              <div className="space-y-4">
-                {searchResults.flights.map((flight, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-4 mb-2">
-                          <div className="text-lg font-semibold">
-                            {flight.flights?.[0]?.departure_airport?.id} → {flight.flights?.[0]?.arrival_airport?.id}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {flight.flights?.[0]?.airline}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-6 text-sm text-gray-600">
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-4 h-4" />
-                            {flight.total_duration}
-                          </div>
-                          <div>
-                            {flight.flights?.length > 1 ? `${flight.flights.length - 1} stop${flight.flights.length > 2 ? 's' : ''}` : 'Direct'}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-teal-600 flex items-center gap-1">
-                          <DollarSign className="w-5 h-5" />
-                          {flight.price}
-                        </div>
-                        <button className="mt-2 bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded-lg transition-colors">
-                          Select
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <Plane className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">No flights found for your search criteria.</p>
-              </div>
-            )}
-          </div>
-        )}
       </Container>
     </div>
   )

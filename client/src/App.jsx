@@ -1,10 +1,14 @@
+import { Provider } from 'react-redux'
+import { store } from './store/store'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import ForgotPassword from './pages/ForgotPassword'
 import AddPaymentMethod from './pages/AddPaymentMethod'
 import Account from './pages/Account'
+import BookingTest from './components/test/BookingTest'
 import ProtectedRoute from './components/common/ProtectedRoute'
+import FlightBooking from './components/flights/FlightBooking'
 
 import {
   createRoutesFromElements,
@@ -14,6 +18,7 @@ import {
 } from "react-router-dom";
 
 import RootLayout from './components/common/RootLayout'
+import Flights from './pages/Flights'
 
 
 const App = () => {
@@ -34,16 +39,17 @@ const App = () => {
             <Account />
           </ProtectedRoute>
         }></Route>
-
-
+        <Route path="/test-booking" element={<BookingTest />}></Route>
+        <Route path="/flights" element={<Flights />}></Route>
+        <Route path="/book-flight" element={<FlightBooking />}></Route>
 
       </Route>
     )
   );
   return (
-    <>
+    <Provider store={store}>
       <RouterProvider router={router} />
-    </>
+    </Provider>
   )
 }
 
