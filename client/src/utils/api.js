@@ -160,6 +160,32 @@ export const flightAPI = {
         return apiCall(`/flights/bookings/${userId}?page=${page}&limit=${limit}`);
     },
 
+    // Get bookings by email (fallback)
+    getBookingsByEmail: (email, page = 1, limit = 20) => {
+        return apiCall(`/flights/bookings/email/${encodeURIComponent(email)}?page=${page}&limit=${limit}`);
+    },
+
+    // Get all bookings directly from bookings table
+    getAllBookings: (page = 1, limit = 50) => {
+        return apiCall(`/flights/bookings/all?page=${page}&limit=${limit}`);
+    },
+
+    // Get multiple bookings by their IDs
+    getBookingsByIds: (bookingIds) => {
+        return apiCall('/flights/bookings/by-ids', {
+            method: 'POST',
+            body: JSON.stringify({ bookingIds }),
+        });
+    },
+
+    // Link bookings with null userId to a user by email
+    linkUserBookings: (userId, email) => {
+        return apiCall('/flights/bookings/link-user', {
+            method: 'PUT',
+            body: JSON.stringify({ userId, email }),
+        });
+    },
+
     // Get booking details
     getBookingDetails: (bookingId) => {
         return apiCall(`/flights/booking/${bookingId}`);

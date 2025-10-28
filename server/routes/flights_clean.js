@@ -507,6 +507,42 @@ router.put("/booking/:bookingId/cancel", async (req, res) => {
     }
 });
 
+// POST /api/flights/bookings/by-ids - Get multiple bookings by their IDs
+router.post("/bookings/by-ids", async (req, res) => {
+    try {
+        const { bookingIds } = req.body;
+
+        if (!bookingIds || !Array.isArray(bookingIds)) {
+            return res.status(400).json({
+                success: false,
+                message: 'bookingIds array is required'
+            });
+        }
+
+        console.log('Fetching bookings by IDs:', bookingIds);
+
+        // Convert string IDs to ObjectIds and fetch bookings
+        const bookings = await Booking.find({
+            _id: { $in: bookingIds }
+        }).sort({ bookingDate: -1 });
+
+        console.log(`Found ${bookings.length} bookings for provided IDs`);
+
+        res.json({
+            success: true,
+            data: bookings
+        });
+
+    } catch (error) {
+        console.error('Get bookings by IDs error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching bookings by IDs',
+            error: error.message
+        });
+    }
+});
+
 // Helper functions
 
 // Simulate payment processing

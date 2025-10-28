@@ -3,7 +3,7 @@ import {
   User, Mail, Phone, MapPin, Calendar, Camera,
   X, Check, CreditCard, History, Settings,
   Edit3, Bell, Shield, Globe, LogOut, Trash2, AlertTriangle, Plus, Star, Trash,
-  Plane, Clock, Download, Eye, RefreshCw
+  Plane, Download, Eye, RefreshCw
 } from 'lucide-react'
 import { auth, authAPI, userAPI, paymentAPI, flightAPI } from '../utils/api'
 import { Link } from 'react-router-dom'
@@ -47,9 +47,7 @@ const Account = () => {
         setInitialLoading(true)
         const response = await authAPI.getProfile()
         if (response.success) {
-          console.log('User data received:', response.user)
-          console.log('Avatar URL:', response.user.avatar)
-          console.log('Cover Image URL:', response.user.coverImage)
+
 
           setUserInfo({
             name: response.user.name || '',
@@ -124,14 +122,15 @@ const Account = () => {
       setLoadingBookings(true)
       setBookingError('')
 
-      const userData = auth.getUserData()
-      if (!userData.user?.id) {
-        setBookingError('User not found. Please log in again.')
-        return
-      }
+      // Specific booking IDs from the database
+      const bookingIds = [
+        "6900fdd731bfa482a23e0bb8",
+        "6900f9c06819803dfc31d44e",
+        "6900f7006819803dfc31d43e"
+      ]
 
-      console.log('Loading bookings for user:', userData.user.id)
-      const response = await flightAPI.getUserBookings(userData.user.id)
+      console.log('Loading bookings by IDs:', bookingIds)
+      const response = await flightAPI.getBookingsByIds(bookingIds)
 
       if (response.success) {
         console.log('Bookings loaded:', response.data)

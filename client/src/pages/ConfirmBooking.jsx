@@ -251,13 +251,17 @@ const ConfirmBooking = () => {
                 }
             }
 
+            // Get user data for userId
+            const userData = auth.getUserData()
+
             const bookingPayload = {
                 flight,
                 passengers: {
                     passenger: passengerData,
                     payment: finalPaymentData
                 },
-                searchParams
+                searchParams,
+                userId: userData.user?.id || null // Include userId in booking payload
             }
 
             // Comprehensive flight data validation before sending

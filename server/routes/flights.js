@@ -414,9 +414,19 @@ router.post("/book", async (req, res) => {
     console.log("SearchParams type:", typeof searchParams);
     console.log("SearchParams stringified:", JSON.stringify(searchParams));
 
+    // Get userId from authentication or request body
+    let userId = req.user?.id || null;
+
+    // If no userId from auth, try to get it from the request body
+    if (!userId && req.body.userId) {
+      userId = req.body.userId;
+    }
+
+    console.log('Creating booking with userId:', userId);
+
     // Create booking record
     const booking = new Booking({
-      userId: req.user?.id || null, // If user is authenticated
+      userId: userId,
       passenger: {
         firstName: passenger.firstName,
         lastName: passenger.lastName,
@@ -538,20 +548,161 @@ router.post("/book", async (req, res) => {
   }
 });
 
+// PUT /api/flights/bookings/link-user - Link bookings with null userId to a user by email
+router.put("/bookings/link-user", async (req, res) => {
+  try {
+    const { userId, email } = req.body;
+
+    if (!userId || !email) {
+      return res.status(400).json({
+        success: false,
+        message: 'userId and email are required'
+      });
+    }
+
+    console.log(`Linking bookings with email ${email} to userId ${userId}`);
+
+    // Update bookings that have null userId but match the email
+    const result = await Booking.updateMany(
+      {
+        userId: null,
+        'passenger.email': email
+      },
+      {
+        $set: { userId: userId }
+      }
+    );
+
+    console.log(`Updated ${result.modifiedCount} bookings for user ${userId}`);
+
+    res.json({
+      success: true,
+      message: `Successfully linked ${result.modifiedCount} bookings to user`,
+      modifiedCount: result.modifiedCount
+    });
+
+  } catch (error) {
+    console.error('Link user bookings error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error linking bookings to user',
+      error: error.message
+    });
+  }
+});
+
+// GET /api/flights/bookings/all - Get all bookings (for debugging)
+router.get("/bookings/all", async (req, res) => {
+  try {
+    const bookings = await Booking.find({}).limit(10).sort({ bookingDate: -1 });
+
+    console.log('All bookings in database:', bookings.map(b => ({
+      id: b._id,
+      userId: b.userId,
+      email: b.passenger?.email,
+      bookingReference: b.bookingReference,
+      bookingDate: b.bookingDate
+    })));
+
+    res.json({
+      success: true,
+      data: bookings.map(b => ({
+        id: b._id,
+        userId: b.userId,
+        email: b.passenger?.email,
+        bookingReference: b.bookingReference,
+        bookingDate: b.bookingDate,
+        flight: {
+          flightNumber: b.flight?.flightNumber,
+          departureAirport: b.flight?.departureAirport,
+          arrivalAirport: b.flight?.arrivalAirport
+        }
+      }))
+    });
+
+  } catch (error) {
+    console.error('Get all bookings error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching all bookings',
+      error: error.message
+    });
+  }
+});
+
+// GET /api/flights/bookings/email/:email - Get bookings by email (fallback)
+router.get("/bookings/email/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const { page = 1, limit = 20 } = req.query;
+
+    console.log('Fetching bookings for email:', email);
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const bookings = await Booking.find({ 'passenger.email': email })
+      .sort({ bookingDate: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await Booking.countDocuments({ 'passenger.email': email });
+
+    console.log(`Found ${bookings.length} bookings for email ${email}, total: ${total}`);
+
+    res.json({
+      success: true,
+      data: bookings,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / parseInt(limit))
+      }
+    });
+
+  } catch (error) {
+    console.error('Get bookings by email error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching bookings by email',
+      error: error.message
+    });
+  }
+});
+
 // GET /api/flights/bookings/:userId
 router.get("/bookings/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
     const { page = 1, limit = 20 } = req.query;
 
+    console.log('Fetching bookings for userId:', userId);
+
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    const bookings = await Booking.find({ userId })
+    // First try to find bookings by userId
+    let bookings = await Booking.find({ userId })
       .sort({ bookingDate: -1 })
       .skip(skip)
       .limit(parseInt(limit));
 
-    const total = await Booking.countDocuments({ userId });
+    let total = await Booking.countDocuments({ userId });
+
+    // If no bookings found by userId, try to find by email (for bookings made without userId)
+    if (bookings.length === 0) {
+      console.log('No bookings found by userId, checking all bookings...');
+
+      // Get all bookings to debug
+      const allBookings = await Booking.find({}).limit(10);
+      console.log('Sample bookings in database:', allBookings.map(b => ({
+        id: b._id,
+        userId: b.userId,
+        email: b.passenger?.email,
+        bookingReference: b.bookingReference
+      })));
+    }
+
+    console.log(`Found ${bookings.length} bookings for user ${userId}, total: ${total}`);
 
     res.json({
       success: true,
@@ -569,6 +720,121 @@ router.get("/bookings/:userId", async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching user bookings',
+      error: error.message
+    });
+  }
+});
+
+// GET /api/flights/bookings/all - Get all bookings (for debugging)
+router.get("/bookings/all", async (req, res) => {
+  try {
+    const bookings = await Booking.find({}).limit(10).sort({ bookingDate: -1 });
+
+    console.log('All bookings in database:', bookings.map(b => ({
+      id: b._id,
+      userId: b.userId,
+      email: b.passenger?.email,
+      bookingReference: b.bookingReference,
+      bookingDate: b.bookingDate
+    })));
+
+    res.json({
+      success: true,
+      data: bookings.map(b => ({
+        id: b._id,
+        userId: b.userId,
+        email: b.passenger?.email,
+        bookingReference: b.bookingReference,
+        bookingDate: b.bookingDate,
+        flight: {
+          flightNumber: b.flight?.flightNumber,
+          departureAirport: b.flight?.departureAirport,
+          arrivalAirport: b.flight?.arrivalAirport
+        }
+      }))
+    });
+
+  } catch (error) {
+    console.error('Get all bookings error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching all bookings',
+      error: error.message
+    });
+  }
+});
+
+// GET /api/flights/bookings/email/:email - Get bookings by email (fallback)
+router.get("/bookings/email/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const { page = 1, limit = 20 } = req.query;
+
+    console.log('Fetching bookings for email:', email);
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const bookings = await Booking.find({ 'passenger.email': email })
+      .sort({ bookingDate: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await Booking.countDocuments({ 'passenger.email': email });
+
+    console.log(`Found ${bookings.length} bookings for email ${email}, total: ${total}`);
+
+    res.json({
+      success: true,
+      data: bookings,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / parseInt(limit))
+      }
+    });
+
+  } catch (error) {
+    console.error('Get bookings by email error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching bookings by email',
+      error: error.message
+    });
+  }
+});
+
+// GET /api/flights/bookings/by-ids - Get multiple bookings by their IDs
+router.post("/bookings/by-ids", async (req, res) => {
+  try {
+    const { bookingIds } = req.body;
+
+    if (!bookingIds || !Array.isArray(bookingIds)) {
+      return res.status(400).json({
+        success: false,
+        message: 'bookingIds array is required'
+      });
+    }
+
+    console.log('Fetching bookings by IDs:', bookingIds);
+
+    // Convert string IDs to ObjectIds and fetch bookings
+    const bookings = await Booking.find({
+      _id: { $in: bookingIds }
+    }).sort({ bookingDate: -1 });
+
+    console.log(`Found ${bookings.length} bookings for provided IDs`);
+
+    res.json({
+      success: true,
+      data: bookings
+    });
+
+  } catch (error) {
+    console.error('Get bookings by IDs error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching bookings by IDs',
       error: error.message
     });
   }
