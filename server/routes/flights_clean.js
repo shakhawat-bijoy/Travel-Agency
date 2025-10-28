@@ -543,6 +543,44 @@ router.post("/bookings/by-ids", async (req, res) => {
     }
 });
 
+// GET /api/flights/bookings/all - Get all bookings
+router.get("/bookings/all", async (req, res) => {
+    try {
+        const { page = 1, limit = 50 } = req.query;
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        console.log('Fetching all bookings from database...');
+
+        const bookings = await Booking.find({})
+            .sort({ bookingDate: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        const total = await Booking.countDocuments({});
+
+        console.log(`Found ${bookings.length} bookings out of ${total} total`);
+
+        res.json({
+            success: true,
+            data: bookings,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total,
+                pages: Math.ceil(total / parseInt(limit))
+            }
+        });
+
+    } catch (error) {
+        console.error('Get all bookings error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching all bookings',
+            error: error.message
+        });
+    }
+});
+
 // Helper functions
 
 // Simulate payment processing

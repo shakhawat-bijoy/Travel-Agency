@@ -7,4 +7,23 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          ui: ['lucide-react', 'react-icons']
+        }
+      }
+    }
+  },
+  server: {
+    port: 3000
+  },
+  preview: {
+    port: 3000
+  }
 })

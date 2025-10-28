@@ -512,7 +512,7 @@ const Register = () => {
                                             to="#"
                                             onClick={(e) => {
                                                 e.preventDefault()
-                                                console.log('Facebook signup')
+                                                // TODO: Implement Facebook signup
                                             }}
                                         />
 
@@ -541,7 +541,7 @@ const Register = () => {
                                             to="#"
                                             onClick={(e) => {
                                                 e.preventDefault()
-                                                console.log('Google signup')
+                                                // TODO: Implement Google signup
                                             }}
                                         />
 
@@ -558,7 +558,7 @@ const Register = () => {
                                             to="#"
                                             onClick={(e) => {
                                                 e.preventDefault()
-                                                console.log('Apple signup')
+                                                // TODO: Implement Apple signup
                                             }}
                                         />
                                     </div>

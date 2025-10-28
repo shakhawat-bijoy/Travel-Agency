@@ -402,7 +402,7 @@ const Login = () => {
                       to="#"
                       onClick={(e) => {
                         e.preventDefault()
-                        console.log('Facebook login')
+                        // TODO: Implement Facebook login
                       }}
                     />
 
@@ -431,7 +431,7 @@ const Login = () => {
                       to="#"
                       onClick={(e) => {
                         e.preventDefault()
-                        console.log('Google login')
+                        // TODO: Implement Google login
                       }}
                     />
 
@@ -448,7 +448,7 @@ const Login = () => {
                       to="#"
                       onClick={(e) => {
                         e.preventDefault()
-                        console.log('Apple login')
+                        // TODO: Implement Apple login
                       }}
                     />
                   </div>

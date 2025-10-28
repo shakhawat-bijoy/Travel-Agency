@@ -5,6 +5,7 @@ import { Plane, Hotel, ArrowLeftRight, Calendar, Search, MapPin, Edit3 } from 'l
 import { searchFlights, setSearchParams, clearSearchResults } from '../../store/slices/flightSlice'
 import { flightAPI } from '../../utils/api'
 import Container from '../common/Container'
+import DateRangePicker from '../common/DateRangePicker'
 
 const FlightSearch = () => {
   const dispatch = useDispatch()
@@ -144,11 +145,7 @@ const FlightSearch = () => {
 
 
 
-  // Format date for input
-  const formatDateForInput = (date) => {
-    if (!date) return ''
-    return new Date(date).toISOString().split('T')[0]
-  }
+
 
 
 
@@ -238,7 +235,7 @@ const FlightSearch = () => {
               </div>
 
               {/* Flight Search Form */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* From */}
                 <div className="relative">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -254,7 +251,7 @@ const FlightSearch = () => {
                         setShowFromDropdown(true)
                       }}
                       onFocus={() => setShowFromDropdown(true)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      className="w-full px-8 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                       placeholder="Search departure city"
                     />
                     <MapPin className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -354,7 +351,7 @@ const FlightSearch = () => {
                         setShowToDropdown(true)
                       }}
                       onFocus={() => setShowToDropdown(true)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      className="w-full px-8 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                       placeholder="Search destination city"
                     />
                     <MapPin className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -426,75 +423,51 @@ const FlightSearch = () => {
                   </div>
                 </div>
 
-                {/* Departure Date */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Departure
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="date"
-                      value={formatDateForInput(searchData.outbound_date)}
-                      onChange={(e) => setSearchData(prev => ({ ...prev, outbound_date: e.target.value }))}
-                      min={new Date().toISOString().split('T')[0]}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                    />
-                    <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                  </div>
+                {/* Date Selection */}
+                <div className="lg:col-span-1">
+                  <DateRangePicker
+                    departureDate={searchData.outbound_date}
+                    returnDate={searchData.return_date}
+                    onDepartureDateChange={(date) => setSearchData(prev => ({ ...prev, outbound_date: date }))}
+                    onReturnDateChange={(date) => setSearchData(prev => ({ ...prev, return_date: date }))}
+                    tripType={tripType}
+                  />
                 </div>
 
-                {/* Return Date */}
-                {tripType === 'round_trip' && (
-                  <div>
+                {/* Passengers & Class */}
+                <div className="flex gap-4">
+                  {/* Passengers */}
+                  <div className='w-1/2'>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Return
+                      Passengers
                     </label>
-                    <div className="relative">
-                      <input
-                        type="date"
-                        value={formatDateForInput(searchData.return_date)}
-                        onChange={(e) => setSearchData(prev => ({ ...prev, return_date: e.target.value }))}
-                        min={searchData.outbound_date || new Date().toISOString().split('T')[0]}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                      />
-                      <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                    </div>
-                  </div>
-                )}
-
-                {/* Passengers */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Passengers
-                  </label>
-                  <div className="flex gap-2">
                     <select
                       value={searchData.adults}
                       onChange={(e) => setSearchData(prev => ({ ...prev, adults: parseInt(e.target.value) }))}
-                      className="flex-1 px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                     >
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
                         <option key={num} value={num}>{num} Adult{num > 1 ? 's' : ''}</option>
                       ))}
                     </select>
                   </div>
-                </div>
 
-                {/* Class */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Class
-                  </label>
-                  <select
-                    value={searchData.travel_class}
-                    onChange={(e) => setSearchData(prev => ({ ...prev, travel_class: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                  >
-                    <option value="ECONOMY">Economy</option>
-                    <option value="PREMIUM_ECONOMY">Premium Economy</option>
-                    <option value="BUSINESS">Business</option>
-                    <option value="FIRST">First Class</option>
-                  </select>
+                  {/* Class */}
+                  <div className='w-1/2'>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Class
+                    </label>
+                    <select
+                      value={searchData.travel_class}
+                      onChange={(e) => setSearchData(prev => ({ ...prev, travel_class: e.target.value }))}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                    >
+                      <option value="ECONOMY">Economy</option>
+                      <option value="PREMIUM_ECONOMY">Premium Economy</option>
+                      <option value="BUSINESS">Business</option>
+                      <option value="FIRST">First Class</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -514,7 +487,7 @@ const FlightSearch = () => {
               )}
 
               {/* Search Button */}
-              <div className="flex justify-center pt-4 gap-4">
+              <div className="flex justify-center gap-4">
                 <button
                   onClick={handleFlightSearch}
                   disabled={searchLoading || !searchData.departure_id || !searchData.arrival_id || !searchData.outbound_date}

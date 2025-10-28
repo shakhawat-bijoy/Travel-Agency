@@ -1,5 +1,5 @@
-// API base URL
-const API_BASE_URL = 'http://localhost:5001/api';
+// API base URL - Use environment variable or fallback to localhost
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
 
 // Get token from localStorage
 const getToken = () => {
@@ -19,24 +19,19 @@ const apiCall = async (endpoint, options = {}) => {
         ...options,
     };
 
-    try {
-        const response = await fetch(url, config);
-        const data = await response.json();
+    const response = await fetch(url, config);
+    const data = await response.json();
 
-        if (!response.ok) {
-            // Create error object with validation errors if available
-            const error = new Error(data.message || 'API call failed');
-            if (data.errors) {
-                error.errors = data.errors;
-            }
-            throw error;
+    if (!response.ok) {
+        // Create error object with validation errors if available
+        const error = new Error(data.message || 'API call failed');
+        if (data.errors) {
+            error.errors = data.errors;
         }
-
-        return data;
-    } catch (error) {
-        console.error('API call error:', error);
         throw error;
     }
+
+    return data;
 };
 
 // Auth API functions
@@ -100,30 +95,22 @@ export const userAPI = {
     // Upload user image (profile or cover)
     uploadImage: async (formData) => {
         const token = getToken();
-        console.log('Making upload request to:', `${API_BASE_URL}/auth/upload-image`);
 
-        try {
-            const response = await fetch(`${API_BASE_URL}/auth/upload-image`, {
-                method: 'POST',
-                headers: {
-                    ...(token && { Authorization: `Bearer ${token}` }),
-                },
-                body: formData,
-            });
+        const response = await fetch(`${API_BASE_URL}/auth/upload-image`, {
+            method: 'POST',
+            headers: {
+                ...(token && { Authorization: `Bearer ${token}` }),
+            },
+            body: formData,
+        });
 
-            console.log('Upload response status:', response.status);
-            const data = await response.json();
-            console.log('Upload response data:', data);
+        const data = await response.json();
 
-            if (!response.ok) {
-                throw new Error(data.message || 'Upload failed');
-            }
-
-            return data;
-        } catch (error) {
-            console.error('Upload API error:', error);
-            throw error;
+        if (!response.ok) {
+            throw new Error(data.message || 'Upload failed');
         }
+
+        return data;
     },
 
     // Delete user account

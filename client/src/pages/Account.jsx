@@ -129,11 +129,9 @@ const Account = () => {
         "6900f7006819803dfc31d43e"
       ]
 
-      console.log('Loading bookings by IDs:', bookingIds)
       const response = await flightAPI.getBookingsByIds(bookingIds)
 
       if (response.success) {
-        console.log('Bookings loaded:', response.data)
         setBookings(response.data || [])
       } else {
         setBookingError(response.message || 'Failed to load booking history')
@@ -239,22 +237,13 @@ const Account = () => {
 
     setLoading(true)
     try {
-      console.log('Uploading image:', { fileName: file.name, fileSize: file.size, type })
       const response = await userAPI.uploadImage(formData)
-      console.log('Upload response:', response)
 
       if (response.success) {
-        console.log('Upload successful, updating UI with:', response.imageUrl)
-        console.log('Updating field:', type === 'profile' ? 'avatar' : 'coverImage')
-
-        setUserInfo(prev => {
-          const updated = {
-            ...prev,
-            [type === 'profile' ? 'avatar' : 'coverImage']: response.imageUrl
-          }
-          console.log('Updated userInfo:', updated)
-          return updated
-        })
+        setUserInfo(prev => ({
+          ...prev,
+          [type === 'profile' ? 'avatar' : 'coverImage']: response.imageUrl
+        }))
         setSaveMessage('Image uploaded successfully!')
         setTimeout(() => setSaveMessage(''), 3000)
       } else {
@@ -435,9 +424,7 @@ const Account = () => {
               src={userInfo.coverImage}
               alt="Cover"
               className="w-full h-full object-cover"
-              onLoad={() => console.log('Cover image loaded successfully')}
               onError={(e) => {
-                console.error('Cover image failed to load:', e)
                 // Hide the broken image and show gradient background
                 e.target.style.display = 'none'
               }}
@@ -472,9 +459,7 @@ const Account = () => {
                       src={userInfo.avatar}
                       alt="Profile"
                       className="w-full h-full rounded-full object-cover"
-                      onLoad={() => console.log('Profile image loaded successfully')}
                       onError={(e) => {
-                        console.error('Profile image failed to load:', e)
                         // Hide the broken image and show default avatar
                         e.target.style.display = 'none'
                       }}
