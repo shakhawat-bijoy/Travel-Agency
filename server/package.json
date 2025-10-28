@@ -4,8 +4,10 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server.js",
+    "start": "node server.js",
     "dev": "nodemon server.js",
+    "build": "echo 'No build step required for Node.js server'",
+    "vercel-build": "echo 'Server ready for deployment'",
     "test": "echo \"Error: no test specified\" && exit 1",
     "init-airports": "node scripts/initBangladeshAirports.js",
     "sync-airports": "node scripts/initBangladeshAirports.js"
