@@ -1,188 +1,136 @@
-import dotenv from "dotenv";
-dotenv.config();
-
-import express from "express";
-import cors from "cors";
+import express from 'express';
+import cors from 'cors';
 
 const app = express();
 
-// Middleware
-app.use(
-  cors({
-    origin:
-      process.env.NODE_ENV === "production"
-        ? [
-          "https://travel-agency-one-two.vercel.app",
-          process.env.CLIENT_URL,
-        ].filter(Boolean)
-        : ["http://localhost:3000", "http://localhost:5173"],
-    credentials: true,
-  })
-);
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+// Basic middleware
+app.use(cors({
+  origin: '*', // Allow all origins for testing
+  credentials: true
+}));
 
-// Health check endpoint (must be before DB initialization)
-app.get("/api/health", (req, res) => {
-  res.json({
-    success: true,
-    message: "Server is running",
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || "development",
-    env_check: {
-      mongo_uri: !!process.env.MONGO_URI,
-      jwt_secret: !!process.env.JWT_SECRET,
-      amadeus_client_id: !!process.env.AMADEUS_CLIENT_ID,
-      amadeus_client_secret: !!process.env.AMADEUS_CLIENT_SECRET,
-      client_url: !!process.env.CLIENT_URL,
-    },
-  });
-});
+app.use(express.json({ limit: '10mb' }));
 
-// Lazy load DB and routes to prevent crashes
-let dbInitialized = false;
-let connectDB, authRoutes, paymentRoutes, flightRoutes, savedCardsRoutes, User;
-
-const initializeDB = async () => {
-  if (!dbInitialized) {
-    try {
-      const dbModule = await import("./config/db.js");
-      connectDB = dbModule.default;
-      await connectDB();
-      dbInitialized = true;
-      console.log("Database connected successfully");
-    } catch (error) {
-      console.error("Database connection failed:", error.message);
-      // Don't throw - let routes that don't need DB still work
-    }
-  }
-};
-
-const loadRoutes = async () => {
+// Ultra-simple health check
+app.get('/api/health', (req, res) => {
   try {
-    const [auth, payment, flights, cards, userModel] = await Promise.all([
-      import("./routes/auth.js").catch((e) => ({ default: null })),
-      import("./routes/payment.js").catch((e) => ({ default: null })),
-      import("./routes/flights.js").catch((e) => ({ default: null })),
-      import("./routes/savedCards.js").catch((e) => ({ default: null })),
-      import("./models/User.js").catch((e) => ({ default: null })),
-    ]);
-
-    authRoutes = auth.default;
-    paymentRoutes = payment.default;
-    flightRoutes = flights.default;
-    savedCardsRoutes = cards.default;
-    User = userModel.default;
-  } catch (error) {
-    console.error("Failed to load routes:", error.message);
-  }
-};
-
-// Middleware to ensure DB connection for routes that need it
-const requireDB = async (req, res, next) => {
-  try {
-    await initializeDB();
-    if (!dbInitialized) {
-      return res.status(503).json({
-        success: false,
-        message: "Database service unavailable",
-      });
-    }
-    next();
-  } catch (error) {
-    res.status(503).json({
-      success: false,
-      message: "Database service unavailable",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
-    });
-  }
-};
-
-// Initialize routes asynchronously
-loadRoutes().catch(console.error);
-
-// Routes - with lazy loading
-app.use("/api/auth", async (req, res, next) => {
-  await requireDB(req, res, async () => {
-    if (authRoutes) {
-      authRoutes(req, res, next);
-    } else {
-      res
-        .status(503)
-        .json({ success: false, message: "Auth service unavailable" });
-    }
-  });
-});
-
-app.use("/api/payment", async (req, res, next) => {
-  await requireDB(req, res, async () => {
-    if (paymentRoutes) {
-      paymentRoutes(req, res, next);
-    } else {
-      res
-        .status(503)
-        .json({ success: false, message: "Payment service unavailable" });
-    }
-  });
-});
-
-app.use("/api/flights", async (req, res, next) => {
-  if (flightRoutes) {
-    flightRoutes(req, res, next);
-  } else {
-    const flights = await import("./routes/flights.js");
-    flights.default(req, res, next);
-  }
-});
-
-app.use("/api/saved-cards", async (req, res, next) => {
-  await requireDB(req, res, async () => {
-    if (savedCardsRoutes) {
-      savedCardsRoutes(req, res, next);
-    } else {
-      res
-        .status(503)
-        .json({ success: false, message: "Saved cards service unavailable" });
-    }
-  });
-});
-
-// Test user creation endpoint
-app.post("/api/users", requireDB, async (req, res) => {
-  try {
-    if (!User) {
-      throw new Error("User model not loaded");
-    }
-    const user = await User.create(req.body);
-    res.status(201).json({
+    res.status(200).json({
       success: true,
-      data: user,
+      message: 'Server is running',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      nodeVersion: process.version
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: 'Health check failed',
+      error: error.message
     });
   }
 });
 
-// Catch-all route for undefined endpoints
-app.use("/api/*", (req, res) => {
+// Test endpoint
+app.get('/api/test', (req, res) => {
+  try {
+    res.status(200).json({
+      success: true,
+      message: 'Test endpoint working',
+      method: req.method,
+      url: req.url,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Test failed',
+      error: error.message
+    });
+  }
+});
+
+// Environment check endpoint
+app.get('/api/env-check', (req, res) => {
+  try {
+    res.status(200).json({
+      success: true,
+      message: 'Environment check',
+      env: {
+        NODE_ENV: process.env.NODE_ENV,
+        hasMongoUri: !!process.env.MONGO_URI,
+        hasJwtSecret: !!process.env.JWT_SECRET,
+        platform: process.platform,
+        nodeVersion: process.version
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Environment check failed',
+      error: error.message
+    });
+  }
+});
+
+// Minimal auth endpoint for testing
+app.post('/api/auth/test', (req, res) => {
+  try {
+    res.status(200).json({
+      success: true,
+      message: 'Auth endpoint accessible',
+      body: req.body,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Auth test failed',
+      error: error.message
+    });
+  }
+});
+
+// Minimal flights endpoint for testing
+app.get('/api/flights/test', (req, res) => {
+  try {
+    res.status(200).json({
+      success: true,
+      message: 'Flights endpoint accessible',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Flights test failed',
+      error: error.message
+    });
+  }
+});
+
+// Catch-all for other API routes
+app.use('/api/*', (req, res) => {
   res.status(404).json({
     success: false,
     message: `API endpoint ${req.originalUrl} not found`,
+    availableEndpoints: [
+      '/api/health',
+      '/api/test',
+      '/api/env-check',
+      '/api/auth/test',
+      '/api/flights/test'
+    ]
   });
 });
 
 // Global error handler
 app.use((error, req, res, next) => {
-  console.error("Global error handler:", error);
+  console.error('Global error:', error);
   res.status(500).json({
     success: false,
-    message: "Internal server error",
-    error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    message: 'Internal server error',
+    error: error.message
   });
 });
 
-// For Vercel serverless deployment
+// Export for Vercel
 export default app;
