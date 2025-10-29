@@ -145,8 +145,8 @@ EMAIL_USER=your-email@gmail.com
 EMAIL_PASS=your-app-password
 
 # Client Environment
-VITE_API_BASE_URL=https://your-domain.vercel.app/api
-VITE_APP_URL=https://your-domain.vercel.app
+VITE_API_BASE_URL=https://travel-agency-one-two.vercel.app/api
+VITE_APP_URL=https://travel-agency-one-two.vercel.app
 ```
 
 ## 📁 Project Structure
