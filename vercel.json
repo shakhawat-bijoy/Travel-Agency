@@ -5,7 +5,7 @@
     "installCommand": "cd server && npm install",
     "builds": [
         {
-            "src": "server/server.js",
+            "src": "server/index.js",
             "use": "@vercel/node",
             "config": {
                 "maxLambdaSize": "50mb"
@@ -18,12 +18,16 @@
     ],
     "routes": [
         {
+            "src": "/api/hello",
+            "dest": "/server/api/hello.js"
+        },
+        {
             "src": "/api/test",
             "dest": "/server/api/test.js"
         },
         {
             "src": "/api/(.*)",
-            "dest": "/server/server.js"
+            "dest": "/server/index.js"
         },
         {
             "src": "/(.*)",
