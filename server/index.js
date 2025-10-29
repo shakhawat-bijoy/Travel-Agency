@@ -1,136 +1,116 @@
-import express from 'express';
-import cors from 'cors';
+import express from "express";
+import cors from "cors";
 
 const app = express();
 
-// Basic middleware
-app.use(cors({
-  origin: '*', // Allow all origins for testing
-  credentials: true
-}));
+// Middleware
+app.use(
+  cors({
+    origin:
+      process.env.NODE_ENV === "production"
+        ? [
+            "https://travel-agency-one-two.vercel.app",
+            process.env.CLIENT_URL,
+          ].filter(Boolean)
+        : ["http://localhost:3000", "http://localhost:5173"],
+    credentials: true,
+  })
+);
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-app.use(express.json({ limit: '10mb' }));
-
-// Ultra-simple health check
-app.get('/api/health', (req, res) => {
-  try {
-    res.status(200).json({
-      success: true,
-      message: 'Server is running',
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development',
-      nodeVersion: process.version
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Health check failed',
-      error: error.message
-    });
-  }
+// Health check endpoint
+app.get("/api/health", (req, res) => {
+  res.json({
+    success: true,
+    message: "Server is running",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || "development",
+    env_check: {
+      mongo_uri: !!process.env.MONGO_URI,
+      jwt_secret: !!process.env.JWT_SECRET,
+      amadeus_client_id: !!process.env.AMADEUS_CLIENT_ID,
+      amadeus_client_secret: !!process.env.AMADEUS_CLIENT_SECRET,
+      client_url: !!process.env.CLIENT_URL,
+    },
+  });
 });
 
-// Test endpoint
-app.get('/api/test', (req, res) => {
-  try {
-    res.status(200).json({
-      success: true,
-      message: 'Test endpoint working',
-      method: req.method,
-      url: req.url,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    res.status(500).json({
+// Import and use routes - wrapped in try-catch for safety
+try {
+  const { default: flightRoutes } = await import("./routes/flights.js");
+  app.use("/api/flights", flightRoutes);
+} catch (error) {
+  console.error("Failed to load flight routes:", error.message);
+  app.use("/api/flights/*", (req, res) => {
+    res.status(503).json({
       success: false,
-      message: 'Test failed',
-      error: error.message
+      message: "Flight service temporarily unavailable",
+      error: error.message,
     });
-  }
-});
+  });
+}
 
-// Environment check endpoint
-app.get('/api/env-check', (req, res) => {
+// Database-dependent routes - loaded conditionally
+if (process.env.MONGO_URI) {
   try {
-    res.status(200).json({
-      success: true,
-      message: 'Environment check',
-      env: {
-        NODE_ENV: process.env.NODE_ENV,
-        hasMongoUri: !!process.env.MONGO_URI,
-        hasJwtSecret: !!process.env.JWT_SECRET,
-        platform: process.platform,
-        nodeVersion: process.version
+    const { default: connectDB } = await import("./config/db.js");
+    const { default: authRoutes } = await import("./routes/auth.js");
+    const { default: paymentRoutes } = await import("./routes/payment.js");
+    const { default: savedCardsRoutes } = await import(
+      "./routes/savedCards.js"
+    );
+    const { default: User } = await import("./models/User.js");
+
+    // Connect to database
+    await connectDB();
+
+    // Mount DB-dependent routes
+    app.use("/api/auth", authRoutes);
+    app.use("/api/payment", paymentRoutes);
+    app.use("/api/saved-cards", savedCardsRoutes);
+
+    // Test user creation endpoint
+    app.post("/api/users", async (req, res) => {
+      try {
+        const user = await User.create(req.body);
+        res.status(201).json({
+          success: true,
+          data: user,
+        });
+      } catch (error) {
+        res.status(500).json({
+          success: false,
+          message: error.message,
+        });
       }
     });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Environment check failed',
-      error: error.message
-    });
-  }
-});
 
-// Minimal auth endpoint for testing
-app.post('/api/auth/test', (req, res) => {
-  try {
-    res.status(200).json({
-      success: true,
-      message: 'Auth endpoint accessible',
-      body: req.body,
-      timestamp: new Date().toISOString()
-    });
+    console.log("Database routes loaded successfully");
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Auth test failed',
-      error: error.message
-    });
+    console.error("Failed to initialize database routes:", error.message);
   }
-});
+} else {
+  console.warn("MONGO_URI not found - database routes disabled");
+}
 
-// Minimal flights endpoint for testing
-app.get('/api/flights/test', (req, res) => {
-  try {
-    res.status(200).json({
-      success: true,
-      message: 'Flights endpoint accessible',
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Flights test failed',
-      error: error.message
-    });
-  }
-});
-
-// Catch-all for other API routes
-app.use('/api/*', (req, res) => {
+// Catch-all route for undefined endpoints
+app.use("/api/*", (req, res) => {
   res.status(404).json({
     success: false,
     message: `API endpoint ${req.originalUrl} not found`,
-    availableEndpoints: [
-      '/api/health',
-      '/api/test',
-      '/api/env-check',
-      '/api/auth/test',
-      '/api/flights/test'
-    ]
   });
 });
 
 // Global error handler
 app.use((error, req, res, next) => {
-  console.error('Global error:', error);
+  console.error("Global error handler:", error);
   res.status(500).json({
     success: false,
-    message: 'Internal server error',
-    error: error.message
+    message: "Internal server error",
+    error: process.env.NODE_ENV === "development" ? error.message : undefined,
   });
 });
 
-// Export for Vercel
+// For Vercel serverless deployment
 export default app;
