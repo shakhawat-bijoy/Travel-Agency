@@ -72,11 +72,18 @@ async function searchAirlines(keyword) {
   const token = await getAccessToken();
   const AMADEUS_BASE = process.env.AMADEUS_BASE_URL || "https://test.api.amadeus.com";
   const url = `${AMADEUS_BASE}/v1/reference-data/airlines`;
+  
+  // Amadeus Airlines API searches by airline code (2-3 letter IATA codes)
+  // It returns all airlines if no code is specified, or specific airline(s) if code(s) provided
+  const params = {};
+  
+  // Only add airlineCodes parameter if we have a valid-looking code
+  if (keyword && keyword.trim().length > 0) {
+    params.airlineCodes = keyword.toUpperCase().trim();
+  }
+  
   const res = await axios.get(url, {
-    params: {
-      airlineCodes: keyword.length <= 3 ? keyword : undefined,
-      ...(keyword.length > 3 && { keyword: keyword }),
-    },
+    params,
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: "application/json",

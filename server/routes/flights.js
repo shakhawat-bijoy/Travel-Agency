@@ -115,10 +115,10 @@ router.get("/airlines", async (req, res) => {
 
     console.log("Airline search request for:", keyword);
 
-    if (!keyword || keyword.length < 2) {
+    if (!keyword || keyword.trim().length < 1) {
       return res.status(400).json({
         success: false,
-        error: "keyword must be at least 2 characters",
+        error: "keyword must be at least 1 character",
       });
     }
 
