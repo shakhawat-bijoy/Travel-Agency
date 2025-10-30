@@ -108,17 +108,19 @@ router.get("/airports", async (req, res) => {
   }
 });
 
-// GET /api/flights/airlines?keyword=american
+// GET /api/flights/airlines?keyword=AA
+// Note: Searches by airline IATA code (e.g., "AA", "BA", "DL")
 router.get("/airlines", async (req, res) => {
   try {
     const { keyword } = req.query;
 
     console.log("Airline search request for:", keyword);
 
-    if (!keyword || keyword.trim().length < 1) {
+    // Validate keyword length - consistent with airport search
+    if (!keyword || keyword.trim().length < 2) {
       return res.status(400).json({
         success: false,
-        error: "keyword must be at least 1 character",
+        error: "keyword must be at least 2 characters",
       });
     }
 

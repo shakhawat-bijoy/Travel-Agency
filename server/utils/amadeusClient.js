@@ -73,11 +73,12 @@ async function searchAirlines(keyword) {
   const AMADEUS_BASE = process.env.AMADEUS_BASE_URL || "https://test.api.amadeus.com";
   const url = `${AMADEUS_BASE}/v1/reference-data/airlines`;
   
-  // Amadeus Airlines API searches by airline code (2-3 letter IATA codes)
-  // It returns all airlines if no code is specified, or specific airline(s) if code(s) provided
+  // Note: Amadeus Airlines API only supports searching by airline IATA codes (2-3 letters)
+  // It does not support text-based name searches. Users should search by airline code.
+  // Example: "AA" for American Airlines, "BA" for British Airways
+  // For longer keywords, the API will return empty results if no matching code exists.
   const params = {};
   
-  // Only add airlineCodes parameter if we have a valid-looking code
   if (keyword && keyword.trim().length > 0) {
     params.airlineCodes = keyword.toUpperCase().trim();
   }
