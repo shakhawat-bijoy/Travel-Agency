@@ -41,3 +41,24 @@ export async function searchAirports(keyword) {
   console.log("Airport search success:", data);
   return data;
 }
+
+export async function searchAirlines(keyword) {
+  console.log("Searching airlines for:", keyword);
+
+  const res = await fetch(
+    `${API_BASE}/api/flights/airlines?keyword=${encodeURIComponent(keyword)}`,
+    {
+      credentials: "include",
+    }
+  );
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    console.error("Airline search error:", data);
+    throw new Error(data.error || "Airline search failed");
+  }
+
+  console.log("Airline search success:", data);
+  return data;
+}

@@ -68,6 +68,23 @@ async function searchAirports(keyword) {
   return res.data;
 }
 
+async function searchAirlines(keyword) {
+  const token = await getAccessToken();
+  const AMADEUS_BASE = process.env.AMADEUS_BASE_URL || "https://test.api.amadeus.com";
+  const url = `${AMADEUS_BASE}/v1/reference-data/airlines`;
+  const res = await axios.get(url, {
+    params: {
+      airlineCodes: keyword.length <= 3 ? keyword : undefined,
+      ...(keyword.length > 3 && { keyword: keyword }),
+    },
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+  });
+  return res.data;
+}
+
 async function getBangladeshAirports() {
   const token = await getAccessToken();
   const AMADEUS_BASE = process.env.AMADEUS_BASE_URL || "https://test.api.amadeus.com";
@@ -422,4 +439,4 @@ async function getAirportDetails(iataCode) {
   }
 }
 
-export { searchFlights, searchAirports, getBangladeshAirports, searchAirportsByCountry, getAirportDetails };
+export { searchFlights, searchAirports, searchAirlines, getBangladeshAirports, searchAirportsByCountry, getAirportDetails };

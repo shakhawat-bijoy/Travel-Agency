@@ -1,5 +1,5 @@
 import express from "express";
-import { searchFlights, searchAirports } from "../utils/amadeusClient.js";
+import { searchFlights, searchAirports, searchAirlines } from "../utils/amadeusClient.js";
 
 const router = express.Router();
 
@@ -94,6 +94,44 @@ router.get("/airports", async (req, res) => {
   } catch (err) {
     console.error(
       "Airport search error:",
+      err?.response?.data || err.message || err
+    );
+    const status = err?.response?.status || 500;
+    const errorMessage =
+      err?.response?.data?.errors?.[0]?.detail ||
+      err?.response?.data ||
+      err.message;
+    res.status(status).json({
+      success: false,
+      error: errorMessage,
+    });
+  }
+});
+
+// GET /api/flights/airlines?keyword=american
+router.get("/airlines", async (req, res) => {
+  try {
+    const { keyword } = req.query;
+
+    console.log("Airline search request for:", keyword);
+
+    if (!keyword || keyword.length < 2) {
+      return res.status(400).json({
+        success: false,
+        error: "keyword must be at least 2 characters",
+      });
+    }
+
+    const data = await searchAirlines(keyword);
+    console.log("Airline search response:", data?.data?.length || 0, "results");
+
+    res.json({
+      success: true,
+      ...data,
+    });
+  } catch (err) {
+    console.error(
+      "Airline search error:",
       err?.response?.data || err.message || err
     );
     const status = err?.response?.status || 500;
