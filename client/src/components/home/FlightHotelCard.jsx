@@ -1,6 +1,8 @@
 import React from 'react'
 import Container from '../common/Container'
 import Button from '../common/Buttton'
+import flights from '../../assets/images/flights.jpg'
+import hotels from '../../assets/images/hotels.jpg'
 
 const FlightHotelCard = () => {
   const cards = [
@@ -9,7 +11,7 @@ const FlightHotelCard = () => {
       type: 'Flights',
       title: 'Flights',
       description: 'Search Flights & Places Hire to our most popular destinations',
-      image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600&h=400&fit=crop',
+      image: flights,
       buttonText: 'Show Flights',
       buttonLink: '/flights',
       overlay: 'bg-black bg-opacity-40'
@@ -19,7 +21,7 @@ const FlightHotelCard = () => {
       type: 'Hotels',
       title: 'Hotels',
       description: 'Search Hotels & Places Hire to our most popular destinations',
-      image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&h=400&fit=crop',
+      image: hotels,
       buttonText: 'Show Hotels',
       buttonLink: '/hotels',
       overlay: 'bg-black bg-opacity-40'
@@ -28,36 +30,36 @@ const FlightHotelCard = () => {
 
   return (
     <div className="py-8 sm:py-12 lg:py-16 bg-white">
-      <Container>
+      <Container className={'w-[1232px]'}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
           {cards.map((card) => (
             <div
               key={card.id}
-              className="relative h-64 sm:h-72 md:h-80 lg:h-96 rounded-xl sm:rounded-2xl overflow-hidden group cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300"
+              className="relative w-[604px] h-[559px] rounded-xl sm:rounded-2xl overflow-hidden group cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300"
             >
               {/* Background Image */}
               <div className="absolute inset-0">
                 <img
                   src={card.image}
                   alt={card.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-full object-cover"
                 />
-                <div className={`absolute inset-0 ${card.overlay} group-hover:bg-opacity-50 transition-all duration-300`}></div>
+                
               </div>
 
               {/* Content Overlay */}
-              <div className="relative z-10 h-full flex flex-col justify-center items-center text-center p-4 sm:p-6 lg:p-8">
-                <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2 sm:mb-3 lg:mb-4 group-hover:scale-105 transition-transform duration-300">
+              <div className="relative z-10 h-full flex flex-col justify-center items-center text-center top-1/2 left-1/2 translate-x-[-50%] translate-y-[-20%] p-4 sm:p-6 lg:p-8">
+                <h3 className="font-bold text-[40px] font-serif text-white mb-1">
                   {card.title}
                 </h3>
-                <p className="text-white text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 lg:mb-8 max-w-xs sm:max-w-sm lg:max-w-md opacity-90 group-hover:opacity-100 transition-opacity duration-300 px-2">
+                <p className="text-white text-sm sm:text-base lg:text-lg mb-2 max-w-xs sm:max-w-sm lg:max-w-md px-2">
                   {card.description}
                 </p>
 
                 <Button
                   text={card.buttonText}
                   to={card.buttonLink}
-                  className="bg-teal-500 hover:bg-teal-600 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-2.5 lg:py-3 rounded-lg font-semibold transition-all duration-300 transform group-hover:scale-105 shadow-lg text-sm sm:text-base"
+                  className="bg-teal-600 text-white px-6 py-2 rounded-lg font-semibold"
                 />
               </div>
 
@@ -75,7 +77,7 @@ const FlightHotelCard = () => {
               </div>
 
               {/* Bottom Gradient */}
-              <div className="absolute bottom-0 left-0 right-0 h-24 sm:h-28 lg:h-32 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+              <div className="absolute bottom-0 left-0 right-0 h-24 sm:h-28 lg:h-32 from-black via-black/50 to-transparent"></div>
             </div>
           ))}
         </div>

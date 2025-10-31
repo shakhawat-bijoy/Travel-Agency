@@ -6,7 +6,7 @@ import { searchFlights, setSearchParams, clearSearchResults } from '../../store/
 import { flightAPI } from '../../utils/api'
 import Container from '../common/Container'
 
-const FlightSearch = () => {
+const FlightSearch = ({className}) => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { searchLoading, searchError, searchResults } = useSelector(state => state.flights)
@@ -153,8 +153,8 @@ const FlightSearch = () => {
 
 
   return (
-    <div className="">
-      <Container>
+    <div className={`${className}`}>
+      <Container className={`w-[1232px]`}>
         {/* Bangladesh Airports Quick Info */}
         {/* {bangladeshAirports.length > 0 && (
           <div className="bg-gradient-to-r from-teal-50 to-blue-50 rounded-2xl p-6 mb-6 border border-teal-100">
@@ -186,12 +186,12 @@ const FlightSearch = () => {
         )} */}
 
         {/* Search Form */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+        <div className="bg-white rounded-2xl shadow-xl px-8 py-4 mb-8">
           {/* Tab Navigation */}
           <div className="flex items-center gap-8 mb-8 border-b border-gray-200">
             <button
               onClick={() => setActiveTab('flights')}
-              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all duration-300 ${activeTab === 'flights'
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all duration-300 cursor-pointer ${activeTab === 'flights'
                 ? 'text-teal-600 border-teal-600'
                 : 'text-gray-600 border-transparent hover:text-teal-600'
                 }`}
@@ -199,9 +199,10 @@ const FlightSearch = () => {
               <Plane className="w-5 h-5" />
               Flights
             </button>
+            <span className='w-px h-12 bg-gray-200'></span>
             <button
               onClick={() => setActiveTab('stays')}
-              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all duration-300 ${activeTab === 'stays'
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all duration-300 cursor-pointer ${activeTab === 'stays'
                 ? 'text-teal-600 border-teal-600'
                 : 'text-gray-600 border-transparent hover:text-teal-600'
                 }`}
@@ -501,7 +502,7 @@ const FlightSearch = () => {
               {/* Error Message */}
               {searchError && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start gap-3">
-                  <div className="flex-shrink-0 mt-0.5">
+                  <div className="shrink-0 mt-0.5">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                     </svg>

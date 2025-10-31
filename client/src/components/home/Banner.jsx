@@ -10,7 +10,7 @@ import banner4 from '../../assets/images/banner4.png'
 import banner5 from '../../assets/images/banner5.jpg'
 import banner6 from '../../assets/images/banner6.jpg'
 
-const Banner = () => {
+const Banner = ({className}) => {
 
   let [active, setActive] = useState(0)
 
@@ -229,8 +229,8 @@ const Banner = () => {
 
 
   return (
-    <div>
-      <Container className="relative pb-16 sm:pb-20 md:pb-24 lg:pb-[92px] rounded-3xl">
+    <div className={`${className}`}>
+      <Container className="relative sm:pb-20 md:pb-24 lg:pb-0 rounded-3xl">
 
 
         <Slider {...settings}>

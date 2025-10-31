@@ -444,7 +444,7 @@ const ConfirmBooking = () => {
                 <div className="">
                     <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                         {/* Header */}
-                        <div className="bg-gradient-to-r from-teal-500 to-blue-600 text-white p-6">
+                        <div className="bg-gradient-to-red from-teal-500 to-blue-600 text-white p-6">
                             <h1 className="text-3xl font-bold mb-2">Confirm Your Booking</h1>
                             <p className="text-teal-100">Complete your flight booking details</p>
                         </div>
@@ -520,7 +520,7 @@ const ConfirmBooking = () => {
                                     )}
                                 </div>
                                 {isRoundTrip && (
-                                    <div className="bg-gradient-to-br from-green-50 to-blue-50 p-4 rounded-lg border border-green-200">
+                                    <div className="bg-gradient-to-blue from-green-50 to-blue-50 p-4 rounded-lg border border-green-200">
                                         <div className="text-xs text-green-700 uppercase tracking-wide mb-1">Trip Type</div>
                                         <div className="font-semibold text-green-800 flex items-center gap-1">
                                             <Plane className="w-4 h-4 transform rotate-45" />
@@ -773,7 +773,7 @@ const ConfirmBooking = () => {
 
                                 {/* Trip Summary for Round Trip */}
                                 {isRoundTrip && (
-                                    <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-6 border border-purple-200">
+                                    <div className="bg-gradient-to-red from-purple-50 to-indigo-50 rounded-lg p-6 border border-purple-200">
                                         <h4 className="text-lg font-semibold text-purple-800 mb-4 flex items-center gap-2">
                                             <Calendar className="w-5 h-5" />
                                             Complete Journey Summary

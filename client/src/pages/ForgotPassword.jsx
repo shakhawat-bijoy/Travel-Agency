@@ -184,7 +184,7 @@ const ForgotPassword = () => {
           <div className={`
             absolute top-0 left-0 h-full rounded-full transition-all duration-700 ease-in-out
             ${i === active
-              ? 'w-full bg-gradient-to-r from-teal-400 to-blue-500 shadow-lg shadow-teal-500/50'
+              ? 'w-full bg-gradient-to-red from-teal-400 to-blue-500 shadow-lg shadow-teal-500/50'
               : 'w-0 bg-white/40'
             }
           `} />
@@ -239,7 +239,7 @@ const ForgotPassword = () => {
             <button
               type="submit"
               disabled={loading || !formData.email.trim()}
-              className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white transition-colors ${loading || !formData.email.trim()
+              className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white transition-color cursor-pointer ${loading || !formData.email.trim()
                 ? 'bg-gray-300 cursor-not-allowed'
                 : 'bg-teal-500 hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500'
                 }`}
@@ -277,7 +277,7 @@ const ForgotPassword = () => {
             <button
               type="submit"
               disabled={loading || formData.verificationCode.length !== 6}
-              className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white transition-colors ${loading || formData.verificationCode.length !== 6
+              className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white transition-colors cursor-pointer ${loading || formData.verificationCode.length !== 6
                 ? 'bg-gray-300 cursor-not-allowed'
                 : 'bg-teal-500 hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500'
                 }`}
@@ -291,7 +291,7 @@ const ForgotPassword = () => {
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="font-medium text-teal-600 hover:text-teal-500"
+                  className="font-medium text-teal-600 hover:text-teal-500 cursor-pointer"
                 >
                   Resend
                 </button>
@@ -343,7 +343,7 @@ const ForgotPassword = () => {
             <button
               type="submit"
               disabled={loading || !formData.newPassword || !formData.confirmPassword}
-              className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white transition-colors ${loading || !formData.newPassword || !formData.confirmPassword
+              className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white transition-colors cursor-pointer ${loading || !formData.newPassword || !formData.confirmPassword
                 ? 'bg-gray-300 cursor-not-allowed'
                 : 'bg-teal-500 hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500'
                 }`}
@@ -380,7 +380,7 @@ const ForgotPassword = () => {
               <div className="flex items-center mb-6">
                 <Link
                   to="/login"
-                  className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+                  className="flex items-center text-gray-600 hover:text-gray-900 transition-colors cursor-pointer"
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   <span className="text-sm font-medium">Back to login</span>

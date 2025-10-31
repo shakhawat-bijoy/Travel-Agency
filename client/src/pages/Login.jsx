@@ -151,7 +151,7 @@ const Login = () => {
           <div className={`
             absolute top-0 left-0 h-full rounded-full transition-all duration-700 ease-in-out
             ${i === active
-              ? 'w-full bg-gradient-to-r from-teal-400 to-blue-500 shadow-lg shadow-teal-500/50'
+              ? 'w-full bg-gradient-to-red from-teal-400 to-blue-500 shadow-lg shadow-teal-500/50'
               : 'w-0 bg-white/40'
             }
           `} />
@@ -229,7 +229,7 @@ const Login = () => {
                 <div className={`
                   absolute top-0 left-0 h-full rounded-full transition-all duration-500 ease-in-out
                   ${i === active
-                    ? 'w-full bg-gradient-to-r from-teal-400 to-blue-500'
+                    ? 'w-full bg-gradient-to-red from-teal-400 to-blue-500'
                     : 'w-0 bg-white/40'
                   }
                 `} />
@@ -311,7 +311,7 @@ const Login = () => {
                       />
                       <button
                         type="button"
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
                         onClick={() => setShowPassword(!showPassword)}
                       >
                         {showPassword ? (
@@ -355,7 +355,7 @@ const Login = () => {
                       onClick={handleSubmit}
                       type="submit"
                       disabled={!isFormValid}
-                      className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white transition-colors ${isFormValid
+                      className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white transition-colors cursor-pointer ${isFormValid
                         ? 'bg-teal-500 hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500'
                         : 'bg-gray-300 cursor-not-allowed'
                         }`}
@@ -398,7 +398,7 @@ const Login = () => {
                           />
                         </svg>
                       }
-                      className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
+                      className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors cursor-pointer"
                       to="#"
                       onClick={(e) => {
                         e.preventDefault()
@@ -444,7 +444,7 @@ const Login = () => {
                           />
                         </svg>
                       }
-                      className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
+                      className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors cursor-pointer"
                       to="#"
                       onClick={(e) => {
                         e.preventDefault()

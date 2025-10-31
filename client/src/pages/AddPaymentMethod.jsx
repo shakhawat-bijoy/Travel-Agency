@@ -246,7 +246,7 @@ const AddPaymentMethod = () => {
                     <div className={`
                     absolute top-0 left-0 h-full rounded-full transition-all duration-700 ease-in-out
                     ${i === active
-                            ? 'w-full bg-gradient-to-r from-teal-400 to-blue-500 shadow-lg shadow-teal-500/50'
+                            ? 'w-full bg-gradient-to-red from-teal-400 to-blue-500 shadow-lg shadow-teal-500/50'
                             : 'w-0 bg-white/40'
                         }
                   `} />
@@ -324,7 +324,7 @@ const AddPaymentMethod = () => {
                                 <div className={`
                                 absolute top-0 left-0 h-full rounded-full transition-all duration-500 ease-in-out
                                 ${i === active
-                                        ? 'w-full bg-gradient-to-r from-teal-400 to-blue-500'
+                                        ? 'w-full bg-gradient-to-red from-teal-400 to-blue-500'
                                         : 'w-0 bg-white/40'
                                     }
                               `} />

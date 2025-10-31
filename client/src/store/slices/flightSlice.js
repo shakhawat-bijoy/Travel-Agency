@@ -189,7 +189,7 @@ const flightSlice = createSlice({
                 localStorage.removeItem('flightSearchResults')
             }
         },
-        clearPersistedResults: (state) => {
+        clearPersistedResults: () => {
             localStorage.removeItem('flightSearchResults')
         }
     },
