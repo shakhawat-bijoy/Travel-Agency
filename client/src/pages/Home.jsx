@@ -8,11 +8,11 @@ import Reviews from '../components/home/Reviews'
 const Home = () => {
   return (
     <div className='md:mt-5 mt-0'>
-        <Banner className='relative'/>
-        <FlightSearch className='absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[10%]'/>
-        <TripPlan className={'mt-[380px]'}/>
+        <Banner className='md:relative static'/>
+        <FlightSearch className='static md:absolute md:top-1/2 md:left-1/2 md:translate-x-[-50%] md:translate-y-[15%]'/>
+        <TripPlan className={'md:mt-[380px]'}/>
         <FlightHotelCard/>
-        <Reviews/>
+        <Reviews className={`hidden md:block`}/>
     </div>
   )
 }

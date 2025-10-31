@@ -29,13 +29,13 @@ const FlightHotelCard = () => {
   ]
 
   return (
-    <div className="py-8 sm:py-12 lg:py-16 bg-white">
-      <Container className={'w-[1232px]'}>
+    <div className="py-8 sm:py-12 lg:py-16 bg-white px-2 md:px-0">
+      <Container className={'w-full max-w-[1232px]'}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
           {cards.map((card) => (
             <div
               key={card.id}
-              className="relative w-[604px] h-[559px] rounded-xl sm:rounded-2xl overflow-hidden group cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300"
+              className="relative w-full max-w-[604px] mx-auto h-[400px] sm:h-[480px] md:h-[520px] lg:h-[559px] rounded-xl sm:rounded-2xl overflow-hidden group cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300"
             >
               {/* Background Image */}
               <div className="absolute inset-0">
@@ -48,18 +48,18 @@ const FlightHotelCard = () => {
               </div>
 
               {/* Content Overlay */}
-              <div className="relative z-10 h-full flex flex-col justify-center items-center text-center top-1/2 left-1/2 translate-x-[-50%] translate-y-[-20%] p-4 sm:p-6 lg:p-8">
-                <h3 className="font-bold text-[40px] font-serif text-white mb-1">
+              <div className="relative z-10 h-full flex flex-col justify-center items-center text-center p-4 sm:p-6 lg:p-8">
+                <h3 className="font-bold text-3xl sm:text-4xl lg:text-[40px] font-serif text-white mb-2 sm:mb-1">
                   {card.title}
                 </h3>
-                <p className="text-white text-sm sm:text-base lg:text-lg mb-2 max-w-xs sm:max-w-sm lg:max-w-md px-2">
+                <p className="text-white text-sm sm:text-base lg:text-lg mb-4 sm:mb-2 max-w-xs sm:max-w-sm lg:max-w-md px-2">
                   {card.description}
                 </p>
 
                 <Button
                   text={card.buttonText}
                   to={card.buttonLink}
-                  className="bg-teal-600 text-white px-6 py-2 rounded-lg font-semibold"
+                  className="bg-teal-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-teal-700 transition-colors"
                 />
               </div>
 
@@ -77,7 +77,7 @@ const FlightHotelCard = () => {
               </div>
 
               {/* Bottom Gradient */}
-              <div className="absolute bottom-0 left-0 right-0 h-24 sm:h-28 lg:h-32 from-black via-black/50 to-transparent"></div>
+              <div className="absolute bottom-0 left-0 right-0 h-24 sm:h-28 lg:h-32 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
             </div>
           ))}
         </div>

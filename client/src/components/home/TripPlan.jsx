@@ -22,7 +22,7 @@ const TripPlan = ({className}) => {
         {
             id: 3,
             name: "Baku, Azerbaijan",
-            image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop",
+            image: "https://ik.imagekit.io/abpj7jifz/baku.webp?updatedAt=1761928744307",
             services: ["Flights", "•", "Hotels", "•", "Resorts"],
             description: "Explore the land of fire and modern architecture"
         },
@@ -72,34 +72,34 @@ const TripPlan = ({className}) => {
 
     return (
         <div className={`${className}`}>
-            <Container className={`w-[1232px] py-20`}>
-                <div className="mb-10 flex items-center justify-between">
+            <Container className={`lg:w-[1232px] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20`}>
+                <div className="mb-8 lg:mb-10 flex flex-col sm:flex-row sm:items-center lg:justify-between gap-4 lg:gap-0">
                     <div>
-                        <h2 className="text-4xl font-bold text-gray-900 mb-4">
+                        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 lg:mb-4">
                             Plan your perfect trip
                         </h2>
-                        <p className="text-lg text-gray-600 mb-8">
+                        <p className="text-base sm:text-lg text-gray-600 lg:mb-8">
                             Search Flights & Places Hire to our most popular destinations
                         </p>
                     </div>
-                    <div className="flex justify-end">
+                    <div className="flex justify-start sm:justify-end lg:justify-end">
                         <Button
                             text="See more places"
-                            className="bg-white border border-teal-500 text-gray-800 px-6 py-2 rounded-lg hover:bg-teal-500 hover:text-white transition-colors"
+                            className="bg-white border border-teal-500 text-gray-800 px-4 sm:px-6 py-2 rounded-lg hover:bg-teal-500 hover:text-white transition-colors text-sm lg:text-base"
                             to="/"
                         />
                     </div>
                 </div>
 
-                <div className="flex justify-between flex-wrap gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:justify-between lg:flex-wrap gap-4 sm:gap-6 lg:gap-8">
                     {destinations.map((destination) => (
                         <div
                             key={destination.id}
-                            className="rounded-2xl shadow-lg cursor-pointer group w-[389px] h-[122px]"
+                            className="rounded-2xl shadow-lg cursor-pointer group w-full sm:w-full lg:w-[389px] lg:h-[122px] hover:shadow-xl transition-shadow duration-300"
                         >
-                            <div className="flex items-center p-4 gap-4">
+                            <div className="flex items-center p-3 sm:p-4 gap-3 sm:gap-4">
 
-                                <div className='w-[90px] h-[90px]'>
+                                <div className='w-16 h-16 sm:w-20 sm:h-20 lg:w-[90px] lg:h-[90px] flex-shrink-0'>
                                     <img
                                         src={destination.image}
                                         alt={destination.name}
@@ -108,16 +108,16 @@ const TripPlan = ({className}) => {
                                 </div>
 
 
-                                <div className="flex flex-col gap-2">
-                                    <h3 className="text-[#121] font-montserrat text-md font-semibold opacity-0.7">
+                                <div className="flex flex-col gap-1 sm:gap-2 min-w-0 flex-1">
+                                    <h3 className="text-[#121] font-montserrat text-sm sm:text-base lg:text-md font-semibold opacity-70 truncate">
                                         {destination.name}
                                     </h3>
 
-                                    <div className="flex flex-wrap gap-2">
+                                    <div className="flex flex-wrap gap-1 sm:gap-2">
                                         {destination.services.map((service, index) => (
                                             <span
                                                 key={index}
-                                                className="text-[#121] font-montserrat text-sm font-medium"
+                                                className="text-[#121] font-montserrat text-xs sm:text-sm font-medium"
                                             >
                                                 {service}
                                             </span>

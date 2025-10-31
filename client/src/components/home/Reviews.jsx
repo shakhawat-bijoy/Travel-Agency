@@ -60,7 +60,7 @@ function SamplePrevArrow2(props) {
   );
 }
 
-const Reviews = () => {
+const Reviews = ({className}) => {
   var settings = {
     infinite: true,
     slidesToShow: 4,
@@ -131,7 +131,7 @@ const Reviews = () => {
   };
 
   return (
-    <div className='my-20'>
+    <div className={`md:my-20 my-4 ${className}`}>
       <Container className="flex mb-10 px-4 md:px-0 justify-between items-center">
         <div className='flex flex-col gap-4'>
           <h5 className='text-[#000000] text-[32px] leading-[44px] font-semibold font-montserrat tracking-[1.92px]'>Reviews</h5>

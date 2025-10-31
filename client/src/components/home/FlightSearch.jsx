@@ -154,7 +154,7 @@ const FlightSearch = ({className}) => {
 
   return (
     <div className={`${className}`}>
-      <Container className={`w-[1232px]`}>
+      <Container className={`lg:w-[1232px] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8`}>
         {/* Bangladesh Airports Quick Info */}
         {/* {bangladeshAirports.length > 0 && (
           <div className="bg-gradient-to-r from-teal-50 to-blue-50 rounded-2xl p-6 mb-6 border border-teal-100">
@@ -186,36 +186,36 @@ const FlightSearch = ({className}) => {
         )} */}
 
         {/* Search Form */}
-        <div className="bg-white rounded-2xl shadow-xl px-8 py-4 mb-8">
+        <div className="bg-white rounded-2xl shadow-xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-4 mb-8">
           {/* Tab Navigation */}
-          <div className="flex items-center gap-8 mb-8 border-b border-gray-200">
+          <div className="flex items-center gap-4 sm:gap-6 lg:gap-8 mb-6 sm:mb-8 border-b border-gray-200 overflow-x-auto">
             <button
               onClick={() => setActiveTab('flights')}
-              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all duration-300 cursor-pointer ${activeTab === 'flights'
+              className={`flex items-center gap-2 px-3 sm:px-4 py-3 border-b-2 transition-all duration-300 cursor-pointer whitespace-nowrap ${activeTab === 'flights'
                 ? 'text-teal-600 border-teal-600'
                 : 'text-gray-600 border-transparent hover:text-teal-600'
                 }`}
             >
-              <Plane className="w-5 h-5" />
-              Flights
+              <Plane className="w-4 h-4 lg:w-5 lg:h-5" />
+              <span className="text-sm lg:text-base">Flights</span>
             </button>
-            <span className='w-px h-12 bg-gray-200'></span>
+            <span className='w-px h-8 sm:h-10 lg:h-12 bg-gray-200'></span>
             <button
               onClick={() => setActiveTab('stays')}
-              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all duration-300 cursor-pointer ${activeTab === 'stays'
+              className={`flex items-center gap-2 px-3 sm:px-4 py-3 border-b-2 transition-all duration-300 cursor-pointer whitespace-nowrap ${activeTab === 'stays'
                 ? 'text-teal-600 border-teal-600'
                 : 'text-gray-600 border-transparent hover:text-teal-600'
                 }`}
             >
-              <Hotel className="w-5 h-5" />
-              Stays
+              <Hotel className="w-4 h-4 lg:w-5 lg:h-5" />
+              <span className="text-sm lg:text-base">Stays</span>
             </button>
           </div>
 
           {activeTab === 'flights' && (
-            <div className="space-y-6">
+            <div className="space-y-4 lg:space-y-6">
               {/* Trip Type */}
-              <div className="flex gap-4 mb-6">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 lg:gap-4 mb-4 lg:mb-6">
                 <label className="flex items-center gap-2">
                   <input
                     type="radio"
@@ -239,10 +239,10 @@ const FlightSearch = ({className}) => {
               </div>
 
               {/* Flight Search Form */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {/* From */}
                 <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 lg:mb-2">
                     From
                   </label>
                   <div className="relative">
@@ -255,10 +255,10 @@ const FlightSearch = ({className}) => {
                         setShowFromDropdown(true)
                       }}
                       onFocus={() => setShowFromDropdown(true)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                       placeholder="Search departure city"
                     />
-                    <MapPin className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <MapPin className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-5 lg:h-5 text-gray-400" />
 
                     {/* Airport Dropdown */}
                     {showFromDropdown && (
@@ -342,7 +342,7 @@ const FlightSearch = ({className}) => {
 
                 {/* To */}
                 <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 lg:mb-2">
                     To
                   </label>
                   <div className="relative">
@@ -355,17 +355,17 @@ const FlightSearch = ({className}) => {
                         setShowToDropdown(true)
                       }}
                       onFocus={() => setShowToDropdown(true)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                       placeholder="Search destination city"
                     />
-                    <MapPin className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <MapPin className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-5 lg:h-5 text-gray-400" />
 
                     {/* Swap Button */}
                     <button
                       onClick={handleSwapLocations}
-                      className="absolute -right-6 top-1/2 transform -translate-y-1/2 p-2 hover:bg-gray-100 rounded-full transition-colors z-10"
+                      className="absolute -right-4 sm:-right-5 lg:-right-6 top-1/2 transform -translate-y-1/2 p-1 sm:p-2 hover:bg-gray-100 rounded-full transition-colors z-10"
                     >
-                      <ArrowLeftRight className="w-4 h-4 text-gray-500" />
+                      <ArrowLeftRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
                     </button>
 
                     {/* Airport Dropdown */}
@@ -429,7 +429,7 @@ const FlightSearch = ({className}) => {
 
                 {/* Departure Date */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 lg:mb-2">
                     Departure
                   </label>
                   <div className="relative">
@@ -438,16 +438,16 @@ const FlightSearch = ({className}) => {
                       value={formatDateForInput(searchData.outbound_date)}
                       onChange={(e) => setSearchData(prev => ({ ...prev, outbound_date: e.target.value }))}
                       min={new Date().toISOString().split('T')[0]}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                     />
-                    <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                    <Calendar className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-5 lg:h-5 text-gray-400 pointer-events-none" />
                   </div>
                 </div>
 
                 {/* Return Date */}
                 {tripType === 'round_trip' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 lg:mb-2">
                       Return
                     </label>
                     <div className="relative">
@@ -456,23 +456,23 @@ const FlightSearch = ({className}) => {
                         value={formatDateForInput(searchData.return_date)}
                         onChange={(e) => setSearchData(prev => ({ ...prev, return_date: e.target.value }))}
                         min={searchData.outbound_date || new Date().toISOString().split('T')[0]}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                       />
-                      <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                      <Calendar className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-5 lg:h-5 text-gray-400 pointer-events-none" />
                     </div>
                   </div>
                 )}
 
                 {/* Passengers */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 lg:mb-2">
                     Passengers
                   </label>
                   <div className="flex gap-2">
                     <select
                       value={searchData.adults}
                       onChange={(e) => setSearchData(prev => ({ ...prev, adults: parseInt(e.target.value) }))}
-                      className="flex-1 px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      className="flex-1 px-2 sm:px-3 py-2 sm:py-3 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                     >
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
                         <option key={num} value={num}>{num} Adult{num > 1 ? 's' : ''}</option>
@@ -483,13 +483,13 @@ const FlightSearch = ({className}) => {
 
                 {/* Class */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 lg:mb-2">
                     Class
                   </label>
                   <select
                     value={searchData.travel_class}
                     onChange={(e) => setSearchData(prev => ({ ...prev, travel_class: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                   >
                     <option value="ECONOMY">Economy</option>
                     <option value="PREMIUM_ECONOMY">Premium Economy</option>
@@ -522,38 +522,46 @@ const FlightSearch = ({className}) => {
                   className={`${searchResults && searchResults.flights && searchResults.flights.length > 0
                     ? 'bg-blue-500 hover:bg-blue-600'
                     : 'bg-teal-500 hover:bg-teal-600'
-                    } disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-8 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 text-lg shadow-lg hover:shadow-xl disabled:shadow-none`}
+                    } disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 sm:px-8 py-2 sm:py-3 lg:py-2 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 text-base sm:text-lg shadow-lg hover:shadow-xl disabled:shadow-none`}
                 >
                   {searchLoading ? (
                     <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      Searching Flights...
+                      <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white"></div>
+                      <span className="hidden sm:inline">Searching Flights...</span>
+                      <span className="sm:hidden">Searching...</span>
                     </>
                   ) : (
                     <>
                       {searchResults && searchResults.flights && searchResults.flights.length > 0 ? (
-                        <Edit3 className="w-5 h-5" />
+                        <Edit3 className="w-4 h-4 sm:w-5 sm:h-5" />
                       ) : (
-                        <Search className="w-5 h-5" />
+                        <Search className="w-4 h-4 sm:w-5 sm:h-5" />
                       )}
-                      {searchResults && searchResults.flights && searchResults.flights.length > 0
-                        ? 'Modify Search'
-                        : 'Search Flights'
-                      }
+                      <span className="hidden sm:inline">
+                        {searchResults && searchResults.flights && searchResults.flights.length > 0
+                          ? 'Modify Search'
+                          : 'Search Flights'
+                        }
+                      </span>
+                      <span className="sm:hidden">
+                        {searchResults && searchResults.flights && searchResults.flights.length > 0
+                          ? 'Modify'
+                          : 'Search'
+                        }
+                      </span>
                     </>
                   )}
                 </button>
-
-
               </div>
 
               {/* Loading Progress */}
               {searchLoading && (
-                <div className="mt-4 text-center">
-                  <div className="text-sm text-gray-600 mb-2">
-                    Searching flights from Bangladesh and worldwide...
+                <div className="mt-4 text-center px-4">
+                  <div className="text-xs sm:text-sm text-gray-600 mb-2">
+                    <span className="hidden sm:inline">Searching flights from Bangladesh and worldwide...</span>
+                    <span className="sm:hidden">Searching flights...</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2 max-w-md mx-auto">
+                  <div className="w-full bg-gray-200 rounded-full h-2 max-w-xs sm:max-w-md mx-auto">
                     <div className="bg-teal-500 h-2 rounded-full animate-pulse" style={{ width: '60%' }}></div>
                   </div>
                 </div>
@@ -562,10 +570,10 @@ const FlightSearch = ({className}) => {
           )}
 
           {activeTab === 'stays' && (
-            <div className="text-center py-12">
-              <Hotel className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Hotel Search</h3>
-              <p className="text-gray-500">Hotel search functionality coming soon...</p>
+            <div className="text-center py-8 sm:py-12 px-4">
+              <Hotel className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-3 sm:mb-4" />
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mb-2">Hotel Search</h3>
+              <p className="text-sm sm:text-base text-gray-500">Hotel search functionality coming soon...</p>
             </div>
           )}
         </div>
