@@ -90,7 +90,7 @@ const TripPlan = ({className}) => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:justify-between lg:flex-wrap gap-4 sm:gap-6 lg:gap-8">
+                <div className="flex flex-wrap justify-between gap-4 sm:gap-6 lg:gap-8">
                     {destinations.map((destination) => (
                         <div
                             key={destination.id}

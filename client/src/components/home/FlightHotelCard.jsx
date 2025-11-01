@@ -31,7 +31,7 @@ const FlightHotelCard = () => {
   return (
     <div className="py-8 sm:py-12 lg:py-16 bg-white px-2 md:px-0">
       <Container className={'w-[1280px]'}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+        <div className="flex flex-wrap justify-between items-center gap-4 sm:gap-6 lg:gap-8">
           {cards.map((card) => (
             <div
               key={card.id}
