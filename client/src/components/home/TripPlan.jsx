@@ -72,7 +72,7 @@ const TripPlan = ({className}) => {
 
     return (
         <div className={`${className}`}>
-            <Container className={`lg:w-[1232px] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20`}>
+            <Container className={`lg:w-[1280px] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20`}>
                 <div className="mb-8 lg:mb-10 flex flex-col sm:flex-row sm:items-center lg:justify-between gap-4 lg:gap-0">
                     <div>
                         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 lg:mb-4">
