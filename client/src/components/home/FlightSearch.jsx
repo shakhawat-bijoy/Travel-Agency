@@ -154,7 +154,7 @@ const FlightSearch = ({className}) => {
 
   return (
     <div className={`${className}`}>
-      <Container className={`lg:w-[1280px] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8`}>
+      <Container className={`lg:w-[1280px] max-w-7xl mx-auto px-4 sm:px-6 lg:px-0`}>
         {/* Bangladesh Airports Quick Info */}
         {/* {bangladeshAirports.length > 0 && (
           <div className="bg-gradient-to-r from-teal-50 to-blue-50 rounded-2xl p-6 mb-6 border border-teal-100">
