@@ -29,13 +29,13 @@ const FlightHotelCard = () => {
   ]
 
   return (
-    <div className="py-8 sm:py-12 lg:py-16 bg-white px-2 md:px-0">
-      <Container className={'w-[1280px]'}>
-        <div className="flex flex-wrap justify-between items-center gap-4 sm:gap-6 lg:gap-8">
+    <div className="py-8 sm:py-12 lg:py-16 bg-white px-4 sm:px-6 lg:px-8">
+      <Container className={'max-w-[1280px] w-full'}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
           {cards.map((card) => (
             <div
               key={card.id}
-              className="relative w-full max-w-[604px] mx-auto h-[400px] sm:h-[480px] md:h-[520px] lg:h-[559px] rounded-xl sm:rounded-2xl overflow-hidden group cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300"
+              className="relative w-full h-[400px] sm:h-[480px] md:h-[520px] lg:h-[559px] rounded-xl sm:rounded-2xl overflow-hidden group cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300"
             >
               {/* Background Image */}
               <div className="absolute inset-0">
@@ -48,23 +48,23 @@ const FlightHotelCard = () => {
               </div>
 
               {/* Content Overlay */}
-              <div className="relative z-10 h-full flex flex-col justify-center items-center text-center p-4 sm:p-6 lg:p-8">
-                <h3 className="font-bold text-3xl sm:text-4xl lg:text-[40px] font-serif text-white mb-2 sm:mb-1">
+              <div className="relative z-10 h-full flex flex-col transform translate-y-[60%] items-center text-center p-4 sm:p-6 lg:p-8">
+                <h3 className="font-bold text-2xl sm:text-3xl md:text-4xl lg:text-[40px] font-serif text-white mb-2 sm:mb-1">
                   {card.title}
                 </h3>
-                <p className="text-white text-sm sm:text-base lg:text-lg mb-4 sm:mb-2 max-w-xs sm:max-w-sm lg:max-w-md px-2">
+                <p className="text-white text-xs sm:text-sm md:text-base lg:text-lg mb-4 sm:mb-2 max-w-xs sm:max-w-sm lg:max-w-md px-2">
                   {card.description}
                 </p>
 
                 <Button
                   text={card.buttonText}
                   to={card.buttonLink}
-                  className="bg-teal-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-teal-700 transition-colors"
+                  className="bg-teal-600 text-white px-4 sm:px-6 py-2 rounded-lg font-semibold hover:bg-teal-700 transition-colors text-sm sm:text-base"
                 />
               </div>
 
               {/* Decorative Elements */}
-              <div className="absolute top-3 right-3 sm:top-4 sm:right-4 w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 border-2 border-white border-opacity-30 rounded-full flex items-center justify-center">
+              <div className="absolute top-2 right-2 sm:top-3 sm:right-3 md:top-4 md:right-4 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 border-2 border-white border-opacity-30 rounded-full flex items-center justify-center">
                 {card.type === 'Flights' ? (
                   <svg className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
