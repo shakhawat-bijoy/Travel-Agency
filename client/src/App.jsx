@@ -45,7 +45,7 @@ const App = () => {
         }></Route>
         <Route path="/test-booking" element={<BookingTest />}></Route>
         <Route path="/flights" element={<Flights />}></Route>
-        <Route path="/hotels" element={<Hotels />}></Route>
+        <Route path='/hotels' element={<Hotels/>}></Route>
         <Route path="/flight-results" element={<FlightResults />}></Route>
         <Route path="/book-flight" element={<FlightBooking />}></Route>
         <Route path="/confirm-booking" element={<ProtectedRoute>

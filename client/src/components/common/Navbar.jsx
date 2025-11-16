@@ -55,7 +55,7 @@ const Navbar = () => {
                             <span className={isOtherRoute ? 'text-black' : isAccountPage ? 'text-black' : 'text-white'}>Find Flights</span>
                         </Link>
 
-                        <Link to={'/'} className={`flex items-center gap-1 px-4 py-2 rounded-lg transition-all duration-300 ${isOtherRoute ? 'hover:bg-gray-100' : isAccountPage ? 'hover:bg-gray-100' : 'hover:bg-white/10'}`}>
+                        <Link to={'/hotels'} className={`flex items-center gap-1 px-4 py-2 rounded-lg transition-all duration-300 ${isOtherRoute ? 'hover:bg-gray-100' : isAccountPage ? 'hover:bg-gray-100' : 'hover:bg-white/10'}`}>
                             <Building2 className={`w-4 h-4 ${isOtherRoute ? 'text-black' : isAccountPage ? 'text-black' : 'text-white'}`} />
                             <span className={isOtherRoute ? 'text-black' : isAccountPage ? 'text-black' : 'text-white'}>Find Stays</span>
                         </Link>
@@ -167,7 +167,7 @@ const Navbar = () => {
                                 </Link>
 
                                 <Link
-                                    to={'/'}
+                                    to={'/hotels'}
                                     className='flex items-center gap-2 px-4 py-3 rounded-lg transition-all duration-300 hover:bg-gray-100 text-gray-800'
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >

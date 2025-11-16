@@ -1,6 +1,5 @@
-import FlightHotelSearch from '../components/home/FlightHotelSearch.jsx'
-import Banner from '../components/home/Banner'
-
+import Banner from "../components/home/Banner"
+import FlightHotelSearch from "../components/home/FlightHotelSearch"
 
 const Hotels = () => {
   return (

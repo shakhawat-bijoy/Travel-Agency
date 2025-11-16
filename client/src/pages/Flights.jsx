@@ -1,4 +1,4 @@
-import FlightSearch from '../components/home/FlightSearch'
+import FlightHotelSearch from '../components/home/FlightHotelSearch'
 import Banner from '../components/home/Banner'
 
 
@@ -6,7 +6,7 @@ const Flights = () => {
   return (
     <div>
       <Banner />
-      <FlightSearch />
+      <FlightHotelSearch />
     </div>
   )
 }
