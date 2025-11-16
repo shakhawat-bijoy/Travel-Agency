@@ -7,9 +7,12 @@ import {
 } from 'lucide-react'
 import { auth, authAPI, userAPI, paymentAPI, flightAPI } from '../utils/api'
 import { Link } from 'react-router-dom'
+import jsPDF from 'jspdf'
+import 'jspdf-autotable'
 
 const Account = () => {
   const [activeTab, setActiveTab] = useState('profile')
+  const [userId, setUserId] = useState(null)
   const [userInfo, setUserInfo] = useState({
     name: '',
     email: '',
@@ -36,6 +39,9 @@ const Account = () => {
   const [bookingError, setBookingError] = useState('')
   const [selectedBooking, setSelectedBooking] = useState(null)
   const [showBookingDetails, setShowBookingDetails] = useState(false)
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
+  const [bookingToDelete, setBookingToDelete] = useState(null)
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState('')
 
   const profileImageRef = useRef(null)
   const coverImageRef = useRef(null)
@@ -47,7 +53,8 @@ const Account = () => {
         setInitialLoading(true)
         const response = await authAPI.getProfile()
         if (response.success) {
-
+          // Store user ID
+          setUserId(response.user._id || response.user.id)
 
           setUserInfo({
             name: response.user.name || '',
@@ -85,7 +92,8 @@ const Account = () => {
     if (activeTab === 'history') {
       loadBookings()
     }
-  }, [activeTab])
+     
+  }, [activeTab, userId, userInfo.email])
 
   // Reload payment methods when user returns to the page (e.g., after adding a card)
   useEffect(() => {
@@ -122,18 +130,14 @@ const Account = () => {
       setLoadingBookings(true)
       setBookingError('')
 
-      // Specific booking IDs from the database
-      const bookingIds = [
-        "6900fdd731bfa482a23e0bb8",
-        "6900f9c06819803dfc31d44e",
-        "6900f7006819803dfc31d43e"
-      ]
+      console.log('Loading all bookings from database...')
 
-      console.log('Loading bookings by IDs:', bookingIds)
-      const response = await flightAPI.getBookingsByIds(bookingIds)
+      // Fetch all bookings from the database dynamically
+      const response = await flightAPI.getAllBookings(1, 100)
 
       if (response.success) {
-        console.log('Bookings loaded:', response.data)
+        console.log('Bookings loaded:', response.data?.length || 0, 'bookings')
+        console.log('Booking details:', response.data)
         setBookings(response.data || [])
       } else {
         setBookingError(response.message || 'Failed to load booking history')
@@ -197,22 +201,313 @@ const Account = () => {
   }
 
   const handleDownloadTicket = (booking) => {
-    // Create a simple ticket download (you can enhance this with PDF generation)
-    const ticketData = {
-      bookingReference: booking.bookingReference,
-      passenger: booking.passenger,
-      flight: booking.flight,
-      bookingDate: booking.bookingDate
+    const doc = new jsPDF()
+    
+    // Helper functions
+    const formatDate = (dateStr) => {
+      if (!dateStr) return 'N/A'
+      const date = new Date(dateStr)
+      const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY']
+      const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+      return `${days[date.getDay()]} ${String(date.getDate()).padStart(2, '0')} ${months[date.getMonth()]} ${date.getFullYear()}`
     }
 
-    const dataStr = JSON.stringify(ticketData, null, 2)
-    const dataBlob = new Blob([dataStr], { type: 'application/json' })
-    const url = URL.createObjectURL(dataBlob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `ticket-${booking.bookingReference}.json`
-    link.click()
-    URL.revokeObjectURL(url)
+    const formatTime = (dateStr) => {
+      if (!dateStr) return 'N/A'
+      const date = new Date(dateStr)
+      return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+    }
+
+    const formatDuration = (duration) => {
+      if (!duration) return 'N/A'
+      return duration.replace('PT', '').replace('H', 'h ').replace('M', 'm')
+    }
+
+    // Get data
+    const flight = booking.flight || {}
+    const passenger = booking.passenger || {}
+    const departureDate = flight.departureTime || booking.departureTime
+    const arrivalDate = flight.arrivalTime || booking.arrivalTime
+    
+    // Colors
+    const teal = [20, 184, 166]
+    const darkBlue = [30, 58, 138]
+    const lightBlue = [219, 234, 254]
+    const darkGray = [31, 41, 55]
+    const mediumGray = [107, 114, 128]
+    const lightGray = [243, 244, 246]
+    const white = [255, 255, 255]
+    const orange = [249, 115, 22]
+    
+    // Header gradient background
+    doc.setFillColor(...teal)
+    doc.rect(0, 0, 210, 35, 'F')
+    
+    // Company name and logo
+    doc.setTextColor(...white)
+    doc.setFontSize(22)
+    doc.setFont('helvetica', 'bold')
+    doc.text('DREAM HOLIDAYS', 105, 15, { align: 'center' })
+    
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'normal')
+    doc.text('Your Journey, Our Priority', 105, 22, { align: 'center' })
+    
+    // E-Ticket label
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'bold')
+    doc.text('E-TICKET', 105, 30, { align: 'center' })
+    
+    // Booking reference box
+    let yPos = 45
+    doc.setFillColor(...darkBlue)
+    doc.roundedRect(15, yPos, 180, 15, 2, 2, 'F')
+    
+    doc.setTextColor(...white)
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'normal')
+    doc.text('BOOKING REFERENCE', 20, yPos + 6)
+    
+    doc.setFontSize(14)
+    doc.setFont('helvetica', 'bold')
+    doc.text(booking.bookingReference, 190, yPos + 10, { align: 'right' })
+    
+    // Passenger information section
+    yPos += 25
+    doc.setFillColor(...lightGray)
+    doc.roundedRect(15, yPos, 85, 28, 2, 2, 'F')
+    
+    doc.setTextColor(...darkGray)
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'bold')
+    doc.text('PASSENGER', 20, yPos + 6)
+    
+    doc.setFontSize(11)
+    doc.text(`${passenger.firstName?.toUpperCase() || ''} ${passenger.lastName?.toUpperCase() || ''}`, 20, yPos + 13)
+    
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`Email: ${passenger.email || 'N/A'}`, 20, yPos + 19)
+    doc.text(`Phone: ${passenger.phone || 'N/A'}`, 20, yPos + 24)
+    
+    // Booking status box
+    doc.setFillColor(...lightBlue)
+    doc.roundedRect(110, yPos, 85, 28, 2, 2, 'F')
+    
+    doc.setTextColor(...darkGray)
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'bold')
+    doc.text('BOOKING STATUS', 115, yPos + 6)
+    
+    doc.setFontSize(12)
+    doc.setTextColor(...teal)
+    doc.text(booking.status.toUpperCase(), 115, yPos + 14)
+    
+    doc.setTextColor(...darkGray)
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`Booked: ${new Date(booking.bookingDate).toLocaleDateString()}`, 115, yPos + 20)
+    doc.text(`Total: ৳${booking.totalAmount} ${booking.currency}`, 115, yPos + 25)
+    
+    // Flight details header
+    yPos += 38
+    doc.setFillColor(...darkBlue)
+    doc.rect(15, yPos, 180, 8, 'F')
+    
+    doc.setTextColor(...white)
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'bold')
+    doc.text('FLIGHT DETAILS', 20, yPos + 6)
+    
+    // Main flight information box
+    yPos += 10
+    doc.setDrawColor(...mediumGray)
+    doc.setLineWidth(0.5)
+    doc.setFillColor(...white)
+    doc.roundedRect(15, yPos, 180, 65, 2, 2, 'FD')
+    
+    // Airline and flight number
+    yPos += 8
+    doc.setTextColor(...darkGray)
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'bold')
+    doc.text('AIRLINE', 20, yPos)
+    
+    doc.setFontSize(12)
+    doc.setTextColor(...teal)
+    doc.text(flight.airlineName || flight.airline || 'N/A', 20, yPos + 6)
+    
+    doc.setFontSize(10)
+    doc.setTextColor(...darkGray)
+    doc.text(`Flight ${flight.flightNumber || 'N/A'}`, 20, yPos + 12)
+    
+    // Aircraft info
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(...mediumGray)
+    doc.text(`Aircraft: ${flight.aircraftModel || 'N/A'}`, 20, yPos + 17)
+    
+    // Departure section
+    yPos += 25
+    doc.setFillColor(...lightGray)
+    doc.roundedRect(20, yPos, 55, 25, 2, 2, 'F')
+    
+    doc.setTextColor(...mediumGray)
+    doc.setFontSize(7)
+    doc.setFont('helvetica', 'bold')
+    doc.text('DEPARTURE', 25, yPos + 5)
+    
+    doc.setTextColor(...darkGray)
+    doc.setFontSize(14)
+    doc.setFont('helvetica', 'bold')
+    doc.text(flight.departureAirport || 'N/A', 25, yPos + 12)
+    
+    doc.setFontSize(16)
+    doc.setTextColor(...teal)
+    doc.text(formatTime(departureDate), 25, yPos + 20)
+    
+    // Arrow
+    doc.setFontSize(18)
+    doc.setTextColor(...orange)
+    doc.text('→', 82, yPos + 15)
+    
+    // Arrival section
+    doc.setFillColor(...lightGray)
+    doc.roundedRect(95, yPos, 55, 25, 2, 2, 'F')
+    
+    doc.setTextColor(...mediumGray)
+    doc.setFontSize(7)
+    doc.setFont('helvetica', 'bold')
+    doc.text('ARRIVAL', 100, yPos + 5)
+    
+    doc.setTextColor(...darkGray)
+    doc.setFontSize(14)
+    doc.setFont('helvetica', 'bold')
+    doc.text(flight.arrivalAirport || 'N/A', 100, yPos + 12)
+    
+    doc.setFontSize(16)
+    doc.setTextColor(...teal)
+    doc.text(formatTime(arrivalDate), 100, yPos + 20)
+    
+    // Duration and stops
+    doc.setFillColor(...lightBlue)
+    doc.roundedRect(160, yPos, 30, 25, 2, 2, 'F')
+    
+    doc.setTextColor(...mediumGray)
+    doc.setFontSize(7)
+    doc.setFont('helvetica', 'bold')
+    doc.text('DURATION', 165, yPos + 5)
+    
+    doc.setTextColor(...darkGray)
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'bold')
+    doc.text(formatDuration(flight.duration), 165, yPos + 12)
+    
+    doc.setFontSize(7)
+    doc.setFont('helvetica', 'normal')
+    doc.text(flight.stops === 0 ? 'Direct' : `${flight.stops} Stop(s)`, 165, yPos + 18)
+    
+    // Travel dates
+    yPos += 30
+    doc.setTextColor(...mediumGray)
+    doc.setFontSize(7)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`Departure: ${formatDate(departureDate)}`, 20, yPos)
+    doc.text(`Arrival: ${formatDate(arrivalDate)}`, 110, yPos)
+    
+    // Additional information section
+    yPos += 10
+    doc.setFillColor(...lightGray)
+    doc.rect(15, yPos, 180, 20, 'F')
+    
+    yPos += 6
+    doc.setTextColor(...darkGray)
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'bold')
+    doc.text('ADDITIONAL INFORMATION', 20, yPos)
+    
+    yPos += 6
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(7)
+    doc.text(`Cabin Class: Economy`, 20, yPos)
+    doc.text(`Baggage: Check airline policy`, 75, yPos)
+    doc.text(`Check-in: 2 hours before departure`, 135, yPos)
+    
+    yPos += 5
+    doc.text(`Passport: Required for international flights`, 20, yPos)
+    doc.text(`Confirmation: ${booking.bookingReference}`, 135, yPos)
+    
+    // Footer
+    yPos += 15
+    doc.setDrawColor(...teal)
+    doc.setLineWidth(1)
+    doc.line(15, yPos, 195, yPos)
+    
+    yPos += 6
+    doc.setTextColor(...mediumGray)
+    doc.setFontSize(7)
+    doc.setFont('helvetica', 'italic')
+    doc.text('Thank you for choosing Dream Holidays! Have a pleasant journey.', 105, yPos, { align: 'center' })
+    
+    yPos += 4
+    doc.text('Please present this e-ticket at check-in counter. Keep a copy for your records.', 105, yPos, { align: 'center' })
+    
+    yPos += 4
+    doc.setFont('helvetica', 'bold')
+    doc.text('24/7 Customer Support: +880-1234-567890 | support@dreamholidays.com', 105, yPos, { align: 'center' })
+    
+    // Save PDF
+    doc.save(`DreamHolidays-Ticket-${booking.bookingReference}.pdf`)
+  }
+
+  const handleDeleteBooking = (booking) => {
+    // Show custom confirmation modal
+    setBookingToDelete(booking)
+    setShowDeleteConfirmation(true)
+    setDeleteConfirmationText('')
+  }
+
+  const confirmDeleteBooking = async () => {
+    if (deleteConfirmationText !== 'REMOVE') {
+      setSaveMessage('Please type "REMOVE" to confirm')
+      setTimeout(() => setSaveMessage(''), 3000)
+      return
+    }
+
+    try {
+      setLoading(true)
+      console.log('Removing booking from account:', bookingToDelete._id)
+      
+      // Unlink the booking by setting userId to null
+      const response = await flightAPI.unlinkBooking(bookingToDelete._id)
+      console.log('Unlink response:', response)
+
+      if (response.success) {
+        setSaveMessage('Booking removed from your account!')
+        setTimeout(() => setSaveMessage(''), 3000)
+        // Close modal and reset
+        setShowDeleteConfirmation(false)
+        setBookingToDelete(null)
+        setDeleteConfirmationText('')
+        // Reload bookings to reflect the change
+        loadBookings()
+      } else {
+        setSaveMessage(response.message || 'Failed to remove booking')
+        setTimeout(() => setSaveMessage(''), 3000)
+      }
+    } catch (error) {
+      console.error('Error removing booking:', error)
+      setSaveMessage(`Error removing booking: ${error.message || 'Please try again.'}`)
+      setTimeout(() => setSaveMessage(''), 5000)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const cancelDeleteBooking = () => {
+    setShowDeleteConfirmation(false)
+    setBookingToDelete(null)
+    setDeleteConfirmationText('')
   }
 
   const handleImageUpload = async (file, type) => {
@@ -793,14 +1088,40 @@ const Account = () => {
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Booking History</h2>
             <p className="text-gray-500 mt-1">View and manage your flight bookings</p>
+            {/* Debug info */}
+            <p className="text-xs text-gray-400 mt-2">
+              User ID: {userId || 'Not loaded'} | Email: {userInfo.email || 'Not loaded'}
+            </p>
           </div>
-          <button
-            onClick={loadBookings}
-            className="flex items-center gap-2 px-4 py-2 bg-teal-50 text-teal-600 rounded-lg hover:bg-teal-100 transition-colors"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Refresh
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                if (userId && userInfo.email) {
+                  try {
+                    setSaveMessage('Linking bookings...')
+                    const linkResponse = await flightAPI.linkUserBookings(userId, userInfo.email)
+                    setSaveMessage(`Linked ${linkResponse.modifiedCount} bookings!`)
+                    setTimeout(() => setSaveMessage(''), 3000)
+                    loadBookings()
+                  } catch {
+                    setSaveMessage('Error linking bookings')
+                    setTimeout(() => setSaveMessage(''), 3000)
+                  }
+                }
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+            >
+              <Check className="w-4 h-4" />
+              Link My Bookings
+            </button>
+            <button
+              onClick={loadBookings}
+              className="flex items-center gap-2 px-4 py-2 bg-teal-50 text-teal-600 rounded-lg hover:bg-teal-100 transition-colors"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </button>
+          </div>
         </div>
 
         {/* Loading State */}
@@ -853,7 +1174,7 @@ const Account = () => {
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">
-                        {booking.flight?.departureAirport} → {booking.flight?.arrivalAirport}
+                        {booking.departureAirport || booking.flight?.departureAirport || 'N/A'} → {booking.arrivalAirport || booking.flight?.arrivalAirport || 'N/A'}
                       </h3>
                       <p className="text-sm text-gray-500">
                         Booking Reference: <span className="font-medium text-gray-700">{booking.bookingReference}</span>
@@ -879,19 +1200,23 @@ const Account = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Flight</div>
-                    <div className="font-semibold text-gray-900">{booking.flight?.flightNumber}</div>
-                    <div className="text-sm text-gray-600">{booking.flight?.airlineName || booking.flight?.airline}</div>
+                    <div className="font-semibold text-gray-900">{booking.flightNumber || booking.flight?.flightNumber || 'N/A'}</div>
+                    <div className="text-sm text-gray-600">{booking.airline || booking.flight?.airline || booking.flight?.airlineName || 'N/A'}</div>
                   </div>
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Departure</div>
                     <div className="font-semibold text-gray-900">
-                      {booking.flight?.departureTime ? new Date(booking.flight.departureTime).toLocaleDateString() : 'N/A'}
+                      {booking.departureTime || booking.flight?.departureTime 
+                        ? new Date(booking.departureTime || booking.flight.departureTime).toLocaleDateString() 
+                        : 'N/A'}
                     </div>
                     <div className="text-sm text-gray-600">
-                      {booking.flight?.departureTime ? new Date(booking.flight.departureTime).toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      }) : 'N/A'}
+                      {booking.departureTime || booking.flight?.departureTime 
+                        ? new Date(booking.departureTime || booking.flight.departureTime).toLocaleTimeString('en-US', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        }) 
+                        : 'N/A'}
                     </div>
                   </div>
                   <div className="bg-gray-50 p-3 rounded-lg">
@@ -927,6 +1252,14 @@ const Account = () => {
                     >
                       <Download className="w-4 h-4" />
                       Download
+                    </button>
+                    <button
+                      onClick={() => handleDeleteBooking(booking)}
+                      disabled={loading}
+                      className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete
                     </button>
                   </div>
                 </div>
@@ -1312,8 +1645,8 @@ const Account = () => {
                     <p className="text-teal-100">Electronic Ticket</p>
                   </div>
                   <div className="text-right">
-                    <div className="text-3xl font-bold">{selectedBooking.flight?.flightNumber}</div>
-                    <div className="text-teal-100">{selectedBooking.flight?.airlineName || selectedBooking.flight?.airline}</div>
+                    <div className="text-3xl font-bold">{selectedBooking.flightNumber || selectedBooking.flight?.flightNumber || 'N/A'}</div>
+                    <div className="text-teal-100">{selectedBooking.airline || selectedBooking.flight?.airline || selectedBooking.flight?.airlineName || 'N/A'}</div>
                   </div>
                 </div>
 
@@ -1321,14 +1654,18 @@ const Account = () => {
                 <div className="flex items-center justify-between mb-8">
                   <div className="text-center">
                     <div className="text-3xl font-bold mb-2">
-                      {selectedBooking.flight?.departureTime ? new Date(selectedBooking.flight.departureTime).toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      }) : 'N/A'}
+                      {selectedBooking.departureTime || selectedBooking.flight?.departureTime 
+                        ? new Date(selectedBooking.departureTime || selectedBooking.flight.departureTime).toLocaleTimeString('en-US', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        }) 
+                        : 'N/A'}
                     </div>
-                    <div className="text-xl font-semibold mb-1">{selectedBooking.flight?.departureAirport}</div>
+                    <div className="text-xl font-semibold mb-1">{selectedBooking.departureAirport || selectedBooking.flight?.departureAirport || 'N/A'}</div>
                     <div className="text-teal-100">
-                      {selectedBooking.flight?.departureTime ? new Date(selectedBooking.flight.departureTime).toLocaleDateString() : 'N/A'}
+                      {selectedBooking.departureTime || selectedBooking.flight?.departureTime 
+                        ? new Date(selectedBooking.departureTime || selectedBooking.flight.departureTime).toLocaleDateString() 
+                        : 'N/A'}
                     </div>
                   </div>
 
@@ -1345,21 +1682,25 @@ const Account = () => {
                     </div>
                     <div className="text-center mt-3">
                       <div className="text-sm text-teal-100">
-                        {selectedBooking.flight?.duration?.replace('PT', '').replace('H', 'h ').replace('M', 'm') || 'N/A'}
+                        {(selectedBooking.duration || selectedBooking.flight?.duration)?.replace('PT', '').replace('H', 'h ').replace('M', 'm') || 'N/A'}
                       </div>
                     </div>
                   </div>
 
                   <div className="text-center">
                     <div className="text-3xl font-bold mb-2">
-                      {selectedBooking.flight?.arrivalTime ? new Date(selectedBooking.flight.arrivalTime).toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      }) : 'N/A'}
+                      {selectedBooking.arrivalTime || selectedBooking.flight?.arrivalTime 
+                        ? new Date(selectedBooking.arrivalTime || selectedBooking.flight.arrivalTime).toLocaleTimeString('en-US', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        }) 
+                        : 'N/A'}
                     </div>
-                    <div className="text-xl font-semibold mb-1">{selectedBooking.flight?.arrivalAirport}</div>
+                    <div className="text-xl font-semibold mb-1">{selectedBooking.arrivalAirport || selectedBooking.flight?.arrivalAirport || 'N/A'}</div>
                     <div className="text-teal-100">
-                      {selectedBooking.flight?.arrivalTime ? new Date(selectedBooking.flight.arrivalTime).toLocaleDateString() : 'N/A'}
+                      {selectedBooking.arrivalTime || selectedBooking.flight?.arrivalTime 
+                        ? new Date(selectedBooking.arrivalTime || selectedBooking.flight.arrivalTime).toLocaleDateString() 
+                        : 'N/A'}
                     </div>
                   </div>
                 </div>
@@ -1422,18 +1763,20 @@ const Account = () => {
                   <div className="space-y-3">
                     <div>
                       <div className="text-sm text-gray-500">Aircraft</div>
-                      <div className="font-medium">{selectedBooking.flight?.aircraftModel || 'N/A'}</div>
+                      <div className="font-medium">{selectedBooking.aircraftModel || selectedBooking.flight?.aircraftModel || 'N/A'}</div>
                     </div>
                     <div>
                       <div className="text-sm text-gray-500">Duration</div>
                       <div className="font-medium">
-                        {selectedBooking.flight?.duration?.replace('PT', '').replace('H', 'h ').replace('M', 'm') || 'N/A'}
+                        {(selectedBooking.duration || selectedBooking.flight?.duration)?.replace('PT', '').replace('H', 'h ').replace('M', 'm') || 'N/A'}
                       </div>
                     </div>
                     <div>
                       <div className="text-sm text-gray-500">Stops</div>
                       <div className="font-medium">
-                        {selectedBooking.flight?.stops === 0 ? 'Direct Flight' : `${selectedBooking.flight?.stops} stop(s)`}
+                        {(selectedBooking.stops !== undefined ? selectedBooking.stops : selectedBooking.flight?.stops) === 0 
+                          ? 'Direct Flight' 
+                          : `${selectedBooking.stops !== undefined ? selectedBooking.stops : selectedBooking.flight?.stops || 0} stop(s)`}
                       </div>
                     </div>
                     <div>
@@ -1498,6 +1841,81 @@ const Account = () => {
                   className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                 >
                   Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Booking Confirmation Modal */}
+      {showDeleteConfirmation && bookingToDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                  <AlertTriangle className="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Delete Booking</h3>
+                  <p className="text-sm text-gray-500">This action cannot be undone</p>
+                </div>
+              </div>
+
+              {/* Booking Info */}
+              <div className="mb-6 bg-gray-50 rounded-lg p-4">
+                <div className="text-sm text-gray-600 mb-2">You are about to delete:</div>
+                <div className="font-semibold text-gray-900 mb-1">
+                  Booking Reference: {bookingToDelete.bookingReference}
+                </div>
+                <div className="text-sm text-gray-600">
+                  {bookingToDelete.flight?.departureAirport || bookingToDelete.departureAirport} → {bookingToDelete.flight?.arrivalAirport || bookingToDelete.arrivalAirport}
+                </div>
+                <div className="text-sm text-gray-600">
+                  Passenger: {bookingToDelete.passenger?.firstName} {bookingToDelete.passenger?.lastName}
+                </div>
+              </div>
+
+              {/* Warning */}
+              <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-sm text-red-700">
+                  <strong>Warning:</strong> Deleting this booking will permanently remove it from your history. 
+                  This action cannot be undone.
+                </p>
+              </div>
+
+              {/* Confirmation Input */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Type <span className="font-bold text-red-600">DELETE</span> to confirm:
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmationText}
+                  onChange={(e) => setDeleteConfirmationText(e.target.value)}
+                  placeholder="Type DELETE"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  autoFocus
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={cancelDeleteBooking}
+                  disabled={loading}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDeleteBooking}
+                  disabled={loading || deleteConfirmationText !== 'DELETE'}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Deleting...' : 'Delete Booking'}
                 </button>
               </div>
             </div>

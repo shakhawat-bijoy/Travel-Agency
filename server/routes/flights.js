@@ -673,45 +673,6 @@ router.put("/bookings/link-user", async (req, res) => {
   }
 });
 
-// GET /api/flights/bookings/all - Get all bookings (for debugging)
-router.get("/bookings/all", async (req, res) => {
-  try {
-    const bookings = await Booking.find({}).limit(10).sort({ bookingDate: -1 });
-
-    console.log('All bookings in database:', bookings.map(b => ({
-      id: b._id,
-      userId: b.userId,
-      email: b.passenger?.email,
-      bookingReference: b.bookingReference,
-      bookingDate: b.bookingDate
-    })));
-
-    res.json({
-      success: true,
-      data: bookings.map(b => ({
-        id: b._id,
-        userId: b.userId,
-        email: b.passenger?.email,
-        bookingReference: b.bookingReference,
-        bookingDate: b.bookingDate,
-        flight: {
-          flightNumber: b.flight?.flightNumber,
-          departureAirport: b.flight?.departureAirport,
-          arrivalAirport: b.flight?.arrivalAirport
-        }
-      }))
-    });
-
-  } catch (error) {
-    console.error('Get all bookings error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching all bookings',
-      error: error.message
-    });
-  }
-});
-
 // GET /api/flights/bookings/email/:email - Get bookings by email (fallback)
 router.get("/bookings/email/:email", async (req, res) => {
   try {
@@ -747,6 +708,45 @@ router.get("/bookings/email/:email", async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching bookings by email',
+      error: error.message
+    });
+  }
+});
+
+// GET /api/flights/bookings/all - Get all bookings from the bookings collection
+router.get("/bookings/all", async (req, res) => {
+  try {
+    const { page = 1, limit = 100 } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    console.log('Fetching all bookings');
+
+    // Fetch all bookings from the bookings collection with full data
+    const bookings = await Booking.find({})
+      .sort({ bookingDate: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await Booking.countDocuments({});
+
+    console.log(`Found ${bookings.length} total bookings, total: ${total}`);
+
+    res.json({
+      success: true,
+      data: bookings,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / parseInt(limit))
+      }
+    });
+
+  } catch (error) {
+    console.error('Get all bookings error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching all bookings',
       error: error.message
     });
   }
@@ -802,85 +802,6 @@ router.get("/bookings/:userId", async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching user bookings',
-      error: error.message
-    });
-  }
-});
-
-// GET /api/flights/bookings/all - Get all bookings (for debugging)
-router.get("/bookings/all", async (req, res) => {
-  try {
-    const bookings = await Booking.find({}).limit(10).sort({ bookingDate: -1 });
-
-    console.log('All bookings in database:', bookings.map(b => ({
-      id: b._id,
-      userId: b.userId,
-      email: b.passenger?.email,
-      bookingReference: b.bookingReference,
-      bookingDate: b.bookingDate
-    })));
-
-    res.json({
-      success: true,
-      data: bookings.map(b => ({
-        id: b._id,
-        userId: b.userId,
-        email: b.passenger?.email,
-        bookingReference: b.bookingReference,
-        bookingDate: b.bookingDate,
-        flight: {
-          flightNumber: b.flight?.flightNumber,
-          departureAirport: b.flight?.departureAirport,
-          arrivalAirport: b.flight?.arrivalAirport
-        }
-      }))
-    });
-
-  } catch (error) {
-    console.error('Get all bookings error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching all bookings',
-      error: error.message
-    });
-  }
-});
-
-// GET /api/flights/bookings/email/:email - Get bookings by email (fallback)
-router.get("/bookings/email/:email", async (req, res) => {
-  try {
-    const { email } = req.params;
-    const { page = 1, limit = 20 } = req.query;
-
-    console.log('Fetching bookings for email:', email);
-
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-
-    const bookings = await Booking.find({ 'passenger.email': email })
-      .sort({ bookingDate: -1 })
-      .skip(skip)
-      .limit(parseInt(limit));
-
-    const total = await Booking.countDocuments({ 'passenger.email': email });
-
-    console.log(`Found ${bookings.length} bookings for email ${email}, total: ${total}`);
-
-    res.json({
-      success: true,
-      data: bookings,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-        pages: Math.ceil(total / parseInt(limit))
-      }
-    });
-
-  } catch (error) {
-    console.error('Get bookings by email error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching bookings by email',
       error: error.message
     });
   }
@@ -1005,6 +926,51 @@ router.put("/booking/:bookingId/cancel", async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error cancelling booking',
+      error: error.message
+    });
+  }
+});
+
+// DELETE /api/flights/booking/:bookingId - Delete a booking permanently
+router.delete("/booking/:bookingId", async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+
+    console.log('Delete booking request for ID:', bookingId);
+
+    // Validate bookingId format
+    if (!bookingId || bookingId === 'undefined') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid booking ID'
+      });
+    }
+
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: 'Booking not found'
+      });
+    }
+
+    // Delete the booking
+    await Booking.findByIdAndDelete(bookingId);
+
+    console.log('Booking deleted successfully:', bookingId);
+
+    res.json({
+      success: true,
+      message: 'Booking deleted successfully',
+      deletedBookingId: bookingId
+    });
+
+  } catch (error) {
+    console.error('Delete booking error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting booking',
       error: error.message
     });
   }

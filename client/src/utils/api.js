@@ -198,6 +198,13 @@ export const flightAPI = {
         });
     },
 
+    // Delete booking
+    deleteBooking: (bookingId) => {
+        return apiCall(`/flights/booking/${bookingId}`, {
+            method: 'DELETE',
+        });
+    },
+
     // Bangladesh airports
     getBangladeshAirports: () => {
         return apiCall('/flights/airports/bangladesh');

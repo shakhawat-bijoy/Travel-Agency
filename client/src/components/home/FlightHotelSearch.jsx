@@ -120,8 +120,14 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
     }
   }, [])
 
-  // Handle airport selection
-  const handleAirportSelect = (airport, type) => {
+  // Handle airport selection (works with mouse, touch, and keyboard)
+  const handleAirportSelect = (airport, type, event) => {
+    // Prevent default behavior
+    if (event) {
+      event.preventDefault()
+      event.stopPropagation()
+    }
+
     const airportCode = airport.iataCode || airport.id
     const airportName = airport.name
 
@@ -267,9 +273,11 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
                       value={fromQuery}
                       onChange={(e) => handleFromQueryChange(e.target.value)}
                       onFocus={() => setShowFromDropdown(true)}
-                      onBlur={() => setTimeout(() => setShowFromDropdown(false), 200)}
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      onBlur={() => setTimeout(() => setShowFromDropdown(false), 300)}
+                      onTouchStart={() => setShowFromDropdown(true)}
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 touch-manipulation"
                       placeholder="Search departure city or airport"
+                      autoComplete="off"
                     />
                     <MapPin className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-5 lg:h-5 text-gray-400" />
 
@@ -295,8 +303,9 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
                             {fromAirports.map((airport, index) => (
                               <button
                                 key={`from-${airport.iataCode || airport.id}-${index}`}
-                                onClick={() => handleAirportSelect(airport, 'from')}
-                                className="w-full px-4 py-3 text-left hover:bg-teal-50 border-b border-gray-100 last:border-b-0 transition-colors group"
+                                onClick={(e) => handleAirportSelect(airport, 'from', e)}
+                                onTouchEnd={(e) => handleAirportSelect(airport, 'from', e)}
+                                className="w-full px-4 py-3 text-left hover:bg-teal-50 active:bg-teal-100 border-b border-gray-100 last:border-b-0 transition-colors group cursor-pointer touch-manipulation"
                               >
                                 <div className="flex items-start justify-between">
                                   <div className="flex-1 min-w-0">
@@ -355,9 +364,11 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
                       value={toQuery}
                       onChange={(e) => handleToQueryChange(e.target.value)}
                       onFocus={() => setShowToDropdown(true)}
-                      onBlur={() => setTimeout(() => setShowToDropdown(false), 200)}
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      onBlur={() => setTimeout(() => setShowToDropdown(false), 300)}
+                      onTouchStart={() => setShowToDropdown(true)}
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 touch-manipulation"
                       placeholder="Search destination city or airport"
+                      autoComplete="off"
                     />
                     <MapPin className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-5 lg:h-5 text-gray-400" />
 
@@ -391,8 +402,9 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
                             {toAirports.map((airport, index) => (
                               <button
                                 key={`to-${airport.iataCode || airport.id}-${index}`}
-                                onClick={() => handleAirportSelect(airport, 'to')}
-                                className="w-full px-4 py-3 text-left hover:bg-teal-50 border-b border-gray-100 last:border-b-0 transition-colors group"
+                                onClick={(e) => handleAirportSelect(airport, 'to', e)}
+                                onTouchEnd={(e) => handleAirportSelect(airport, 'to', e)}
+                                className="w-full px-4 py-3 text-left hover:bg-teal-50 active:bg-teal-100 border-b border-gray-100 last:border-b-0 transition-colors group cursor-pointer touch-manipulation"
                               >
                                 <div className="flex items-start justify-between">
                                   <div className="flex-1 min-w-0">
@@ -535,7 +547,7 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
                   className={`${searchResults && searchResults.flights && searchResults.flights.length > 0
                     ? 'bg-blue-500 hover:bg-blue-600'
                     : 'bg-teal-500 hover:bg-teal-600'
-                    } disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 sm:px-8 py-2 sm:py-3 lg:py-2 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 text-base sm:text-lg shadow-lg hover:shadow-xl disabled:shadow-none`}
+                    } disabled:bg-gray-400 disabled:cursor-not-allowed cursor-pointer text-white px-6 sm:px-8 py-2 sm:py-3 lg:py-2 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 text-base sm:text-lg shadow-lg hover:shadow-xl disabled:shadow-none touch-manipulation`}
                 >
                   {searchLoading ? (
                     <>
@@ -755,7 +767,7 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
                   className={`${hotelSearchResults && hotelSearchResults.hotels && hotelSearchResults.hotels.length > 0
                     ? 'bg-blue-500 hover:bg-blue-600'
                     : 'bg-teal-500 hover:bg-teal-600'
-                    } disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 sm:px-8 py-2 sm:py-3 lg:py-2 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 text-base sm:text-lg shadow-lg hover:shadow-xl disabled:shadow-none`}
+                    } disabled:bg-gray-400 disabled:cursor-not-allowed cursor-pointer text-white px-6 sm:px-8 py-2 sm:py-3 lg:py-2 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 text-base sm:text-lg shadow-lg hover:shadow-xl disabled:shadow-none touch-manipulation`}
                 >
                   {hotelSearchLoading ? (
                     <>

@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { User, Mail, Phone, CreditCard, Calendar, Plane, Check, AlertCircle, Plus, Trash2, ArrowLeft } from 'lucide-react'
 import { bookFlight, clearBookingState } from '../store/slices/flightSlice'
-import { savedCardsAPI, auth } from '../utils/api'
+import { savedCardsAPI, auth, authAPI } from '../utils/api'
 import Container from '../components/common/Container'
 
 const ConfirmBooking = () => {
@@ -111,42 +111,50 @@ const ConfirmBooking = () => {
         }
     }, [flight, navigate, searchParams])
 
-    // Load saved cards and pre-populate user data on component mount
+    // State for user ID
+    const [userId, setUserId] = useState(null)
+
+    // Load user profile and saved cards on component mount
     useEffect(() => {
-        const loadSavedCards = async () => {
+        const loadUserDataAndCards = async () => {
             try {
-                const userData = auth.getUserData()
-                if (userData.user?.id) {
+                // Fetch user profile to get userId (same as Account component)
+                const profileResponse = await authAPI.getProfile()
+                if (profileResponse.success) {
+                    const fetchedUserId = profileResponse.user._id || profileResponse.user.id
+                    setUserId(fetchedUserId)
+
                     // Pre-populate passenger data with user information
                     setPassengerData(prev => ({
                         ...prev,
-                        firstName: userData.user.firstName || '',
-                        lastName: userData.user.lastName || '',
-                        email: userData.user.email || '',
-                        phone: userData.user.phone || ''
+                        firstName: profileResponse.user.firstName || profileResponse.user.name?.split(' ')[0] || '',
+                        lastName: profileResponse.user.lastName || profileResponse.user.name?.split(' ').slice(1).join(' ') || '',
+                        email: profileResponse.user.email || '',
+                        phone: profileResponse.user.phone || ''
                     }))
 
+                    // Load saved cards
                     setLoadingSavedCards(true)
-                    const response = await savedCardsAPI.getSavedCards(userData.user.id)
-                    if (response.success) {
-                        setSavedCards(response.data)
+                    const cardsResponse = await savedCardsAPI.getSavedCards(fetchedUserId)
+                    if (cardsResponse.success) {
+                        setSavedCards(cardsResponse.data)
                         // If user has saved cards, default to using saved card
-                        if (response.data.length > 0) {
+                        if (cardsResponse.data.length > 0) {
                             setUseNewCard(false)
                             // Select default card or first card
-                            const defaultCard = response.data.find(card => card.isDefault) || response.data[0]
+                            const defaultCard = cardsResponse.data.find(card => card.isDefault) || cardsResponse.data[0]
                             setSelectedSavedCard(defaultCard)
                         }
                     }
                 }
             } catch (error) {
-                console.error('Error loading saved cards:', error)
+                console.error('Error loading user data and cards:', error)
             } finally {
                 setLoadingSavedCards(false)
             }
         }
 
-        loadSavedCards()
+        loadUserDataAndCards()
     }, [])
 
     // Clear booking state on unmount and cleanup stored flight data
@@ -234,10 +242,9 @@ const ConfirmBooking = () => {
             } else if (useNewCard && saveCard) {
                 // Save new card if requested
                 try {
-                    const userData = auth.getUserData()
-                    if (userData.user?.id) {
+                    if (userId) {
                         await savedCardsAPI.saveCard({
-                            userId: userData.user.id,
+                            userId: userId,
                             cardholderName: paymentData.cardholderName,
                             cardNumber: paymentData.cardNumber,
                             expiryDate: paymentData.expiryDate,
@@ -251,9 +258,6 @@ const ConfirmBooking = () => {
                 }
             }
 
-            // Get user data for userId
-            const userData = auth.getUserData()
-
             const bookingPayload = {
                 flight,
                 passengers: {
@@ -261,7 +265,7 @@ const ConfirmBooking = () => {
                     payment: finalPaymentData
                 },
                 searchParams,
-                userId: userData.user?.id || null // Include userId in booking payload
+                userId: userId // Include userId from state (fetched from profile API)
             }
 
             // Comprehensive flight data validation before sending

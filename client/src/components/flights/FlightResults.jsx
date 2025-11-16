@@ -98,7 +98,7 @@ const FlightResults = () => {
             <p className="text-gray-600 mb-6">{searchError}</p>
             <button
               onClick={() => navigate('/flights')}
-              className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2 mx-auto"
+              className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2 mx-auto cursor-pointer"
             >
               <ArrowLeft className="w-5 h-5" />
               Back to Search
@@ -138,7 +138,7 @@ const FlightResults = () => {
         <div className="mb-6">
           <button
             onClick={() => navigate('/flights')}
-            className="flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium transition-colors mb-4"
+            className="flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium transition-colors mb-4 cursor-pointer"
           >
             <ArrowLeft className="w-5 h-5" />
             Back to Search
@@ -433,14 +433,14 @@ const FlightResults = () => {
                   <div className="mt-6 flex justify-between items-center">
                     <button
                       onClick={() => toggleFlightDetails(flight.id)}
-                      className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-6 py-3 rounded-lg font-semibold transition-all duration-300 shadow-sm hover:shadow-md flex items-center gap-2"
+                      className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-6 py-3 rounded-lg font-semibold transition-all duration-300 shadow-sm hover:shadow-md flex items-center gap-2 cursor-pointer"
                     >
                       <Info className={`w-5 h-5 transition-transform duration-300 ${expandedFlights[flight.id] ? 'rotate-180' : 'rotate-0'}`} />
                       {expandedFlights[flight.id] ? 'Hide Details' : 'View Details'}
                     </button>
                     <button
                       onClick={() => handleSelectFlight(flight)}
-                      className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors shadow-md hover:shadow-lg"
+                      className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors shadow-md hover:shadow-lg cursor-pointer"
                     >
                       Book Flight
                     </button>
@@ -660,125 +660,407 @@ const FlightResults = () => {
                         </div>
                       )}
 
-                      {/* Flight Segments for Multi-Stop Flights */}
-                      {flight.itineraries && flight.itineraries[0]?.segments && flight.itineraries[0].segments.length > 1 && (
+                      {/* Flight Segments for Multi-Stop Flights - Enhanced with All Details */}
+                      {flight.itineraries && flight.itineraries[0]?.segments && flight.itineraries[0].segments.length > 0 && (
                         <div className={`mb-6 transform transition-all duration-700 ease-out ${expandedFlights[flight.id]
                           ? 'translate-y-0 opacity-100'
                           : 'translate-y-4 opacity-0'
                           }`} style={{ transitionDelay: expandedFlights[flight.id] ? '200ms' : '0ms' }}>
-                          <h5 className="text-md font-semibold text-gray-800 mb-3">Flight Segments</h5>
-                          <div className="space-y-3">
-                            {flight.itineraries[0].segments.map((segment, index) => (
-                              <div key={segment.id || index} className="bg-white border border-gray-200 rounded-lg p-4">
-                                <div className="flex items-center justify-between mb-3">
-                                  <div className="text-sm font-semibold text-gray-900">
-                                    Segment {index + 1}
+                          <h5 className="text-md font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                            <Plane className="w-5 h-5 text-teal-500" />
+                            {flight.itineraries[0].segments.length > 1 ? 'Flight Segments (Connecting Flights)' : 'Flight Segment Details'}
+                            <span className="bg-teal-100 text-teal-800 px-2 py-1 rounded-full text-xs font-medium">
+                              {flight.itineraries[0].segments.length} segment{flight.itineraries[0].segments.length > 1 ? 's' : ''}
+                            </span>
+                          </h5>
+                          <div className="space-y-4">
+                            {flight.itineraries[0].segments.map((segment, index) => {
+                              // Calculate layover time if not the last segment
+                              let layoverDuration = null
+                              if (index < flight.itineraries[0].segments.length - 1) {
+                                const currentArrival = new Date(segment.arrival.at)
+                                const nextDeparture = new Date(flight.itineraries[0].segments[index + 1].departure.at)
+                                const layoverMs = nextDeparture - currentArrival
+                                const layoverHours = Math.floor(layoverMs / (1000 * 60 * 60))
+                                const layoverMinutes = Math.floor((layoverMs % (1000 * 60 * 60)) / (1000 * 60))
+                                layoverDuration = `${layoverHours}h ${layoverMinutes}m`
+                              }
+
+                              return (
+                                <div key={segment.id || index} className="bg-white border-2 border-gray-200 rounded-xl p-5 hover:border-teal-300 transition-all shadow-sm hover:shadow-md">
+                                  {/* Segment Header */}
+                                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+                                    <div className="flex items-center gap-3">
+                                      <div className="bg-teal-100 text-teal-800 px-3 py-1.5 rounded-full text-sm font-bold">
+                                        Segment {index + 1}
+                                      </div>
+                                      {index === 0 && (
+                                        <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                                          First Flight
+                                        </div>
+                                      )}
+                                      {index === flight.itineraries[0].segments.length - 1 && flight.itineraries[0].segments.length > 1 && (
+                                        <div className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">
+                                          Final Flight
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="text-right">
+                                      <div className="text-sm font-bold text-teal-600">
+                                        {segment.carrierName || segment.carrierCode} {segment.number}
+                                      </div>
+                                      <div className="text-xs text-gray-500">Flight Number</div>
+                                    </div>
                                   </div>
-                                  <div className="text-sm text-teal-600 font-medium">
-                                    {segment.carrierName || segment.carrierCode} {segment.number}
+
+                                  {/* Flight Route Visualization */}
+                                  <div className="flex items-center justify-between mb-4">
+                                    <div className="text-center flex-1">
+                                      <div className="text-2xl font-bold text-gray-900 mb-1">
+                                        {new Date(segment.departure.at).toLocaleTimeString('en-US', {
+                                          hour: '2-digit',
+                                          minute: '2-digit'
+                                        })}
+                                      </div>
+                                      <div className="text-lg font-semibold text-gray-700 mb-1">
+                                        {segment.departure.iataCode}
+                                      </div>
+                                      <div className="text-sm text-gray-600 mb-1">
+                                        {segment.departure.fullName || segment.departure.name}
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        {segment.departure.cityCountry}
+                                      </div>
+                                      <div className="text-xs text-gray-400 mt-1">
+                                        {new Date(segment.departure.at).toLocaleDateString('en-US', {
+                                          weekday: 'short',
+                                          month: 'short',
+                                          day: 'numeric',
+                                          year: 'numeric'
+                                        })}
+                                      </div>
+                                    </div>
+
+                                    <div className="flex-1 mx-6">
+                                      <div className="relative">
+                                        <div className="absolute inset-0 flex items-center">
+                                          <div className="w-full border-t-2 border-teal-300"></div>
+                                        </div>
+                                        <div className="relative flex justify-center">
+                                          <div className="bg-white px-3">
+                                            <Plane className="w-6 h-6 text-teal-500 transform rotate-90" />
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="text-center mt-3">
+                                        <div className="text-sm font-medium text-gray-700">
+                                          {segment.duration?.replace('PT', '').replace('H', 'h ').replace('M', 'm') || 'Duration TBD'}
+                                        </div>
+                                        <div className="text-xs text-gray-500">Flight Time</div>
+                                      </div>
+                                    </div>
+
+                                    <div className="text-center flex-1">
+                                      <div className="text-2xl font-bold text-gray-900 mb-1">
+                                        {new Date(segment.arrival.at).toLocaleTimeString('en-US', {
+                                          hour: '2-digit',
+                                          minute: '2-digit'
+                                        })}
+                                      </div>
+                                      <div className="text-lg font-semibold text-gray-700 mb-1">
+                                        {segment.arrival.iataCode}
+                                      </div>
+                                      <div className="text-sm text-gray-600 mb-1">
+                                        {segment.arrival.fullName || segment.arrival.name}
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        {segment.arrival.cityCountry}
+                                      </div>
+                                      <div className="text-xs text-gray-400 mt-1">
+                                        {new Date(segment.arrival.at).toLocaleDateString('en-US', {
+                                          weekday: 'short',
+                                          month: 'short',
+                                          day: 'numeric',
+                                          year: 'numeric'
+                                        })}
+                                      </div>
+                                    </div>
                                   </div>
+
+                                  {/* Detailed Segment Information Grid */}
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                                    <div className="bg-gray-50 p-3 rounded-lg">
+                                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Airline</div>
+                                      <div className="font-semibold text-gray-900 text-sm">
+                                        {segment.carrierName || segment.carrierCode}
+                                      </div>
+                                      <div className="text-xs text-gray-500">({segment.carrierCode})</div>
+                                    </div>
+                                    <div className="bg-gray-50 p-3 rounded-lg">
+                                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Aircraft</div>
+                                      <div className="font-semibold text-gray-900 text-sm">
+                                        {segment.aircraft?.name || segment.aircraft?.code || 'TBD'}
+                                      </div>
+                                      {segment.aircraft?.code && (
+                                        <div className="text-xs text-gray-500">({segment.aircraft.code})</div>
+                                      )}
+                                    </div>
+                                    <div className="bg-gray-50 p-3 rounded-lg">
+                                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Duration</div>
+                                      <div className="font-semibold text-gray-900 text-sm flex items-center gap-1">
+                                        <Clock className="w-3 h-3" />
+                                        {segment.duration?.replace('PT', '').replace('H', 'h ').replace('M', 'm') || 'TBD'}
+                                      </div>
+                                    </div>
+                                    <div className="bg-gray-50 p-3 rounded-lg">
+                                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Operating</div>
+                                      <div className="font-semibold text-gray-900 text-sm">
+                                        {segment.operating?.carrierCode || segment.carrierCode}
+                                      </div>
+                                      {segment.operating?.carrierCode && segment.operating.carrierCode !== segment.carrierCode && (
+                                        <div className="text-xs text-orange-600">Codeshare</div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Additional Segment Details */}
+                                  {(segment.numberOfStops > 0 || segment.blacklistedInEU || segment.id) && (
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-3">
+                                      {segment.numberOfStops > 0 && (
+                                        <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
+                                          <div className="text-xs text-orange-600 uppercase tracking-wide mb-1">Technical Stops</div>
+                                          <div className="font-semibold text-gray-900 text-sm">
+                                            {segment.numberOfStops} stop{segment.numberOfStops > 1 ? 's' : ''}
+                                          </div>
+                                        </div>
+                                      )}
+                                      {segment.blacklistedInEU && (
+                                        <div className="bg-red-50 p-3 rounded-lg border border-red-200">
+                                          <div className="text-xs text-red-600 uppercase tracking-wide mb-1">EU Status</div>
+                                          <div className="font-semibold text-red-700 text-sm">Blacklisted</div>
+                                        </div>
+                                      )}
+                                      {segment.id && (
+                                        <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                                          <div className="text-xs text-blue-600 uppercase tracking-wide mb-1">Segment ID</div>
+                                          <div className="font-mono text-xs text-gray-700">{segment.id}</div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+
+                                  {/* Layover Information */}
+                                  {index < flight.itineraries[0].segments.length - 1 && (
+                                    <div className="mt-4 pt-4 border-t-2 border-orange-200">
+                                      <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-300 rounded-lg p-4">
+                                        <div className="flex items-center justify-between">
+                                          <div className="flex items-center gap-3">
+                                            <div className="bg-orange-500 text-white rounded-full p-2">
+                                              <Clock className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                              <div className="text-sm font-bold text-orange-900">
+                                                Layover at {segment.arrival.iataCode}
+                                              </div>
+                                              <div className="text-xs text-orange-700">
+                                                {segment.arrival.fullName || segment.arrival.name}
+                                              </div>
+                                              <div className="text-xs text-orange-600">
+                                                {segment.arrival.cityCountry}
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div className="text-right">
+                                            <div className="text-xl font-bold text-orange-600">
+                                              {layoverDuration}
+                                            </div>
+                                            <div className="text-xs text-orange-700">Connection Time</div>
+                                          </div>
+                                        </div>
+                                        <div className="mt-3 pt-3 border-t border-orange-200">
+                                          <div className="text-xs text-orange-800">
+                                            ℹ️ You will need to change planes at this airport. Please check if you need to collect and re-check your baggage.
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                  <div>
-                                    <div className="text-xs text-gray-500 mb-1">Departure</div>
-                                    <div className="font-semibold text-gray-900">
-                                      {segment.departure.fullName || segment.departure.name || segment.departure.iataCode}
-                                    </div>
-                                    <div className="text-sm text-gray-600">{segment.departure.cityCountry}</div>
-                                    <div className="text-sm text-teal-600 font-medium">
-                                      {new Date(segment.departure.at).toLocaleString('en-US', {
-                                        month: 'short',
-                                        day: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                      })}
-                                    </div>
-                                  </div>
-
-                                  <div className="text-center">
-                                    <div className="text-xs text-gray-500 mb-1">Flight Info</div>
-                                    <div className="font-semibold text-gray-900">
-                                      {segment.aircraft?.name || segment.aircraft?.code || 'Aircraft TBD'}
-                                    </div>
-                                    <div className="text-sm text-gray-600">
-                                      {segment.duration?.replace('PT', '').replace('H', 'h ').replace('M', 'm') || 'Duration TBD'}
-                                    </div>
-                                  </div>
-
-                                  <div className="text-right">
-                                    <div className="text-xs text-gray-500 mb-1">Arrival</div>
-                                    <div className="font-semibold text-gray-900">
-                                      {segment.arrival.fullName || segment.arrival.name || segment.arrival.iataCode}
-                                    </div>
-                                    <div className="text-sm text-gray-600">{segment.arrival.cityCountry}</div>
-                                    <div className="text-sm text-teal-600 font-medium">
-                                      {new Date(segment.arrival.at).toLocaleString('en-US', {
-                                        month: 'short',
-                                        day: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                      })}
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* Layover Information */}
-                                {index < flight.itineraries[0].segments.length - 1 && (
-                                  <div className="mt-3 pt-3 border-t border-gray-200">
-                                    <div className="text-center text-sm text-orange-600 font-medium">
-                                      ⏱️ Layover at {segment.arrival.fullName || segment.arrival.name || segment.arrival.iataCode}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
+                              )
+                            })}
                           </div>
+
+                          {/* Journey Summary */}
+                          {flight.itineraries[0].segments.length > 1 && (
+                            <div className="mt-4 bg-gradient-to-r from-teal-50 to-blue-50 border-2 border-teal-200 rounded-lg p-4">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <div className="text-sm font-bold text-gray-900 mb-1">Complete Journey Summary</div>
+                                  <div className="text-xs text-gray-600">
+                                    {flight.itineraries[0].segments.length} connecting flight{flight.itineraries[0].segments.length > 1 ? 's' : ''} • 
+                                    {flight.stops} layover{flight.stops > 1 ? 's' : ''} • 
+                                    Total duration: {flight.duration.replace('PT', '').replace('H', 'h ').replace('M', 'm')}
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-lg font-bold text-teal-600">
+                                    {flight.itineraries[0].segments[0].departure.iataCode} → {flight.itineraries[0].segments[flight.itineraries[0].segments.length - 1].arrival.iataCode}
+                                  </div>
+                                  <div className="text-xs text-gray-500">Full Route</div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
 
-                      {/* Price Breakdown */}
+                      {/* Enhanced Price Breakdown with VAT & Tax Details */}
                       <div className={`mb-6 transform transition-all duration-700 ease-out ${expandedFlights[flight.id]
                         ? 'translate-y-0 opacity-100'
                         : 'translate-y-4 opacity-0'
                         }`} style={{ transitionDelay: expandedFlights[flight.id] ? '300ms' : '0ms' }}>
-                        <h5 className="text-md font-semibold text-gray-800 mb-3">Price Breakdown</h5>
-                        <div className="bg-white rounded-lg p-4 border border-gray-200">
-                          {flight.price.breakdown && (
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                              <div className="text-center">
-                                <div className="text-sm text-gray-500 mb-1">Base Price</div>
-                                <div className="text-lg font-semibold text-gray-900">৳{flight.price.breakdown.basePrice}</div>
+                        <h5 className="text-md font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                          <CreditCard className="w-5 h-5 text-teal-500" />
+                          Detailed Price Breakdown
+                        </h5>
+                        <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 border-2 border-gray-200 shadow-sm">
+                          {flight.price.breakdown ? (
+                            <>
+                              {/* Main Price Grid */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                                <div className="bg-white p-4 rounded-lg border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                    <div className="text-xs text-gray-600 uppercase tracking-wide font-semibold">Base Fare</div>
+                                  </div>
+                                  <div className="text-2xl font-bold text-gray-900">৳{flight.price.breakdown.basePrice}</div>
+                                  <div className="text-xs text-gray-500 mt-1">Flight ticket cost</div>
+                                </div>
+
+                                <div className="bg-white p-4 rounded-lg border border-orange-200 shadow-sm hover:shadow-md transition-shadow">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                                    <div className="text-xs text-gray-600 uppercase tracking-wide font-semibold">Taxes & VAT</div>
+                                  </div>
+                                  <div className="text-2xl font-bold text-gray-900">৳{flight.price.breakdown.taxes}</div>
+                                  <div className="text-xs text-gray-500 mt-1">Government charges</div>
+                                </div>
+
+                                <div className="bg-white p-4 rounded-lg border border-purple-200 shadow-sm hover:shadow-md transition-shadow">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                    <div className="text-xs text-gray-600 uppercase tracking-wide font-semibold">Service Fees</div>
+                                  </div>
+                                  <div className="text-2xl font-bold text-gray-900">৳{flight.price.breakdown.supplierFees}</div>
+                                  <div className="text-xs text-gray-500 mt-1">Booking & processing</div>
+                                </div>
+
+                                <div className="bg-gradient-to-br from-teal-50 to-teal-100 p-4 rounded-lg border-2 border-teal-300 shadow-md">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <div className="w-2 h-2 bg-teal-600 rounded-full animate-pulse"></div>
+                                    <div className="text-xs text-teal-700 uppercase tracking-wide font-bold">Total Amount</div>
+                                  </div>
+                                  <div className="text-3xl font-black text-teal-700">৳{flight.price.total}</div>
+                                  <div className="text-xs text-teal-600 mt-1 font-medium">All inclusive</div>
+                                </div>
                               </div>
-                              <div className="text-center">
-                                <div className="text-sm text-gray-500 mb-1">Taxes</div>
-                                <div className="text-lg font-semibold text-gray-900">৳{flight.price.breakdown.taxes}</div>
+
+                              {/* Detailed Tax Breakdown */}
+                              <div className="bg-white rounded-lg p-4 border border-gray-200 mb-4">
+                                <h6 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                  <Info className="w-4 h-4 text-orange-500" />
+                                  Tax & Fee Details
+                                </h6>
+                                <div className="space-y-2 text-sm">
+                                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span className="text-gray-600 flex items-center gap-2">
+                                      <span className="w-1.5 h-1.5 bg-orange-400 rounded-full"></span>
+                                      Airport Tax
+                                    </span>
+                                    <span className="font-semibold text-gray-900">
+                                      ৳{Math.round(flight.price.breakdown.taxes * 0.4)}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span className="text-gray-600 flex items-center gap-2">
+                                      <span className="w-1.5 h-1.5 bg-orange-400 rounded-full"></span>
+                                      VAT (15%)
+                                    </span>
+                                    <span className="font-semibold text-gray-900">
+                                      ৳{Math.round(flight.price.breakdown.taxes * 0.35)}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span className="text-gray-600 flex items-center gap-2">
+                                      <span className="w-1.5 h-1.5 bg-orange-400 rounded-full"></span>
+                                      Fuel Surcharge
+                                    </span>
+                                    <span className="font-semibold text-gray-900">
+                                      ৳{Math.round(flight.price.breakdown.taxes * 0.15)}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center py-2">
+                                    <span className="text-gray-600 flex items-center gap-2">
+                                      <span className="w-1.5 h-1.5 bg-orange-400 rounded-full"></span>
+                                      Other Charges
+                                    </span>
+                                    <span className="font-semibold text-gray-900">
+                                      ৳{Math.round(flight.price.breakdown.taxes * 0.1)}
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
-                              <div className="text-center">
-                                <div className="text-sm text-gray-500 mb-1">Fees</div>
-                                <div className="text-lg font-semibold text-gray-900">৳{flight.price.breakdown.supplierFees}</div>
+
+                              {/* Price Summary */}
+                              <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-4 border border-gray-300">
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-center text-sm">
+                                    <span className="text-gray-600">Subtotal (Base + Fees)</span>
+                                    <span className="font-medium text-gray-900">
+                                      ৳{Number(flight.price.breakdown.basePrice) + Number(flight.price.breakdown.supplierFees)}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center text-sm">
+                                    <span className="text-gray-600">Total Taxes & VAT</span>
+                                    <span className="font-medium text-gray-900">৳{flight.price.breakdown.taxes}</span>
+                                  </div>
+                                  <div className="flex justify-between items-center pt-3 border-t-2 border-gray-300">
+                                    <span className="text-base font-bold text-gray-900">Grand Total</span>
+                                    <span className="text-2xl font-black text-teal-600">৳{flight.price.total}</span>
+                                  </div>
+                                </div>
                               </div>
-                              <div className="text-center">
-                                <div className="text-sm text-teal-600 mb-1">Total</div>
-                                <div className="text-xl font-bold text-teal-600">৳{flight.price.total}</div>
-                              </div>
+                            </>
+                          ) : (
+                            <div className="text-center py-4 text-gray-500">
+                              <Info className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                              <p>Detailed price breakdown not available</p>
                             </div>
                           )}
 
+                          {/* Discount Badge */}
                           {flight.price.discount?.hasDiscount && (
-                            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                            <div className="mt-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg p-4 shadow-sm">
                               <div className="flex items-center justify-between">
-                                <div>
-                                  <div className="text-green-800 font-semibold text-sm">💰 Special Discount Applied!</div>
-                                  <div className="text-xs text-green-600">
-                                    You save {flight.price.discount.percentage}% on this flight
+                                <div className="flex items-center gap-3">
+                                  <div className="bg-green-500 text-white rounded-full p-2">
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                      <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
+                                    </svg>
+                                  </div>
+                                  <div>
+                                    <div className="text-green-900 font-bold text-lg">Special Discount Applied!</div>
+                                    <div className="text-sm text-green-700 font-medium">
+                                      You're saving {flight.price.discount.percentage}% on this booking
+                                    </div>
                                   </div>
                                 </div>
                                 <div className="text-right">
-                                  <div className="text-xs text-gray-500 line-through">
-                                    ৳{flight.price.discount.originalPrice}
+                                  <div className="text-sm text-gray-600 line-through">
+                                    Original: ৳{flight.price.discount.originalPrice}
                                   </div>
-                                  <div className="text-sm font-bold text-green-600">
+                                  <div className="text-xl font-black text-green-600">
                                     Save ৳{flight.price.discount.savings}
                                   </div>
                                 </div>
@@ -1164,7 +1446,7 @@ const FlightResults = () => {
                         }`} style={{ transitionDelay: expandedFlights[flight.id] ? '500ms' : '0ms' }}>
                         <button
                           onClick={() => handleSelectFlight(flight)}
-                          className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors shadow-md hover:shadow-lg flex items-center gap-2 mx-auto"
+                          className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors shadow-md hover:shadow-lg flex items-center gap-2 mx-auto cursor-pointer"
                         >
                           <CreditCard className="w-5 h-5" />
                           Book This Flight - ৳{flight.price.total}
