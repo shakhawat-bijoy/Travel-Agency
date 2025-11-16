@@ -176,42 +176,110 @@ router.get("/search-direct", async (req, res) => {
     }
 });
 
+// Simple in-memory cache for airport searches (expires after 1 hour)
+const airportSearchCache = new Map();
+const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
+
+// Calculate relevance score for sorting results
+function calculateRelevance(location, query) {
+    let score = 0;
+    const lowerQuery = query.toLowerCase();
+    const name = location.name.toLowerCase();
+    const city = (location.address?.cityName || '').toLowerCase();
+    const iataCode = location.iataCode.toLowerCase();
+    
+    // Exact IATA code match gets highest priority
+    if (iataCode === lowerQuery) score += 100;
+    else if (iataCode.startsWith(lowerQuery)) score += 50;
+    
+    // City name matches
+    if (city === lowerQuery) score += 80;
+    else if (city.startsWith(lowerQuery)) score += 40;
+    else if (city.includes(lowerQuery)) score += 20;
+    
+    // Airport name matches
+    if (name.startsWith(lowerQuery)) score += 30;
+    else if (name.includes(lowerQuery)) score += 10;
+    
+    // Boost major international airports
+    const majorAirports = ['jfk', 'lhr', 'cdg', 'dxb', 'sin', 'hnd', 'dac', 'cgp', 'bom', 'del'];
+    if (majorAirports.includes(iataCode)) score += 15;
+    
+    return score;
+}
+
 // GET /api/flights/airports?query=london
 router.get("/airports", async (req, res) => {
     try {
-        const { query, limit = 15, country } = req.query;
+        const { query, limit = 20, country } = req.query;
 
-        if (!query) {
+        if (!query || query.trim().length < 2) {
             return res.status(400).json({
                 success: false,
-                message: 'Query parameter is required'
+                message: 'Query parameter must be at least 2 characters'
             });
         }
 
-        console.log("Airport search request for:", query);
+        const normalizedQuery = query.trim().toLowerCase();
+        const cacheKey = `${normalizedQuery}-${country || 'all'}-${limit}`;
+
+        // Check cache first
+        const cached = airportSearchCache.get(cacheKey);
+        if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+            console.log(`✓ Airport search cache hit for: ${query}`);
+            return res.json({
+                ...cached.data,
+                cached: true
+            });
+        }
+
+        console.log(`\n🔍 Airport search request for: "${query}"`);
 
         // Search airports using Amadeus API
-        const amadeusResponse = await searchAirports(query);
-        console.log("Airport search response:", amadeusResponse?.data?.length || 0, "results");
+        const amadeusResponse = await searchAirports(query, limit);
+        console.log(`📊 Airport search response: ${amadeusResponse?.data?.length || 0} results`);
+        
+        if (amadeusResponse?.data) {
+            console.log(`📋 Raw results:`, amadeusResponse.data.map(a => `${a.name} (${a.iataCode})`).join(', '));
+        }
+
+        if (!amadeusResponse.data || amadeusResponse.data.length === 0) {
+            return res.json({
+                success: true,
+                data: [],
+                total: 0,
+                source: 'amadeus',
+                query: query,
+                message: 'No airports found'
+            });
+        }
 
         // Transform Amadeus airport data to our format
-        let transformedAirports = amadeusResponse.data.map(location => ({
-            id: location.iataCode,
-            name: location.name,
-            city: location.address?.cityName || location.name,
-            country: location.address?.countryName || location.address?.countryCode,
-            iataCode: location.iataCode,
-            type: location.subType,
-            timeZone: location.timeZoneOffset,
-            geoCode: location.geoCode,
-            // Enhanced airport information
-            detailedName: `${location.name} (${location.iataCode})`,
-            cityCountry: `${location.address?.cityName || location.name}, ${location.address?.countryName || location.address?.countryCode}`,
-            coordinates: location.geoCode ? {
-                latitude: location.geoCode.latitude,
-                longitude: location.geoCode.longitude
-            } : null
-        }));
+        // Note: searchAirports() already filters and returns only airports
+        let transformedAirports = amadeusResponse.data.map(location => {
+                const cityName = location.address?.cityName || location.name;
+                const countryName = location.address?.countryName || location.address?.countryCode || '';
+                
+                return {
+                    id: location.iataCode,
+                    name: location.name,
+                    city: cityName,
+                    country: countryName,
+                    iataCode: location.iataCode,
+                    type: location.subType,
+                    timeZone: location.timeZoneOffset,
+                    geoCode: location.geoCode,
+                    detailedName: `${location.name} (${location.iataCode})`,
+                    cityCountry: `${cityName}, ${countryName}`,
+                    coordinates: location.geoCode ? {
+                        latitude: location.geoCode.latitude,
+                        longitude: location.geoCode.longitude
+                    } : null,
+                    // Add relevance score for better sorting
+                    relevance: calculateRelevance(location, normalizedQuery)
+                };
+            })
+            .sort((a, b) => b.relevance - a.relevance); // Sort by relevance
 
         // Filter by country if specified
         if (country) {
@@ -221,23 +289,39 @@ router.get("/airports", async (req, res) => {
             );
         }
 
+        // Limit results
         transformedAirports = transformedAirports.slice(0, parseInt(limit));
 
-        res.json({
+        const responseData = {
             success: true,
             data: transformedAirports,
             total: transformedAirports.length,
             source: 'amadeus',
             query: query,
-            country: country || null
+            country: country || null,
+            cached: false
+        };
+
+        // Cache the result
+        airportSearchCache.set(cacheKey, {
+            data: responseData,
+            timestamp: Date.now()
         });
+
+        // Clean old cache entries (keep cache size manageable)
+        if (airportSearchCache.size > 1000) {
+            const oldestKeys = Array.from(airportSearchCache.keys()).slice(0, 100);
+            oldestKeys.forEach(key => airportSearchCache.delete(key));
+        }
+
+        res.json(responseData);
 
     } catch (error) {
         console.error('Amadeus airport search error:', error.response?.data || error.message);
         res.status(500).json({
             success: false,
-            message: 'Error searching airports with Amadeus',
-            error: error.response?.data || error.message
+            message: 'Error searching airports',
+            error: error.response?.data?.errors?.[0]?.detail || error.message
         });
     }
 });

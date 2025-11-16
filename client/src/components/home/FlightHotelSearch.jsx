@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { Plane, Hotel, ArrowLeftRight, Calendar, Search, MapPin, Edit3 } from 'lucide-react'
@@ -31,13 +31,14 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
     children: 0,
     rooms: 1
   })
-  const [airports, setAirports] = useState([])
-  const [bangladeshAirports, setBangladeshAirports] = useState([])
+  const [fromAirports, setFromAirports] = useState([])
+  const [toAirports, setToAirports] = useState([])
   const [showFromDropdown, setShowFromDropdown] = useState(false)
   const [showToDropdown, setShowToDropdown] = useState(false)
   const [fromQuery, setFromQuery] = useState('')
   const [toQuery, setToQuery] = useState('')
-  const [showBangladeshAirports, setShowBangladeshAirports] = useState(false)
+  const [fromSearching, setFromSearching] = useState(false)
+  const [toSearching, setToSearching] = useState(false)
   const [destinationQuery, setDestinationQuery] = useState('')
   const [showDestinationDropdown, setShowDestinationDropdown] = useState(false)
 
@@ -46,42 +47,78 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
   const hotelSearchError = null
   const hotelSearchResults = null
 
-  // Load Bangladesh airports on component mount
-  useEffect(() => {
-    const loadBangladeshAirports = async () => {
-      try {
-        const response = await flightAPI.getBangladeshAirports()
-        if (response.success) {
-          setBangladeshAirports(response.data)
-          console.log('Bangladesh airports loaded:', response.data.length)
-        }
-      } catch (error) {
-        console.error('Failed to load Bangladesh airports:', error)
-      }
-    }
+  // Debounce timer refs
+  const fromSearchTimer = useRef(null)
+  const toSearchTimer = useRef(null)
 
-    loadBangladeshAirports()
-  }, [])
-
-  // Airport search using Amadeus API
-  const searchAirports = async (query) => {
+  // Airport search using Amadeus API with debouncing
+  const searchAirports = async (query, type) => {
     if (query.length < 2) {
-      setAirports([])
+      if (type === 'from') setFromAirports([])
+      else setToAirports([])
       return
     }
 
     try {
-      const response = await flightAPI.searchAirports(query)
+      if (type === 'from') setFromSearching(true)
+      else setToSearching(true)
+
+      console.log(`Searching airports for "${query}" (${type})...`)
+      const response = await flightAPI.searchAirports(query, 20)
+      
+      console.log(`Airport search response for "${query}":`, response)
+      
       if (response.success) {
-        setAirports(response.data)
+        const airports = response.data || []
+        console.log(`Found ${airports.length} airports for "${query}"`)
+        
+        if (type === 'from') setFromAirports(airports)
+        else setToAirports(airports)
       } else {
-        setAirports([])
+        console.warn(`Airport search failed for "${query}":`, response.message)
+        if (type === 'from') setFromAirports([])
+        else setToAirports([])
       }
     } catch (error) {
-      console.error('Airport search error:', error)
-      setAirports([])
+      console.error(`Airport search error for "${query}":`, error)
+      if (type === 'from') setFromAirports([])
+      else setToAirports([])
+    } finally {
+      if (type === 'from') setFromSearching(false)
+      else setToSearching(false)
     }
   }
+
+  // Debounced search handlers
+  const handleFromQueryChange = (query) => {
+    setFromQuery(query)
+    setShowFromDropdown(true)
+    
+    if (fromSearchTimer.current) clearTimeout(fromSearchTimer.current)
+    
+    fromSearchTimer.current = setTimeout(() => {
+      searchAirports(query, 'from')
+    }, 300)
+  }
+
+  const handleToQueryChange = (query) => {
+    setToQuery(query)
+    setShowToDropdown(true)
+    
+    if (toSearchTimer.current) clearTimeout(toSearchTimer.current)
+    
+    toSearchTimer.current = setTimeout(() => {
+      searchAirports(query, 'to')
+    }, 300)
+  }
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (fromSearchTimer.current) clearTimeout(fromSearchTimer.current)
+      if (toSearchTimer.current) clearTimeout(toSearchTimer.current)
+    }
+  }, [])
 
   // Handle airport selection
   const handleAirportSelect = (airport, type) => {
@@ -228,90 +265,78 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
                     <input
                       type="text"
                       value={fromQuery}
-                      onChange={(e) => {
-                        setFromQuery(e.target.value)
-                        searchAirports(e.target.value)
-                        setShowFromDropdown(true)
-                      }}
+                      onChange={(e) => handleFromQueryChange(e.target.value)}
                       onFocus={() => setShowFromDropdown(true)}
+                      onBlur={() => setTimeout(() => setShowFromDropdown(false), 200)}
                       className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                      placeholder="Search departure city"
+                      placeholder="Search departure city or airport"
                     />
                     <MapPin className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-5 lg:h-5 text-gray-400" />
 
                     {/* Airport Dropdown */}
                     {showFromDropdown && (
                       <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                        {/* Bangladesh Airports Section */}
-                        {!fromQuery && bangladeshAirports.length > 0 && (
-                          <>
-                            <div className="px-4 py-2 bg-teal-50 border-b border-teal-100">
-                              <div className="text-sm font-semibold text-teal-700">🇧🇩 Bangladesh Airports</div>
-                            </div>
-                            {bangladeshAirports.slice(0, 4).map((airport, index) => (
-                              <button
-                                key={`bd-${index}`}
-                                onClick={() => handleAirportSelect(airport, 'from')}
-                                className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100"
-                              >
-                                <div className="font-medium">{airport.name}</div>
-                                <div className="text-sm text-gray-500">
-                                  {airport.city}, {airport.country} ({airport.iataCode})
-                                  {airport.isInternational && <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded">International</span>}
-                                </div>
-                              </button>
-                            ))}
-                            {bangladeshAirports.length > 4 && (
-                              <button
-                                onClick={() => setShowBangladeshAirports(!showBangladeshAirports)}
-                                className="w-full px-4 py-2 text-left text-sm text-teal-600 hover:bg-teal-50 border-b border-gray-100"
-                              >
-                                {showBangladeshAirports ? 'Show Less' : `Show ${bangladeshAirports.length - 4} More Bangladesh Airports`}
-                              </button>
-                            )}
-                            {showBangladeshAirports && bangladeshAirports.slice(4).map((airport, index) => (
-                              <button
-                                key={`bd-more-${index}`}
-                                onClick={() => handleAirportSelect(airport, 'from')}
-                                className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100"
-                              >
-                                <div className="font-medium">{airport.name}</div>
-                                <div className="text-sm text-gray-500">
-                                  {airport.city}, {airport.country} ({airport.iataCode})
-                                  {airport.isInternational && <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded">International</span>}
-                                </div>
-                              </button>
-                            ))}
-                          </>
+                        {/* Loading State */}
+                        {fromSearching && (
+                          <div className="px-4 py-3 text-center">
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-teal-600 mx-auto"></div>
+                            <div className="text-sm text-gray-500 mt-2">Searching airports...</div>
+                          </div>
                         )}
 
                         {/* Search Results */}
-                        {airports.length > 0 && (
+                        {!fromSearching && fromAirports.length > 0 && (
                           <>
-                            {fromQuery && (
-                              <div className="px-4 py-2 bg-gray-50 border-b border-gray-100">
-                                <div className="text-sm font-semibold text-gray-700">Search Results</div>
+                            <div className="px-4 py-2 bg-gray-50 border-b border-gray-100">
+                              <div className="text-xs font-semibold text-gray-600 uppercase">
+                                {fromAirports.length} Airport{fromAirports.length > 1 ? 's' : ''} Found
                               </div>
-                            )}
-                            {airports.map((airport, index) => (
+                            </div>
+                            {fromAirports.map((airport, index) => (
                               <button
-                                key={`search-${index}`}
+                                key={`from-${airport.iataCode || airport.id}-${index}`}
                                 onClick={() => handleAirportSelect(airport, 'from')}
-                                className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                                className="w-full px-4 py-3 text-left hover:bg-teal-50 border-b border-gray-100 last:border-b-0 transition-colors group"
                               >
-                                <div className="font-medium">{airport.name}</div>
-                                <div className="text-sm text-gray-500">
-                                  {airport.city}, {airport.country} ({airport.iataCode || airport.id})
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1 min-w-0">
+                                    <div className="font-medium text-gray-900 group-hover:text-teal-700 transition-colors truncate">
+                                      {airport.name}
+                                    </div>
+                                    <div className="text-sm text-gray-500 mt-0.5">
+                                      {airport.city}{airport.country ? `, ${airport.country}` : ''}
+                                    </div>
+                                  </div>
+                                  <div className="ml-3 flex-shrink-0">
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800 group-hover:bg-teal-100 group-hover:text-teal-800 transition-colors">
+                                      {airport.iataCode || airport.id}
+                                    </span>
+                                  </div>
                                 </div>
                               </button>
                             ))}
                           </>
                         )}
 
+                        {/* Empty state - show hint */}
+                        {!fromSearching && !fromQuery && fromAirports.length === 0 && (
+                          <div className="px-4 py-6 text-center">
+                            <MapPin className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                            <div className="text-sm text-gray-500 font-medium">Search airports worldwide</div>
+                            <div className="text-xs text-gray-400 mt-2">Try searching by:</div>
+                            <div className="text-xs text-gray-500 mt-1 space-y-0.5">
+                              <div>• City name: "Dhaka", "Bangkok", "Dubai"</div>
+                              <div>• Airport code: "DAC", "BKK", "DXB"</div>
+                              <div>• Airport name: "Heathrow", "JFK"</div>
+                            </div>
+                          </div>
+                        )}
+
                         {/* No results message */}
-                        {fromQuery && airports.length === 0 && (
-                          <div className="px-4 py-3 text-sm text-gray-500 text-center">
-                            No airports found for "{fromQuery}"
+                        {!fromSearching && fromQuery && fromAirports.length === 0 && (
+                          <div className="px-4 py-6 text-center">
+                            <div className="text-sm text-gray-500">No airports found for "{fromQuery}"</div>
+                            <div className="text-xs text-gray-400 mt-1">Try a different city or airport code</div>
                           </div>
                         )}
                       </div>
@@ -328,14 +353,11 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
                     <input
                       type="text"
                       value={toQuery}
-                      onChange={(e) => {
-                        setToQuery(e.target.value)
-                        searchAirports(e.target.value)
-                        setShowToDropdown(true)
-                      }}
+                      onChange={(e) => handleToQueryChange(e.target.value)}
                       onFocus={() => setShowToDropdown(true)}
+                      onBlur={() => setTimeout(() => setShowToDropdown(false), 200)}
                       className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                      placeholder="Search destination city"
+                      placeholder="Search destination city or airport"
                     />
                     <MapPin className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-5 lg:h-5 text-gray-400" />
 
@@ -350,55 +372,67 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
                     {/* Airport Dropdown */}
                     {showToDropdown && (
                       <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                        {/* Bangladesh Airports Section */}
-                        {!toQuery && bangladeshAirports.length > 0 && (
-                          <>
-                            <div className="px-4 py-2 bg-teal-50 border-b border-teal-100">
-                              <div className="text-sm font-semibold text-teal-700">🇧🇩 Bangladesh Airports</div>
-                            </div>
-                            {bangladeshAirports.slice(0, 4).map((airport, index) => (
-                              <button
-                                key={`bd-to-${index}`}
-                                onClick={() => handleAirportSelect(airport, 'to')}
-                                className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100"
-                              >
-                                <div className="font-medium">{airport.name}</div>
-                                <div className="text-sm text-gray-500">
-                                  {airport.city}, {airport.country} ({airport.iataCode})
-                                  {airport.isInternational && <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded">International</span>}
-                                </div>
-                              </button>
-                            ))}
-                          </>
+                        {/* Loading State */}
+                        {toSearching && (
+                          <div className="px-4 py-3 text-center">
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-teal-600 mx-auto"></div>
+                            <div className="text-sm text-gray-500 mt-2">Searching airports...</div>
+                          </div>
                         )}
 
                         {/* Search Results */}
-                        {airports.length > 0 && (
+                        {!toSearching && toAirports.length > 0 && (
                           <>
-                            {toQuery && (
-                              <div className="px-4 py-2 bg-gray-50 border-b border-gray-100">
-                                <div className="text-sm font-semibold text-gray-700">Search Results</div>
+                            <div className="px-4 py-2 bg-gray-50 border-b border-gray-100">
+                              <div className="text-xs font-semibold text-gray-600 uppercase">
+                                {toAirports.length} Airport{toAirports.length > 1 ? 's' : ''} Found
                               </div>
-                            )}
-                            {airports.map((airport, index) => (
+                            </div>
+                            {toAirports.map((airport, index) => (
                               <button
-                                key={`search-to-${index}`}
+                                key={`to-${airport.iataCode || airport.id}-${index}`}
                                 onClick={() => handleAirportSelect(airport, 'to')}
-                                className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                                className="w-full px-4 py-3 text-left hover:bg-teal-50 border-b border-gray-100 last:border-b-0 transition-colors group"
                               >
-                                <div className="font-medium">{airport.name}</div>
-                                <div className="text-sm text-gray-500">
-                                  {airport.city}, {airport.country} ({airport.iataCode || airport.id})
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1 min-w-0">
+                                    <div className="font-medium text-gray-900 group-hover:text-teal-700 transition-colors truncate">
+                                      {airport.name}
+                                    </div>
+                                    <div className="text-sm text-gray-500 mt-0.5">
+                                      {airport.city}{airport.country ? `, ${airport.country}` : ''}
+                                    </div>
+                                  </div>
+                                  <div className="ml-3 flex-shrink-0">
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800 group-hover:bg-teal-100 group-hover:text-teal-800 transition-colors">
+                                      {airport.iataCode || airport.id}
+                                    </span>
+                                  </div>
                                 </div>
                               </button>
                             ))}
                           </>
                         )}
 
+                        {/* Empty state - show hint */}
+                        {!toSearching && !toQuery && toAirports.length === 0 && (
+                          <div className="px-4 py-6 text-center">
+                            <MapPin className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                            <div className="text-sm text-gray-500 font-medium">Search airports worldwide</div>
+                            <div className="text-xs text-gray-400 mt-2">Try searching by:</div>
+                            <div className="text-xs text-gray-500 mt-1 space-y-0.5">
+                              <div>• City name: "Singapore", "Mumbai", "London"</div>
+                              <div>• Airport code: "SIN", "BOM", "LHR"</div>
+                              <div>• Airport name: "Changi", "Indira Gandhi"</div>
+                            </div>
+                          </div>
+                        )}
+
                         {/* No results message */}
-                        {toQuery && airports.length === 0 && (
-                          <div className="px-4 py-3 text-sm text-gray-500 text-center">
-                            No airports found for "{toQuery}"
+                        {!toSearching && toQuery && toAirports.length === 0 && (
+                          <div className="px-4 py-6 text-center">
+                            <div className="text-sm text-gray-500">No airports found for "{toQuery}"</div>
+                            <div className="text-xs text-gray-400 mt-1">Try a different city or airport code</div>
                           </div>
                         )}
                       </div>

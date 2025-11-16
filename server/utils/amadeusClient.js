@@ -50,22 +50,362 @@ async function searchFlights(queryParams) {
   return res.data;
 }
 
-async function searchAirports(keyword) {
+// Manual Bangladesh airports data (always available)
+const bangladeshAirportsData = [
+  {
+    iataCode: 'DAC',
+    name: 'Hazrat Shahjalal International Airport',
+    subType: 'AIRPORT',
+    address: {
+      cityName: 'Dhaka',
+      countryName: 'Bangladesh',
+      countryCode: 'BD'
+    },
+    geoCode: {
+      latitude: 23.8433,
+      longitude: 90.3978
+    },
+    timeZoneOffset: '+06:00'
+  },
+  {
+    iataCode: 'CGP',
+    name: 'Shah Amanat International Airport',
+    subType: 'AIRPORT',
+    address: {
+      cityName: 'Chittagong',
+      countryName: 'Bangladesh',
+      countryCode: 'BD'
+    },
+    geoCode: {
+      latitude: 22.2496,
+      longitude: 91.8133
+    },
+    timeZoneOffset: '+06:00'
+  },
+  {
+    iataCode: 'CXB',
+    name: "Cox's Bazar Airport",
+    subType: 'AIRPORT',
+    address: {
+      cityName: "Cox's Bazar",
+      countryName: 'Bangladesh',
+      countryCode: 'BD'
+    },
+    geoCode: {
+      latitude: 21.4522,
+      longitude: 91.9639
+    },
+    timeZoneOffset: '+06:00'
+  },
+  {
+    iataCode: 'SYL',
+    name: 'Osmani International Airport',
+    subType: 'AIRPORT',
+    address: {
+      cityName: 'Sylhet',
+      countryName: 'Bangladesh',
+      countryCode: 'BD'
+    },
+    geoCode: {
+      latitude: 24.9633,
+      longitude: 91.8667
+    },
+    timeZoneOffset: '+06:00'
+  },
+  {
+    iataCode: 'JSR',
+    name: 'Jessore Airport',
+    subType: 'AIRPORT',
+    address: {
+      cityName: 'Jessore',
+      countryName: 'Bangladesh',
+      countryCode: 'BD'
+    },
+    geoCode: {
+      latitude: 23.1838,
+      longitude: 89.1608
+    },
+    timeZoneOffset: '+06:00'
+  },
+  {
+    iataCode: 'RJH',
+    name: 'Shah Makhdum Airport',
+    subType: 'AIRPORT',
+    address: {
+      cityName: 'Rajshahi',
+      countryName: 'Bangladesh',
+      countryCode: 'BD'
+    },
+    geoCode: {
+      latitude: 24.4372,
+      longitude: 88.6165
+    },
+    timeZoneOffset: '+06:00'
+  },
+  {
+    iataCode: 'BZL',
+    name: 'Barisal Airport',
+    subType: 'AIRPORT',
+    address: {
+      cityName: 'Barisal',
+      countryName: 'Bangladesh',
+      countryCode: 'BD'
+    },
+    geoCode: {
+      latitude: 22.8010,
+      longitude: 90.3012
+    },
+    timeZoneOffset: '+06:00'
+  },
+  {
+    iataCode: 'SPD',
+    name: 'Saidpur Airport',
+    subType: 'AIRPORT',
+    address: {
+      cityName: 'Saidpur',
+      countryName: 'Bangladesh',
+      countryCode: 'BD'
+    },
+    geoCode: {
+      latitude: 25.7592,
+      longitude: 88.9089
+    },
+    timeZoneOffset: '+06:00'
+  }
+];
+
+// Function to check if search query matches Bangladesh airports
+function matchesBangladeshAirport(airport, keyword) {
+  const lowerKeyword = keyword.toLowerCase();
+  const cityName = airport.address.cityName.toLowerCase();
+  const airportName = airport.name.toLowerCase();
+  const iataCode = airport.iataCode.toLowerCase();
+  
+  return (
+    cityName.includes(lowerKeyword) ||
+    lowerKeyword.includes(cityName) ||
+    airportName.includes(lowerKeyword) ||
+    iataCode === lowerKeyword ||
+    lowerKeyword === 'bangladesh' ||
+    lowerKeyword === 'bd'
+  );
+}
+
+// Fallback function to try known airport codes
+async function tryFallbackAirports(keyword, token, url) {
+  const lowerKeyword = keyword.toLowerCase();
+  const allLocations = [];
+
+  // First, check if it matches any Bangladesh airport
+  const matchingBDAirports = bangladeshAirportsData.filter(airport => 
+    matchesBangladeshAirport(airport, keyword)
+  );
+
+  if (matchingBDAirports.length > 0) {
+    console.log(`✓ Found ${matchingBDAirports.length} Bangladesh airports in manual data`);
+    allLocations.push(...matchingBDAirports);
+    return {
+      data: allLocations,
+      meta: { count: allLocations.length }
+    };
+  }
+
+  // If not Bangladesh, try other known cities via API
+  const knownCityAirports = {
+    'bangkok': ['BKK', 'DMK'],
+    'mumbai': ['BOM'],
+    'delhi': ['DEL'],
+    'kolkata': ['CCU'],
+    'singapore': ['SIN'],
+    'kuala lumpur': ['KUL'],
+    'jakarta': ['CGK'],
+    'manila': ['MNL'],
+    'ho chi minh': ['SGN'],
+    'hanoi': ['HAN'],
+  };
+
+  const codes = knownCityAirports[lowerKeyword];
+
+  if (codes) {
+    console.log(`✓ Found known codes for "${keyword}": ${codes.join(', ')}`);
+    for (const code of codes) {
+      try {
+        const airportUrl = `${url}/${code}`;
+        const airportRes = await axios.get(airportUrl, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        });
+
+        if (airportRes.data && airportRes.data.data) {
+          const airport = airportRes.data.data;
+          allLocations.push(airport);
+          console.log(`✓ Added from fallback: ${airport.name} (${code})`);
+        }
+      } catch (error) {
+        console.warn(`Could not fetch details for code ${code}:`, error.message);
+      }
+    }
+  }
+
+  return {
+    data: allLocations,
+    meta: { count: allLocations.length }
+  };
+}
+
+async function searchAirports(keyword, limit = 20) {
   const token = await getAccessToken();
   const AMADEUS_BASE = process.env.AMADEUS_BASE_URL || "https://test.api.amadeus.com";
   const url = `${AMADEUS_BASE}/v1/reference-data/locations`;
+  
+  console.log(`\n=== Airport Search for: "${keyword}" ===`);
+  
+  // First search for both airports and cities
   const res = await axios.get(url, {
     params: {
       subType: "AIRPORT,CITY",
       keyword: keyword,
-      "page[limit]": 10,
+      "page[limit]": Math.min(limit, 20), // Amadeus max is 20
     },
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: "application/json",
     },
   });
-  return res.data;
+
+  const results = res.data.data || [];
+  console.log(`Initial search returned ${results.length} results`);
+  
+  const allLocations = [];
+  const addedCodes = new Set(); // Track added airport codes to avoid duplicates
+
+  // Separate airports and cities
+  const airports = results.filter(loc => loc.subType === 'AIRPORT');
+  const cities = results.filter(loc => loc.subType === 'CITY');
+  
+  console.log(`Found ${airports.length} airports and ${cities.length} cities`);
+  
+  // If no results at all, try the fallback immediately
+  if (results.length === 0) {
+    console.log(`⚠️  No results from Amadeus API for "${keyword}", trying fallback...`);
+    const fallbackResult = await tryFallbackAirports(keyword, token, url);
+    if (fallbackResult.data.length > 0) {
+      console.log(`✓ Fallback successful! Found ${fallbackResult.data.length} airports`);
+      return {
+        data: fallbackResult.data,
+        meta: { count: fallbackResult.data.length }
+      };
+    }
+    console.log(`✗ Fallback also returned no results`);
+    return { data: [], meta: { count: 0 } };
+  }
+
+  // Add all airports first
+  airports.forEach(airport => {
+    if (!addedCodes.has(airport.iataCode)) {
+      allLocations.push(airport);
+      addedCodes.add(airport.iataCode);
+      console.log(`✓ Added airport: ${airport.name} (${airport.iataCode}) - ${airport.address?.cityName}`);
+    }
+  });
+
+  // For each city found, try to get its airports
+  for (const city of cities) {
+    const cityName = city.address?.cityName || city.name;
+    const cityCode = city.iataCode;
+
+    try {
+      console.log(`\n→ Searching airports for city: ${cityName} (${cityCode})`);
+      
+      // Try multiple search strategies
+      const searchStrategies = [
+        { keyword: cityName, desc: 'city name' },
+        { keyword: cityCode, desc: 'city code' },
+      ];
+
+      for (const strategy of searchStrategies) {
+        try {
+          const cityAirportsRes = await axios.get(url, {
+            params: {
+              subType: "AIRPORT",
+              keyword: strategy.keyword,
+              "page[limit]": 15,
+            },
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+            },
+          });
+
+          const cityAirports = cityAirportsRes.data.data || [];
+          console.log(`  Found ${cityAirports.length} airports using ${strategy.desc}: "${strategy.keyword}"`);
+          
+          // Add airports from this city that aren't already in the list
+          let addedCount = 0;
+          for (const airport of cityAirports) {
+            const airportCity = airport.address?.cityName?.toLowerCase();
+            const searchCity = cityName.toLowerCase();
+            
+            // More flexible matching - check if city names are similar
+            const isMatch = airportCity === searchCity || 
+                           airportCity?.includes(searchCity) || 
+                           searchCity.includes(airportCity);
+            
+            if (isMatch && !addedCodes.has(airport.iataCode)) {
+              allLocations.push(airport);
+              addedCodes.add(airport.iataCode);
+              addedCount++;
+              console.log(`  ✓ Added: ${airport.name} (${airport.iataCode})`);
+            }
+          }
+          
+          if (addedCount > 0) {
+            console.log(`  Total added from ${strategy.desc}: ${addedCount}`);
+            break; // If we found airports with this strategy, no need to try others
+          }
+        } catch (strategyError) {
+          console.warn(`  Failed ${strategy.desc} search:`, strategyError.message);
+        }
+      }
+    } catch (error) {
+      console.warn(`Could not fetch airports for city ${cityName}:`, error.message);
+    }
+  }
+
+  // If no airports found after all attempts, try the fallback
+  if (allLocations.length === 0) {
+    console.log(`⚠️  No airports found after all attempts, trying fallback...`);
+    const fallbackResult = await tryFallbackAirports(keyword, token, url);
+    allLocations.push(...fallbackResult.data);
+  }
+
+  // ALWAYS inject matching Bangladesh airports (manual injection)
+  console.log(`\n🇧🇩 Checking Bangladesh airports for injection...`);
+  const matchingBDAirports = bangladeshAirportsData.filter(airport => 
+    matchesBangladeshAirport(airport, keyword) && !addedCodes.has(airport.iataCode)
+  );
+
+  if (matchingBDAirports.length > 0) {
+    console.log(`✓ Injecting ${matchingBDAirports.length} Bangladesh airports:`);
+    matchingBDAirports.forEach(airport => {
+      // Add to beginning for higher priority
+      allLocations.unshift(airport);
+      addedCodes.add(airport.iataCode);
+      console.log(`  ✓ ${airport.name} (${airport.iataCode}) - ${airport.address.cityName}`);
+    });
+  } else {
+    console.log(`  No matching Bangladesh airports for "${keyword}"`);
+  }
+
+  console.log(`\n=== Total airports found: ${allLocations.length} ===\n`);
+
+  // Return in the same format as original API
+  return {
+    ...res.data,
+    data: allLocations.slice(0, Math.min(limit, 50)) // Allow more results since we're combining
+  };
 }
 
 async function getBangladeshAirports() {
