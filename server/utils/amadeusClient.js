@@ -10,30 +10,46 @@ async function getAccessToken() {
   const CLIENT_ID = process.env.AMADEUS_CLIENT_ID;
   const CLIENT_SECRET = process.env.AMADEUS_CLIENT_SECRET;
 
+  console.log('[Amadeus] Auth check:', {
+    BASE_URL: AMADEUS_BASE,
+    CLIENT_ID_SET: !!CLIENT_ID,
+    CLIENT_SECRET_SET: !!CLIENT_SECRET,
+    NODE_ENV: process.env.NODE_ENV
+  });
+
   if (!CLIENT_ID || !CLIENT_SECRET) {
-    console.log('Environment variables check:', {
-      CLIENT_ID: CLIENT_ID ? 'SET' : 'NOT SET',
-      CLIENT_SECRET: CLIENT_SECRET ? 'SET' : 'NOT SET'
-    });
+    console.error('[Amadeus] ERROR: Missing credentials');
     throw new Error(
-      "AMADEUS_CLIENT_ID and AMADEUS_CLIENT_SECRET must be set in .env"
+      "AMADEUS_CLIENT_ID and AMADEUS_CLIENT_SECRET must be set in environment variables"
     );
   }
 
-  const url = `${AMADEUS_BASE}/v1/security/oauth2/token`;
-  const params = new URLSearchParams();
-  params.append("grant_type", "client_credentials");
-  params.append("client_id", CLIENT_ID);
-  params.append("client_secret", CLIENT_SECRET);
+  try {
+    const url = `${AMADEUS_BASE}/v1/security/oauth2/token`;
+    const params = new URLSearchParams();
+    params.append("grant_type", "client_credentials");
+    params.append("client_id", CLIENT_ID);
+    params.append("client_secret", CLIENT_SECRET);
 
-  const res = await axios.post(url, params.toString(), {
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  });
+    console.log('[Amadeus] Requesting token...');
+    const res = await axios.post(url, params.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      timeout: 10000
+    });
 
-  const { access_token, expires_in } = res.data;
-  cachedToken = access_token;
-  tokenExpiresAt = Date.now() + (expires_in - 60) * 1000; // refresh 1 min early
-  return cachedToken;
+    const { access_token, expires_in } = res.data;
+    cachedToken = access_token;
+    tokenExpiresAt = Date.now() + (expires_in - 60) * 1000;
+    console.log('[Amadeus] Token obtained successfully');
+    return cachedToken;
+  } catch (error) {
+    console.error('[Amadeus] Token error:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status
+    });
+    throw new Error(`Amadeus authentication failed: ${error.message}`);
+  }
 }
 
 async function searchFlights(queryParams) {
