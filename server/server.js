@@ -54,6 +54,23 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/flights', flightRoutes);
 app.use('/api/saved-cards', savedCardsRoutes);
 
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Dream Holidays API Server',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth/*',
+      flights: '/api/flights/*',
+      payment: '/api/payment/*',
+      savedCards: '/api/saved-cards/*'
+    },
+    documentation: 'See API_EXAMPLES.md for usage'
+  });
+});
+
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
   const mongoose = await import('mongoose');
