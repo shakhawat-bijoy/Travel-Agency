@@ -1,5 +1,7 @@
 // API base URL
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL 
+    ? `${import.meta.env.VITE_API_URL}/api` 
+    : 'http://localhost:5001/api';
 
 // Get token from localStorage
 const getToken = () => {
@@ -21,11 +23,24 @@ const apiCall = async (endpoint, options = {}) => {
 
     try {
         const response = await fetch(url, config);
-        const data = await response.json();
+        
+        // Handle network errors
+        if (!response) {
+            throw new Error('No response from server. Please check your connection.');
+        }
+
+        // Try to parse JSON response
+        let data;
+        try {
+            data = await response.json();
+        } catch (parseError) {
+            console.error('Failed to parse response:', parseError);
+            throw new Error('Invalid response from server');
+        }
 
         if (!response.ok) {
             // Create error object with validation errors if available
-            const error = new Error(data.message || 'API call failed');
+            const error = new Error(data.message || data.error || `Request failed with status ${response.status}`);
             if (data.errors) {
                 error.errors = data.errors;
             }
@@ -34,6 +49,12 @@ const apiCall = async (endpoint, options = {}) => {
 
         return data;
     } catch (error) {
+        // Handle network errors specifically
+        if (error.name === 'TypeError' && (error.message.includes('fetch') || error.message.includes('Failed to fetch'))) {
+            console.error('Network error:', error);
+            throw new Error('Unable to connect to server. Please check your internet connection.');
+        }
+        
         console.error('API call error:', error);
         throw error;
     }

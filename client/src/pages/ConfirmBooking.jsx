@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { User, Mail, Phone, CreditCard, Calendar, Plane, Check, AlertCircle, Plus, Trash2, ArrowLeft } from 'lucide-react'
 import { bookFlight, clearBookingState } from '../store/slices/flightSlice'
-import { savedCardsAPI, auth, authAPI } from '../utils/api'
+import { savedCardsAPI, authAPI } from '../utils/api'
 import Container from '../components/common/Container'
 
 const ConfirmBooking = () => {
@@ -449,8 +449,8 @@ const ConfirmBooking = () => {
                     <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                         {/* Header */}
                         <div className="bg-gradient-to-red from-teal-500 to-blue-600 text-white p-6">
-                            <h1 className="text-3xl font-bold mb-2">Confirm Your Booking</h1>
-                            <p className="text-teal-100">Complete your flight booking details</p>
+                            <h1 className="text-3xl font-bold mb-2 text-black">Confirm Your Booking</h1>
+                            <p className="text-teal-700">Complete your flight booking details</p>
                         </div>
 
                         {/* Detailed Flight Information */}

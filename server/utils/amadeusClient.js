@@ -583,96 +583,96 @@ function getBangladeshAirportCity(code) {
 
 // Static fallback data for Bangladesh airports
 function getBangladeshAirportsStatic() {
-  return [
-    {
-      id: 'DAC',
-      name: 'Hazrat Shahjalal International Airport',
-      city: 'Dhaka',
-      country: 'Bangladesh',
-      iataCode: 'DAC',
-      type: 'AIRPORT',
-      detailedName: 'Hazrat Shahjalal International Airport (DAC)',
-      cityCountry: 'Dhaka, Bangladesh',
-      isInternational: true
-    },
-    {
-      id: 'CGP',
-      name: 'Shah Amanat International Airport',
-      city: 'Chittagong',
-      country: 'Bangladesh',
-      iataCode: 'CGP',
-      type: 'AIRPORT',
-      detailedName: 'Shah Amanat International Airport (CGP)',
-      cityCountry: 'Chittagong, Bangladesh',
-      isInternational: true
-    },
-    {
-      id: 'CXB',
-      name: "Cox's Bazar Airport",
-      city: "Cox's Bazar",
-      country: 'Bangladesh',
-      iataCode: 'CXB',
-      type: 'AIRPORT',
-      detailedName: "Cox's Bazar Airport (CXB)",
-      cityCountry: "Cox's Bazar, Bangladesh",
-      isInternational: true
-    },
-    {
-      id: 'SYL',
-      name: 'Sylhet Osmani International Airport',
-      city: 'Sylhet',
-      country: 'Bangladesh',
-      iataCode: 'SYL',
-      type: 'AIRPORT',
-      detailedName: 'Sylhet Osmani International Airport (SYL)',
-      cityCountry: 'Sylhet, Bangladesh',
-      isInternational: true
-    },
-    {
-      id: 'SPD',
-      name: 'Saidpur Airport',
-      city: 'Saidpur',
-      country: 'Bangladesh',
-      iataCode: 'SPD',
-      type: 'AIRPORT',
-      detailedName: 'Saidpur Airport (SPD)',
-      cityCountry: 'Saidpur, Bangladesh',
-      isInternational: false
-    },
-    {
-      id: 'RJH',
-      name: 'Rajshahi Airport',
-      city: 'Rajshahi',
-      country: 'Bangladesh',
-      iataCode: 'RJH',
-      type: 'AIRPORT',
-      detailedName: 'Rajshahi Airport (RJH)',
-      cityCountry: 'Rajshahi, Bangladesh',
-      isInternational: false
-    },
-    {
-      id: 'JSR',
-      name: 'Jessore Airport',
-      city: 'Jessore',
-      country: 'Bangladesh',
-      iataCode: 'JSR',
-      type: 'AIRPORT',
-      detailedName: 'Jessore Airport (JSR)',
-      cityCountry: 'Jessore, Bangladesh',
-      isInternational: false
-    },
-    {
-      id: 'BZL',
-      name: 'Barisal Airport',
-      city: 'Barisal',
-      country: 'Bangladesh',
-      iataCode: 'BZL',
-      type: 'AIRPORT',
-      detailedName: 'Barisal Airport (BZL)',
-      cityCountry: 'Barisal, Bangladesh',
-      isInternational: false
-    }
-  ];
+  // return [
+  //   {
+  //     id: 'DAC',
+  //     name: 'Hazrat Shahjalal International Airport',
+  //     city: 'Dhaka',
+  //     country: 'Bangladesh',
+  //     iataCode: 'DAC',
+  //     type: 'AIRPORT',
+  //     detailedName: 'Hazrat Shahjalal International Airport (DAC)',
+  //     cityCountry: 'Dhaka, Bangladesh',
+  //     isInternational: true
+  //   },
+  //   {
+  //     id: 'CGP',
+  //     name: 'Shah Amanat International Airport',
+  //     city: 'Chittagong',
+  //     country: 'Bangladesh',
+  //     iataCode: 'CGP',
+  //     type: 'AIRPORT',
+  //     detailedName: 'Shah Amanat International Airport (CGP)',
+  //     cityCountry: 'Chittagong, Bangladesh',
+  //     isInternational: true
+  //   },
+  //   {
+  //     id: 'CXB',
+  //     name: "Cox's Bazar Airport",
+  //     city: "Cox's Bazar",
+  //     country: 'Bangladesh',
+  //     iataCode: 'CXB',
+  //     type: 'AIRPORT',
+  //     detailedName: "Cox's Bazar Airport (CXB)",
+  //     cityCountry: "Cox's Bazar, Bangladesh",
+  //     isInternational: true
+  //   },
+  //   {
+  //     id: 'SYL',
+  //     name: 'Sylhet Osmani International Airport',
+  //     city: 'Sylhet',
+  //     country: 'Bangladesh',
+  //     iataCode: 'SYL',
+  //     type: 'AIRPORT',
+  //     detailedName: 'Sylhet Osmani International Airport (SYL)',
+  //     cityCountry: 'Sylhet, Bangladesh',
+  //     isInternational: true
+  //   },
+  //   {
+  //     id: 'SPD',
+  //     name: 'Saidpur Airport',
+  //     city: 'Saidpur',
+  //     country: 'Bangladesh',
+  //     iataCode: 'SPD',
+  //     type: 'AIRPORT',
+  //     detailedName: 'Saidpur Airport (SPD)',
+  //     cityCountry: 'Saidpur, Bangladesh',
+  //     isInternational: false
+  //   },
+  //   {
+  //     id: 'RJH',
+  //     name: 'Rajshahi Airport',
+  //     city: 'Rajshahi',
+  //     country: 'Bangladesh',
+  //     iataCode: 'RJH',
+  //     type: 'AIRPORT',
+  //     detailedName: 'Rajshahi Airport (RJH)',
+  //     cityCountry: 'Rajshahi, Bangladesh',
+  //     isInternational: false
+  //   },
+  //   {
+  //     id: 'JSR',
+  //     name: 'Jessore Airport',
+  //     city: 'Jessore',
+  //     country: 'Bangladesh',
+  //     iataCode: 'JSR',
+  //     type: 'AIRPORT',
+  //     detailedName: 'Jessore Airport (JSR)',
+  //     cityCountry: 'Jessore, Bangladesh',
+  //     isInternational: false
+  //   },
+  //   {
+  //     id: 'BZL',
+  //     name: 'Barisal Airport',
+  //     city: 'Barisal',
+  //     country: 'Bangladesh',
+  //     iataCode: 'BZL',
+  //     type: 'AIRPORT',
+  //     detailedName: 'Barisal Airport (BZL)',
+  //     cityCountry: 'Barisal, Bangladesh',
+  //     isInternational: false
+  //   }
+  // ];
 }
 
 // Search airports by country code using Amadeus API

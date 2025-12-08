@@ -723,7 +723,7 @@ const Account = () => {
 
       {/* Cover Photo Section */}
       <div className="relative">
-        <div className="h-96 bg-gradient-to-r from-teal-600 via-orange-400 to-yellow-400 rounded-2xl overflow-hidden shadow-xl">
+        <div className="lg:h-96 h-48 bg-gradient-to-r from-teal-600 via-orange-400 to-yellow-400 rounded-2xl overflow-hidden shadow-xl">
           {userInfo.coverImage && userInfo.coverImage !== '' && userInfo.coverImage.startsWith('data:image') ? (
             <img
               id="coverAvatar"
@@ -755,9 +755,9 @@ const Account = () => {
           <div className='flex items-center gap-5'>
 
 
-            <div className="absolute -bottom-20 left-8">
+            <div className="absolute -bottom-20 lg:left-8 left-2">
               <div className="relative">
-                <div className="w-40 h-40 rounded-full bg-white p-1.5 shadow-2xl ring-1 ring-white">
+                <div className="lg:w-40 lg:h-40 w-32 h-32 rounded-full bg-white lg:p-1.5 p-0.5 shadow-2xl ring-1 ring-white">
                   {userInfo.avatar &&
                     userInfo.avatar !== 'https://via.placeholder.com/150' &&
                     userInfo.avatar !== '' &&
@@ -782,15 +782,15 @@ const Account = () => {
                 </div>
                 <button
                   onClick={() => profileImageRef.current?.click()}
-                  className="absolute bottom-2 right-2 w-12 h-12 bg-teal-500 hover:bg-teal-600 rounded-full flex items-center justify-center text-white transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 cursor-pointer"
+                  className="absolute lg:bottom-2 lg:right-2 bottom-1 -right-2 w-12 h-12 bg-teal-500 hover:bg-teal-600 rounded-full flex items-center justify-center text-white transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 cursor-pointer"
                 >
                   <Camera className="w-6 h-6" />
                 </button>
               </div>
             </div>
 
-            <div className="z-10 absolute left-52">
-              <h1 className="text-4xl font-bold text-white drop-shadow-lg">{userInfo.name || 'Welcome!'}</h1>
+            <div className="z-10 absolute lg:left-52 left-[150px] lg:top-100 top-52">
+              <h1 className="lg:text-4xl text-md lg:font-bold font-semibold text-black drop-shadow-lg">{userInfo.name || 'Welcome!'}</h1>
             </div>
 
           </div>
@@ -1083,17 +1083,17 @@ const Account = () => {
       </div>
 
       {/* Booking History Content */}
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Booking History</h2>
-            <p className="text-gray-500 mt-1">View and manage your flight bookings</p>
+      <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl border border-gray-100 p-4 sm:p-6 lg:p-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
+          <div className="flex-1">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Booking History</h2>
+            <p className="text-sm sm:text-base text-gray-500 mt-1">View and manage your flight bookings</p>
             {/* Debug info */}
-            <p className="text-xs text-gray-400 mt-2">
+            <p className="text-xs text-gray-400 mt-2 hidden sm:block">
               User ID: {userId || 'Not loaded'} | Email: {userInfo.email || 'Not loaded'}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <button
               onClick={async () => {
                 if (userId && userInfo.email) {
@@ -1109,14 +1109,15 @@ const Account = () => {
                   }
                 }
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+              className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm whitespace-nowrap touch-manipulation"
             >
               <Check className="w-4 h-4" />
-              Link My Bookings
+              <span className="hidden sm:inline">Link My Bookings</span>
+              <span className="sm:hidden">Link Bookings</span>
             </button>
             <button
               onClick={loadBookings}
-              className="flex items-center gap-2 px-4 py-2 bg-teal-50 text-teal-600 rounded-lg hover:bg-teal-100 transition-colors"
+              className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-teal-50 text-teal-600 rounded-lg hover:bg-teal-100 transition-colors text-sm whitespace-nowrap touch-manipulation"
             >
               <RefreshCw className="w-4 h-4" />
               Refresh
@@ -1163,29 +1164,29 @@ const Account = () => {
           </div>
         ) : (
           /* Bookings List */
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {bookings.map((booking) => (
-              <div key={booking._id} className="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300">
+              <div key={booking._id} className="border border-gray-200 rounded-lg sm:rounded-xl p-4 sm:p-6 hover:shadow-lg transition-all duration-300">
                 {/* Booking Header */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center">
-                      <Plane className="w-6 h-6 text-teal-600" />
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Plane className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600" />
                     </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
                         {booking.departureAirport || booking.flight?.departureAirport || 'N/A'} → {booking.arrivalAirport || booking.flight?.arrivalAirport || 'N/A'}
                       </h3>
-                      <p className="text-sm text-gray-500">
-                        Booking Reference: <span className="font-medium text-gray-700">{booking.bookingReference}</span>
+                      <p className="text-xs sm:text-sm text-gray-500 truncate">
+                        Ref: <span className="font-medium text-gray-700">{booking.bookingReference}</span>
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-xl font-bold text-teal-600">
+                  <div className="text-left sm:text-right">
+                    <div className="text-lg sm:text-xl font-bold text-teal-600">
                       ৳{booking.totalAmount} {booking.currency}
                     </div>
-                    <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${booking.status === 'confirmed'
+                    <div className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium mt-1 ${booking.status === 'confirmed'
                       ? 'bg-green-100 text-green-800'
                       : booking.status === 'cancelled'
                         ? 'bg-red-100 text-red-800'
@@ -1197,20 +1198,20 @@ const Account = () => {
                 </div>
 
                 {/* Flight Details */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4">
                   <div className="bg-gray-50 p-3 rounded-lg">
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Flight</div>
-                    <div className="font-semibold text-gray-900">{booking.flightNumber || booking.flight?.flightNumber || 'N/A'}</div>
-                    <div className="text-sm text-gray-600">{booking.airline || booking.flight?.airline || booking.flight?.airlineName || 'N/A'}</div>
+                    <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wide mb-1">Flight</div>
+                    <div className="font-semibold text-gray-900 text-sm sm:text-base truncate">{booking.flightNumber || booking.flight?.flightNumber || 'N/A'}</div>
+                    <div className="text-xs sm:text-sm text-gray-600 truncate">{booking.airline || booking.flight?.airline || booking.flight?.airlineName || 'N/A'}</div>
                   </div>
                   <div className="bg-gray-50 p-3 rounded-lg">
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Departure</div>
-                    <div className="font-semibold text-gray-900">
+                    <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wide mb-1">Departure</div>
+                    <div className="font-semibold text-gray-900 text-sm sm:text-base">
                       {booking.departureTime || booking.flight?.departureTime 
                         ? new Date(booking.departureTime || booking.flight.departureTime).toLocaleDateString() 
                         : 'N/A'}
                     </div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-xs sm:text-sm text-gray-600">
                       {booking.departureTime || booking.flight?.departureTime 
                         ? new Date(booking.departureTime || booking.flight.departureTime).toLocaleTimeString('en-US', {
                           hour: '2-digit',
@@ -1219,47 +1220,52 @@ const Account = () => {
                         : 'N/A'}
                     </div>
                   </div>
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Passenger</div>
-                    <div className="font-semibold text-gray-900">
+                  <div className="bg-gray-50 p-3 rounded-lg sm:col-span-2 lg:col-span-1">
+                    <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wide mb-1">Passenger</div>
+                    <div className="font-semibold text-gray-900 text-sm sm:text-base truncate">
                       {booking.passenger?.firstName} {booking.passenger?.lastName}
                     </div>
-                    <div className="text-sm text-gray-600">{booking.passenger?.email}</div>
+                    <div className="text-xs sm:text-sm text-gray-600 truncate">{booking.passenger?.email}</div>
                   </div>
                 </div>
 
-                {/* Booking Date */}
-                <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Calendar className="w-4 h-4" />
-                    Booked on {new Date(booking.bookingDate).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
+                {/* Booking Date & Actions */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 pt-4 border-t border-gray-200">
+                  <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+                    <Calendar className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                    <span className="truncate">
+                      Booked {new Date(booking.bookingDate).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <button
                       onClick={() => handleViewBookingDetails(booking)}
-                      className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+                      className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-xs sm:text-sm font-medium touch-manipulation"
                     >
-                      <Eye className="w-4 h-4" />
-                      View Details
+                      <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="hidden sm:inline">View Details</span>
+                      <span className="sm:hidden">View</span>
                     </button>
                     <button
                       onClick={() => handleDownloadTicket(booking)}
-                      className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors text-sm font-medium"
+                      className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors text-xs sm:text-sm font-medium touch-manipulation"
                     >
-                      <Download className="w-4 h-4" />
-                      Download
+                      <Download className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="hidden sm:inline">Download</span>
+                      <span className="sm:hidden">PDF</span>
                     </button>
                     <button
                       onClick={() => handleDeleteBooking(booking)}
                       disabled={loading}
-                      className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-xs sm:text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                     >
-                      <Trash2 className="w-4 h-4" />
-                      Delete
+                      <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="hidden sm:inline">Delete</span>
+                      <span className="sm:hidden">Del</span>
                     </button>
                   </div>
                 </div>
@@ -1278,7 +1284,7 @@ const Account = () => {
       case 'mastercard':
         return 'bg-gradient-to-br from-red-500 via-orange-600 to-yellow-500'
       case 'amex':
-        return 'bg-gradient-to-br from-green-600 via-teal-600 to-cyan-700'
+        return 'bg-gradient-to-br from-gray-600 via-black-600 to-cyan-700'
       case 'discover':
         return 'bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700'
       default:
@@ -1368,17 +1374,17 @@ const Account = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Payment Methods</h2>
-            <p className="text-gray-500 mt-1">Manage your saved payment methods</p>
+      <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl border border-gray-100 p-4 sm:p-6 lg:p-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
+          <div className="flex-1">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Payment Methods</h2>
+            <p className="text-sm sm:text-base text-gray-500 mt-1">Manage your saved payment methods</p>
           </div>
           <Link
             to="/add-payment-method"
-            className="flex items-center gap-2 px-6 py-3 bg-teal-500 text-white rounded-xl hover:bg-teal-600 transition-all duration-300 shadow-lg hover:shadow-xl font-medium"
+            className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-teal-500 text-white rounded-lg sm:rounded-xl hover:bg-teal-600 transition-all duration-300 shadow-lg hover:shadow-xl font-medium text-sm sm:text-base touch-manipulation"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
             Add Card
           </Link>
         </div>
@@ -1404,11 +1410,11 @@ const Account = () => {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
             {paymentMethods.map((payment) => (
               <div key={payment._id} className="relative">
                 {/* Credit Card Design */}
-                <div className={`relative ${getCardGradient(payment.cardType)} rounded-2xl p-6 shadow-2xl overflow-hidden`}>
+                <div className={`relative ${getCardGradient(payment.cardType)} rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-2xl overflow-hidden`}>
                   {/* Card Background Pattern */}
                   <div className="absolute inset-0 opacity-10">
                     <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -mr-20 -mt-20"></div>
@@ -1418,26 +1424,26 @@ const Account = () => {
                   {/* Card Content */}
                   <div className="relative z-10">
                     {/* Card Header */}
-                    <div className="flex items-start justify-between mb-8">
-                      <div className="flex items-center gap-2">
+                    <div className="flex items-start justify-between mb-6 sm:mb-8">
+                      <div className="flex items-center gap-2 scale-90 sm:scale-100">
                         {getCardLogo(payment.cardType)}
                       </div>
                       {payment.isDefault && (
-                        <div className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
+                        <div className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full">
                           <Star className="w-3 h-3 text-yellow-300 fill-yellow-300" />
-                          <span className="text-xs text-white font-medium">Default</span>
+                          <span className="text-[10px] sm:text-xs text-white font-medium">Default</span>
                         </div>
                       )}
                     </div>
 
                     {/* Chip */}
-                    <div className="mb-6">
-                      <div className="w-12 h-9 bg-gradient-to-br from-yellow-200 to-yellow-400 rounded-md shadow-lg"></div>
+                    <div className="mb-4 sm:mb-6">
+                      <div className="w-10 h-7 sm:w-12 sm:h-9 bg-gradient-to-br from-yellow-200 to-yellow-400 rounded-md shadow-lg"></div>
                     </div>
 
                     {/* Card Number */}
-                    <div className="mb-6">
-                      <div className="flex items-center gap-3 text-white text-xl font-mono tracking-wider">
+                    <div className="mb-4 sm:mb-6">
+                      <div className="flex items-center gap-2 sm:gap-3 text-white text-base sm:text-xl font-mono tracking-wider">
                         <span>••••</span>
                         <span>••••</span>
                         <span>••••</span>
@@ -1447,15 +1453,15 @@ const Account = () => {
 
                     {/* Card Footer */}
                     <div className="flex items-end justify-between">
-                      <div>
-                        <p className="text-white/60 text-xs mb-1 uppercase tracking-wide">Card Holder</p>
-                        <p className="text-white font-semibold text-sm uppercase tracking-wide">
+                      <div className="flex-1 min-w-0 mr-2">
+                        <p className="text-white/60 text-[10px] sm:text-xs mb-1 uppercase tracking-wide">Card Holder</p>
+                        <p className="text-white font-semibold text-xs sm:text-sm uppercase tracking-wide truncate">
                           {payment.nameOnCard}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-white/60 text-xs mb-1 uppercase tracking-wide">Expires</p>
-                        <p className="text-white font-semibold text-sm tracking-wide">
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-white/60 text-[10px] sm:text-xs mb-1 uppercase tracking-wide">Expires</p>
+                        <p className="text-white font-semibold text-xs sm:text-sm tracking-wide">
                           {payment.expiryDate}
                         </p>
                       </div>
@@ -1464,28 +1470,28 @@ const Account = () => {
                 </div>
 
                 {/* Card Actions */}
-                <div className="mt-4 flex items-center gap-2">
+                <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                   {!payment.isDefault && (
                     <button
                       onClick={() => handleSetDefaultPayment(payment._id)}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+                      className="flex-1 flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-xs sm:text-sm font-medium touch-manipulation"
                     >
-                      <Star className="w-4 h-4" />
+                      <Star className="w-3 h-3 sm:w-4 sm:h-4" />
                       Set Default
                     </button>
                   )}
                   <button
                     onClick={() => handleDeletePayment(payment._id)}
-                    className="flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
+                    className={`flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-xs sm:text-sm font-medium touch-manipulation ${!payment.isDefault ? '' : 'flex-1'}`}
                   >
-                    <Trash className="w-4 h-4" />
+                    <Trash className="w-3 h-3 sm:w-4 sm:h-4" />
                     Delete
                   </button>
                 </div>
 
                 {/* Country Badge */}
-                <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
-                  <Globe className="w-4 h-4" />
+                <div className="mt-2 flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+                  <Globe className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span>{payment.country}</span>
                 </div>
               </div>
