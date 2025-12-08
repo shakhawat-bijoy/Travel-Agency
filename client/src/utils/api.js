@@ -3,6 +3,9 @@ const API_BASE_URL = import.meta.env.VITE_API_URL
     ? `${import.meta.env.VITE_API_URL}/api` 
     : 'http://localhost:5001/api';
 
+console.log('🔗 API Base URL:', API_BASE_URL);
+console.log('🔗 VITE_API_URL env:', import.meta.env.VITE_API_URL);
+
 // Get token from localStorage
 const getToken = () => {
     return localStorage.getItem('token');
