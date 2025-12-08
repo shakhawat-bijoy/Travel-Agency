@@ -165,9 +165,20 @@ router.post('/login', [
 
     } catch (error) {
         console.error('Login error:', error);
+        
+        // Check if it's a MongoDB connection error
+        if (error.name === 'MongooseError' || error.message.includes('buffering timed out')) {
+            return res.status(503).json({
+                success: false,
+                message: 'Database connection error. Please try again later.',
+                error: 'Database unavailable'
+            });
+        }
+        
         res.status(500).json({
             success: false,
-            message: 'Server error during login'
+            message: 'Server error during login',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 });
