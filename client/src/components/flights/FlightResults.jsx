@@ -24,7 +24,7 @@ const FlightResults = () => {
       console.log('No search results found, attempting to restore from localStorage...')
       dispatch(restoreSearchResults())
     }
-  }, [dispatch])
+  }, [dispatch, searchLoading, searchResults])
 
   // Redirect to search if no results after restoration attempt (with delay)
   useEffect(() => {
