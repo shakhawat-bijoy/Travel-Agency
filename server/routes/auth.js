@@ -602,6 +602,62 @@ router.post('/reset-password', async (req, res) => {
     }
 });
 
+// @route   PUT /api/auth/change-password
+// @desc    Change user password
+// @access  Private
+router.put('/change-password', protect, [
+    body('currentPassword').exists().withMessage('Current password is required'),
+    body('newPassword').isLength({ min: 8 }).withMessage('New password must be at least 8 characters'),
+], async (req, res) => {
+    try {
+        // Check for validation errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Validation failed',
+                errors: errors.array()
+            });
+        }
+
+        const { currentPassword, newPassword } = req.body;
+
+        // Find user with password field
+        const user = await User.findById(req.user._id).select('+password');
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        // Verify current password
+        const isPasswordMatch = await user.matchPassword(currentPassword);
+        if (!isPasswordMatch) {
+            return res.status(401).json({
+                success: false,
+                message: 'Current password is incorrect'
+            });
+        }
+
+        // Update password (will be hashed by pre-save middleware)
+        user.password = newPassword;
+        await user.save();
+
+        res.json({
+            success: true,
+            message: 'Password changed successfully'
+        });
+
+    } catch (error) {
+        console.error('Change password error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to change password'
+        });
+    }
+});
+
 // @route   DELETE /api/auth/delete-account
 // @desc    Delete user account
 // @access  Private

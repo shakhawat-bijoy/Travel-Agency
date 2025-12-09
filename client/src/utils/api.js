@@ -109,6 +109,14 @@ export const authAPI = {
             body: JSON.stringify({ resetToken, newPassword, email }),
         });
     },
+
+    // Change password
+    changePassword: (currentPassword, newPassword) => {
+        return apiCall('/auth/change-password', {
+            method: 'PUT',
+            body: JSON.stringify({ currentPassword, newPassword }),
+        });
+    },
 };
 
 // User management functions

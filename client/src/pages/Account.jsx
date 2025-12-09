@@ -3,7 +3,7 @@ import {
   User, Mail, Phone, MapPin, Calendar, Camera,
   X, Check, CreditCard, History, Settings,
   Edit3, Bell, Shield, Globe, LogOut, Trash2, AlertTriangle, Plus, Star, Trash,
-  Plane, Download, Eye, RefreshCw
+  Plane, Download, Eye, RefreshCw, Lock
 } from 'lucide-react'
 import { auth, authAPI, userAPI, paymentAPI, flightAPI } from '../utils/api'
 import { Link } from 'react-router-dom'
@@ -42,6 +42,13 @@ const Account = () => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
   const [bookingToDelete, setBookingToDelete] = useState(null)
   const [deleteConfirmationText, setDeleteConfirmationText] = useState('')
+  const [showChangePassword, setShowChangePassword] = useState(false)
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  })
+  const [passwordError, setPasswordError] = useState('')
 
   const profileImageRef = useRef(null)
   const coverImageRef = useRef(null)
@@ -658,6 +665,65 @@ const Account = () => {
   const closeDeletePopup = () => {
     setShowDeletePopup(false)
     setDeleteConfirmText('')
+  }
+
+  const handleChangePassword = async () => {
+    setPasswordError('')
+
+    // Validation
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      setPasswordError('All fields are required')
+      return
+    }
+
+    if (passwordData.newPassword.length < 8) {
+      setPasswordError('New password must be at least 8 characters')
+      return
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError('New passwords do not match')
+      return
+    }
+
+    if (passwordData.currentPassword === passwordData.newPassword) {
+      setPasswordError('New password must be different from current password')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const response = await authAPI.changePassword(
+        passwordData.currentPassword,
+        passwordData.newPassword
+      )
+
+      if (response.success) {
+        setSaveMessage('Password changed successfully!')
+        setTimeout(() => setSaveMessage(''), 3000)
+        setShowChangePassword(false)
+        setPasswordData({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        })
+      }
+    } catch (error) {
+      console.error('Error changing password:', error)
+      setPasswordError(error.message || 'Failed to change password. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const closeChangePassword = () => {
+    setShowChangePassword(false)
+    setPasswordData({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    })
+    setPasswordError('')
   }
 
   if (initialLoading) {
@@ -1557,6 +1623,22 @@ const Account = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between py-3 border-b border-gray-100">
             <div className="flex items-center gap-3">
+              <Lock className="w-5 h-5 text-gray-400" />
+              <div>
+                <p className="font-medium text-gray-900">Password</p>
+                <p className="text-sm text-gray-500">Change your account password</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setShowChangePassword(true)}
+              className="px-4 py-2 text-sm text-teal-600 hover:text-teal-700 font-medium cursor-pointer"
+            >
+              Change
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between py-3 border-b border-gray-100">
+            <div className="flex items-center gap-3">
               <Bell className="w-5 h-5 text-gray-400" />
               <div>
                 <p className="font-medium text-gray-900">Email Notifications</p>
@@ -1624,6 +1706,112 @@ const Account = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Change Password Modal */}
+      {showChangePassword && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center">
+                    <Lock className="w-6 h-6 text-teal-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Change Password</h3>
+                    <p className="text-sm text-gray-500">Update your account password</p>
+                  </div>
+                </div>
+                <button
+                  onClick={closeChangePassword}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              {/* Error Message */}
+              {passwordError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-700">{passwordError}</p>
+                </div>
+              )}
+
+              {/* Form */}
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Current Password
+                  </label>
+                  <input
+                    type="password"
+                    value={passwordData.currentPassword}
+                    onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    placeholder="Enter current password"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    New Password
+                  </label>
+                  <input
+                    type="password"
+                    value={passwordData.newPassword}
+                    onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    placeholder="Enter new password (min 8 characters)"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Confirm New Password
+                  </label>
+                  <input
+                    type="password"
+                    value={passwordData.confirmPassword}
+                    onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    placeholder="Confirm new password"
+                  />
+                </div>
+              </div>
+
+              {/* Info */}
+              <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-700">
+                  <strong>Password requirements:</strong>
+                </p>
+                <ul className="text-sm text-blue-600 mt-2 space-y-1">
+                  <li>• At least 8 characters long</li>
+                  <li>• Different from your current password</li>
+                </ul>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={closeChangePassword}
+                  disabled={loading}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleChangePassword}
+                  disabled={loading}
+                  className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Changing...' : 'Change Password'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Booking Details Modal */}
       {showBookingDetails && selectedBooking && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
