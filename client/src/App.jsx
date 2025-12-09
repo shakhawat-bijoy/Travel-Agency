@@ -53,6 +53,9 @@ const App = () => {
           </ProtectedRoute>}></Route>
         <Route path="/booking-success" element={<BookingSuccess />}></Route>
 
+        {/* Catch-all route - must be last */}
+        <Route path="*" element={<Home />}></Route>
+
       </Route>
     )
   );
