@@ -21,6 +21,10 @@ const connectDB = async () => {
             connectTimeoutMS: 30000,
             maxPoolSize: 10,
             minPoolSize: 2,
+            maxIdleTimeMS: 60000, // Close idle connections after 60s
+            retryWrites: true,
+            retryReads: true,
+            heartbeatFrequencyMS: 10000, // Check connection health every 10s
         });
 
         console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
@@ -49,7 +53,32 @@ mongoose.connection.on('error', (err) => {
 
 mongoose.connection.on('disconnected', () => {
     console.warn('⚠️ MongoDB disconnected');
+    // Attempt to reconnect
+    if (process.env.NODE_ENV === 'production' && process.env.MONGO_URI) {
+        console.log('🔄 Attempting to reconnect to MongoDB...');
+        setTimeout(() => {
+            connectDB().catch(err => console.error('Reconnection failed:', err));
+        }, 5000);
+    }
 });
+
+mongoose.connection.on('connected', () => {
+    console.log('✅ MongoDB connection established');
+});
+
+// Keep-alive ping to prevent connection timeout
+if (process.env.NODE_ENV === 'production') {
+    setInterval(async () => {
+        if (mongoose.connection.readyState === 1) {
+            try {
+                await mongoose.connection.db.admin().ping();
+                console.log('💓 MongoDB keep-alive ping successful');
+            } catch (error) {
+                console.error('❌ Keep-alive ping failed:', error.message);
+            }
+        }
+    }, 5 * 60 * 1000); // Ping every 5 minutes
+}
 
 // Graceful shutdown
 process.on('SIGINT', async () => {

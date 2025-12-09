@@ -468,22 +468,22 @@ const Account = () => {
   }
 
   const confirmDeleteBooking = async () => {
-    if (deleteConfirmationText !== 'REMOVE') {
-      setSaveMessage('Please type "REMOVE" to confirm')
+    if (deleteConfirmationText !== 'DELETE') {
+      setSaveMessage('Please type "DELETE" to confirm')
       setTimeout(() => setSaveMessage(''), 3000)
       return
     }
 
     try {
       setLoading(true)
-      console.log('Removing booking from account:', bookingToDelete._id)
+      console.log('Deleting booking:', bookingToDelete._id)
       
-      // Unlink the booking by setting userId to null
-      const response = await flightAPI.unlinkBooking(bookingToDelete._id)
-      console.log('Unlink response:', response)
+      // Delete the booking permanently
+      const response = await flightAPI.deleteBooking(bookingToDelete._id)
+      console.log('Delete response:', response)
 
       if (response.success) {
-        setSaveMessage('Booking removed from your account!')
+        setSaveMessage('Booking deleted successfully!')
         setTimeout(() => setSaveMessage(''), 3000)
         // Close modal and reset
         setShowDeleteConfirmation(false)
@@ -492,12 +492,12 @@ const Account = () => {
         // Reload bookings to reflect the change
         loadBookings()
       } else {
-        setSaveMessage(response.message || 'Failed to remove booking')
+        setSaveMessage(response.message || 'Failed to delete booking')
         setTimeout(() => setSaveMessage(''), 3000)
       }
     } catch (error) {
-      console.error('Error removing booking:', error)
-      setSaveMessage(`Error removing booking: ${error.message || 'Please try again.'}`)
+      console.error('Error deleting booking:', error)
+      setSaveMessage(`Error deleting booking: ${error.message || 'Please try again.'}`)
       setTimeout(() => setSaveMessage(''), 5000)
     } finally {
       setLoading(false)
