@@ -56,8 +56,8 @@ const ConfirmBooking = () => {
                 const storedSelection = localStorage.getItem('selectedFlightForBooking')
                 if (storedSelection) {
                     const { flight: storedFlight, searchParams: storedSearchParams, timestamp } = JSON.parse(storedSelection)
-                    // Only restore if data is less than 30 minutes old
-                    if (Date.now() - timestamp < 30 * 60 * 1000) {
+                    // Only restore if data is less than 1 hour old (increased from 30 minutes)
+                    if (Date.now() - timestamp < 60 * 60 * 1000) {
                         console.log('Restoring flight data from localStorage')
                         setFlight(storedFlight)
                         setSearchParams(storedSearchParams)
@@ -67,6 +67,8 @@ const ConfirmBooking = () => {
                         console.log('Stored flight data expired, clearing...')
                         localStorage.removeItem('selectedFlightForBooking')
                     }
+                } else {
+                    console.log('No stored flight selection found')
                 }
             } catch (error) {
                 console.error('Error restoring flight data:', error)
@@ -77,12 +79,18 @@ const ConfirmBooking = () => {
         }
     }, [flight, searchParams])
 
-    // Check if we have flight data, if not redirect
+    // Check if we have flight data, if not redirect (with delay for restoration)
     useEffect(() => {
-        if (!flight) {
-            console.log('No flight data available, redirecting to flights page')
-            navigate('/flights')
-        } else {
+        if (!flight && !restoringFlightData) {
+            const timer = setTimeout(() => {
+                if (!flight) {
+                    console.log('No flight data available after restoration, redirecting to flights page')
+                    navigate('/flights')
+                }
+            }, 1500) // Give time for restoration to complete
+
+            return () => clearTimeout(timer)
+        } else if (flight) {
             // Log all flight data for debugging
             console.log('=== COMPLETE FLIGHT DATA RECEIVED ===')
             console.log('Flight ID:', flight.id)
@@ -109,7 +117,7 @@ const ConfirmBooking = () => {
             console.log('Search params received:', searchParams)
             console.log('=== END FLIGHT DATA ===')
         }
-    }, [flight, navigate, searchParams])
+    }, [flight, navigate, searchParams, restoringFlightData])
 
     // State for user ID
     const [userId, setUserId] = useState(null)

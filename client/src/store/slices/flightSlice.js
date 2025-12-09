@@ -175,14 +175,18 @@ const flightSlice = createSlice({
                 const stored = localStorage.getItem('flightSearchResults')
                 if (stored) {
                     const { searchResults, searchParams, timestamp } = JSON.parse(stored)
-                    // Only restore if data is less than 30 minutes old
-                    if (Date.now() - timestamp < 30 * 60 * 1000) {
+                    // Only restore if data is less than 1 hour old (increased from 30 minutes)
+                    if (Date.now() - timestamp < 60 * 60 * 1000) {
+                        console.log('Restoring flight search results from localStorage')
                         state.searchResults = searchResults
                         state.searchParams = searchParams
                     } else {
                         // Clear expired data
+                        console.log('Flight search results expired, clearing...')
                         localStorage.removeItem('flightSearchResults')
                     }
+                } else {
+                    console.log('No stored flight search results found')
                 }
             } catch (error) {
                 console.error('Error restoring search results:', error)

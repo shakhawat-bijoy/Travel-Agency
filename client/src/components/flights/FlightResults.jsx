@@ -20,17 +20,21 @@ const FlightResults = () => {
 
   // Check if we have search results, if not try to restore from localStorage
   useEffect(() => {
-    if (!searchResults) {
+    if (!searchResults && !searchLoading) {
       console.log('No search results found, attempting to restore from localStorage...')
       dispatch(restoreSearchResults())
     }
-  }, [searchResults, dispatch])
+  }, [dispatch])
 
-  // Redirect to search if no results after restoration attempt
+  // Redirect to search if no results after restoration attempt (with delay)
   useEffect(() => {
     if (!searchResults && !searchLoading) {
-      console.log('No search results available, redirecting to search page')
-      navigate('/flights')
+      const timer = setTimeout(() => {
+        console.log('No search results available after restoration, redirecting to search page')
+        navigate('/flights')
+      }, 1000) // Give time for restoration to complete
+
+      return () => clearTimeout(timer)
     }
   }, [searchResults, searchLoading, navigate])
 
@@ -332,13 +336,13 @@ const FlightResults = () => {
 
                   {/* Round Trip Journey Summary */}
                   {searchParams && searchParams.return_date && !flight.oneWay && (
-                    <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+                    <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
                       <div className="text-center">
-                        <div className="text-sm font-medium text-gray-700 mb-2">Complete Round Trip Journey</div>
-                        <div className="flex items-center justify-center gap-4 text-sm">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
-                            <span className="font-medium">
+                        <div className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3">Complete Round Trip Journey</div>
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 lg:gap-4 text-xs sm:text-sm">
+                          <div className="flex items-center gap-1.5 sm:gap-2">
+                            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-teal-500 rounded-full flex-shrink-0"></div>
+                            <span className="font-medium whitespace-nowrap">
                               {new Date(searchParams.outbound_date).toLocaleDateString('en-US', {
                                 month: 'short',
                                 day: 'numeric'
@@ -346,10 +350,10 @@ const FlightResults = () => {
                             </span>
                             <span className="text-gray-600">Outbound</span>
                           </div>
-                          <div className="text-gray-400">•</div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            <span className="font-medium">
+                          <div className="hidden sm:block text-gray-400">•</div>
+                          <div className="flex items-center gap-1.5 sm:gap-2">
+                            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                            <span className="font-medium whitespace-nowrap">
                               {new Date(searchParams.return_date).toLocaleDateString('en-US', {
                                 month: 'short',
                                 day: 'numeric'
@@ -357,10 +361,10 @@ const FlightResults = () => {
                             </span>
                             <span className="text-gray-600">Return</span>
                           </div>
-                          <div className="text-gray-400">•</div>
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4 text-purple-500" />
-                            <span className="font-medium text-purple-600">
+                          <div className="hidden sm:block text-gray-400">•</div>
+                          <div className="flex items-center gap-1.5 sm:gap-2">
+                            <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-purple-500 flex-shrink-0" />
+                            <span className="font-medium text-purple-600 whitespace-nowrap">
                               {Math.ceil((new Date(searchParams.return_date) - new Date(searchParams.outbound_date)) / (1000 * 60 * 60 * 24))} days trip
                             </span>
                           </div>
@@ -440,7 +444,7 @@ const FlightResults = () => {
 
                   {/* Flight Details Dropdown */}
                   <div className={`overflow-hidden transition-all duration-500 ease-in-out ${expandedFlights[flight.id]
-                    ? 'max-h-[4000px] opacity-100'
+                    ? 'max-h-[5000px] opacity-100'
                     : 'max-h-0 opacity-0'
                     }`}>
                     <div className={`mt-4 sm:mt-6 border-t border-gray-200 pt-4 sm:pt-6 bg-gray-50 rounded-b-lg sm:rounded-b-xl -mx-4 sm:-mx-6 -mb-4 sm:-mb-6 px-4 sm:px-6 pb-4 sm:pb-6 transform transition-all duration-500 ease-in-out ${expandedFlights[flight.id]
@@ -756,23 +760,23 @@ const FlightResults = () => {
                                       </div>
                                     </div>
 
-                                    <div className="text-center flex-1">
-                                      <div className="text-2xl font-bold text-gray-900 mb-1">
+                                    <div className="text-center flex-1 min-w-0">
+                                      <div className="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 mb-1">
                                         {new Date(segment.arrival.at).toLocaleTimeString('en-US', {
                                           hour: '2-digit',
                                           minute: '2-digit'
                                         })}
                                       </div>
-                                      <div className="text-lg font-semibold text-gray-700 mb-1">
+                                      <div className="text-sm sm:text-base lg:text-lg font-semibold text-gray-700 mb-1">
                                         {segment.arrival.iataCode}
                                       </div>
-                                      <div className="text-sm text-gray-600 mb-1">
+                                      <div className="text-xs sm:text-sm text-gray-600 mb-1 truncate">
                                         {segment.arrival.fullName || segment.arrival.name}
                                       </div>
-                                      <div className="text-xs text-gray-500">
+                                      <div className="text-[10px] sm:text-xs text-gray-500 truncate">
                                         {segment.arrival.cityCountry}
                                       </div>
-                                      <div className="text-xs text-gray-400 mt-1">
+                                      <div className="text-[10px] sm:text-xs text-gray-400 mt-1 hidden sm:block">
                                         {new Date(segment.arrival.at).toLocaleDateString('en-US', {
                                           weekday: 'short',
                                           month: 'short',
@@ -784,62 +788,62 @@ const FlightResults = () => {
                                   </div>
 
                                   {/* Detailed Segment Information Grid */}
-                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-                                    <div className="bg-gray-50 p-3 rounded-lg">
-                                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Airline</div>
-                                      <div className="font-semibold text-gray-900 text-sm">
+                                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-3">
+                                    <div className="bg-gray-50 p-2 sm:p-3 rounded-lg">
+                                      <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wide mb-1">Airline</div>
+                                      <div className="font-semibold text-gray-900 text-xs sm:text-sm truncate">
                                         {segment.carrierName || segment.carrierCode}
                                       </div>
-                                      <div className="text-xs text-gray-500">({segment.carrierCode})</div>
+                                      <div className="text-[10px] sm:text-xs text-gray-500 truncate">({segment.carrierCode})</div>
                                     </div>
-                                    <div className="bg-gray-50 p-3 rounded-lg">
-                                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Aircraft</div>
-                                      <div className="font-semibold text-gray-900 text-sm">
+                                    <div className="bg-gray-50 p-2 sm:p-3 rounded-lg">
+                                      <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wide mb-1">Aircraft</div>
+                                      <div className="font-semibold text-gray-900 text-xs sm:text-sm truncate">
                                         {segment.aircraft?.name || segment.aircraft?.code || 'TBD'}
                                       </div>
                                       {segment.aircraft?.code && (
-                                        <div className="text-xs text-gray-500">({segment.aircraft.code})</div>
+                                        <div className="text-[10px] sm:text-xs text-gray-500 truncate">({segment.aircraft.code})</div>
                                       )}
                                     </div>
-                                    <div className="bg-gray-50 p-3 rounded-lg">
-                                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Duration</div>
-                                      <div className="font-semibold text-gray-900 text-sm flex items-center gap-1">
-                                        <Clock className="w-3 h-3" />
-                                        {segment.duration?.replace('PT', '').replace('H', 'h ').replace('M', 'm') || 'TBD'}
+                                    <div className="bg-gray-50 p-2 sm:p-3 rounded-lg">
+                                      <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wide mb-1">Duration</div>
+                                      <div className="font-semibold text-gray-900 text-xs sm:text-sm flex items-center gap-1">
+                                        <Clock className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                                        <span className="truncate">{segment.duration?.replace('PT', '').replace('H', 'h ').replace('M', 'm') || 'TBD'}</span>
                                       </div>
                                     </div>
-                                    <div className="bg-gray-50 p-3 rounded-lg">
-                                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Operating</div>
-                                      <div className="font-semibold text-gray-900 text-sm">
+                                    <div className="bg-gray-50 p-2 sm:p-3 rounded-lg">
+                                      <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wide mb-1">Operating</div>
+                                      <div className="font-semibold text-gray-900 text-xs sm:text-sm truncate">
                                         {segment.operating?.carrierCode || segment.carrierCode}
                                       </div>
                                       {segment.operating?.carrierCode && segment.operating.carrierCode !== segment.carrierCode && (
-                                        <div className="text-xs text-orange-600">Codeshare</div>
+                                        <div className="text-[10px] sm:text-xs text-orange-600">Codeshare</div>
                                       )}
                                     </div>
                                   </div>
 
                                   {/* Additional Segment Details */}
                                   {(segment.numberOfStops > 0 || segment.blacklistedInEU || segment.id) && (
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-3">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 mb-3">
                                       {segment.numberOfStops > 0 && (
-                                        <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
-                                          <div className="text-xs text-orange-600 uppercase tracking-wide mb-1">Technical Stops</div>
-                                          <div className="font-semibold text-gray-900 text-sm">
+                                        <div className="bg-orange-50 p-2 sm:p-3 rounded-lg border border-orange-200">
+                                          <div className="text-[10px] sm:text-xs text-orange-600 uppercase tracking-wide mb-1">Technical Stops</div>
+                                          <div className="font-semibold text-gray-900 text-xs sm:text-sm">
                                             {segment.numberOfStops} stop{segment.numberOfStops > 1 ? 's' : ''}
                                           </div>
                                         </div>
                                       )}
                                       {segment.blacklistedInEU && (
-                                        <div className="bg-red-50 p-3 rounded-lg border border-red-200">
-                                          <div className="text-xs text-red-600 uppercase tracking-wide mb-1">EU Status</div>
-                                          <div className="font-semibold text-red-700 text-sm">Blacklisted</div>
+                                        <div className="bg-red-50 p-2 sm:p-3 rounded-lg border border-red-200">
+                                          <div className="text-[10px] sm:text-xs text-red-600 uppercase tracking-wide mb-1">EU Status</div>
+                                          <div className="font-semibold text-red-700 text-xs sm:text-sm">Blacklisted</div>
                                         </div>
                                       )}
                                       {segment.id && (
-                                        <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                                          <div className="text-xs text-blue-600 uppercase tracking-wide mb-1">Segment ID</div>
-                                          <div className="font-mono text-xs text-gray-700">{segment.id}</div>
+                                        <div className="bg-blue-50 p-2 sm:p-3 rounded-lg border border-blue-200">
+                                          <div className="text-[10px] sm:text-xs text-blue-600 uppercase tracking-wide mb-1">Segment ID</div>
+                                          <div className="font-mono text-[10px] sm:text-xs text-gray-700 truncate">{segment.id}</div>
                                         </div>
                                       )}
                                     </div>
@@ -847,34 +851,34 @@ const FlightResults = () => {
 
                                   {/* Layover Information */}
                                   {index < flight.itineraries[0].segments.length - 1 && (
-                                    <div className="mt-4 pt-4 border-t-2 border-orange-200">
-                                      <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-300 rounded-lg p-4">
-                                        <div className="flex items-center justify-between">
-                                          <div className="flex items-center gap-3">
-                                            <div className="bg-orange-500 text-white rounded-full p-2">
-                                              <Clock className="w-5 h-5" />
+                                    <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t-2 border-orange-200">
+                                      <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-300 rounded-lg p-3 sm:p-4">
+                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                          <div className="flex items-center gap-2 sm:gap-3">
+                                            <div className="bg-orange-500 text-white rounded-full p-1.5 sm:p-2 flex-shrink-0">
+                                              <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
                                             </div>
-                                            <div>
-                                              <div className="text-sm font-bold text-orange-900">
+                                            <div className="min-w-0 flex-1">
+                                              <div className="text-xs sm:text-sm font-bold text-orange-900 truncate">
                                                 Layover at {segment.arrival.iataCode}
                                               </div>
-                                              <div className="text-xs text-orange-700">
+                                              <div className="text-[10px] sm:text-xs text-orange-700 truncate">
                                                 {segment.arrival.fullName || segment.arrival.name}
                                               </div>
-                                              <div className="text-xs text-orange-600">
+                                              <div className="text-[10px] sm:text-xs text-orange-600 truncate">
                                                 {segment.arrival.cityCountry}
                                               </div>
                                             </div>
                                           </div>
-                                          <div className="text-right">
-                                            <div className="text-xl font-bold text-orange-600">
+                                          <div className="text-left sm:text-right flex-shrink-0">
+                                            <div className="text-lg sm:text-xl font-bold text-orange-600">
                                               {layoverDuration}
                                             </div>
-                                            <div className="text-xs text-orange-700">Connection Time</div>
+                                            <div className="text-[10px] sm:text-xs text-orange-700">Connection Time</div>
                                           </div>
                                         </div>
-                                        <div className="mt-3 pt-3 border-t border-orange-200">
-                                          <div className="text-xs text-orange-800">
+                                        <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-orange-200">
+                                          <div className="text-[10px] sm:text-xs text-orange-800">
                                             ℹ️ You will need to change planes at this airport. Please check if you need to collect and re-check your baggage.
                                           </div>
                                         </div>
@@ -888,21 +892,21 @@ const FlightResults = () => {
 
                           {/* Journey Summary */}
                           {flight.itineraries[0].segments.length > 1 && (
-                            <div className="mt-4 bg-gradient-to-r from-teal-50 to-blue-50 border-2 border-teal-200 rounded-lg p-4">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <div className="text-sm font-bold text-gray-900 mb-1">Complete Journey Summary</div>
-                                  <div className="text-xs text-gray-600">
+                            <div className="mt-3 sm:mt-4 bg-gradient-to-r from-teal-50 to-blue-50 border-2 border-teal-200 rounded-lg p-3 sm:p-4">
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-xs sm:text-sm font-bold text-gray-900 mb-1">Complete Journey Summary</div>
+                                  <div className="text-[10px] sm:text-xs text-gray-600">
                                     {flight.itineraries[0].segments.length} connecting flight{flight.itineraries[0].segments.length > 1 ? 's' : ''} • 
                                     {flight.stops} layover{flight.stops > 1 ? 's' : ''} • 
                                     Total duration: {flight.duration.replace('PT', '').replace('H', 'h ').replace('M', 'm')}
                                   </div>
                                 </div>
-                                <div className="text-right">
-                                  <div className="text-lg font-bold text-teal-600">
+                                <div className="text-left sm:text-right flex-shrink-0">
+                                  <div className="text-base sm:text-lg font-bold text-teal-600">
                                     {flight.itineraries[0].segments[0].departure.iataCode} → {flight.itineraries[0].segments[flight.itineraries[0].segments.length - 1].arrival.iataCode}
                                   </div>
-                                  <div className="text-xs text-gray-500">Full Route</div>
+                                  <div className="text-[10px] sm:text-xs text-gray-500">Full Route</div>
                                 </div>
                               </div>
                             </div>
@@ -911,26 +915,26 @@ const FlightResults = () => {
                       )}
 
                       {/* Enhanced Price Breakdown with VAT & Tax Details */}
-                      <div className={`mb-6 transform transition-all duration-700 ease-out ${expandedFlights[flight.id]
+                      <div className={`mb-4 sm:mb-6 transform transition-all duration-700 ease-out ${expandedFlights[flight.id]
                         ? 'translate-y-0 opacity-100'
                         : 'translate-y-4 opacity-0'
                         }`} style={{ transitionDelay: expandedFlights[flight.id] ? '300ms' : '0ms' }}>
-                        <h5 className="text-md font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                          <CreditCard className="w-5 h-5 text-teal-500" />
-                          Detailed Price Breakdown
+                        <h5 className="text-sm sm:text-base font-semibold text-gray-800 mb-2 sm:mb-3 flex items-center gap-2">
+                          <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-teal-500" />
+                          <span className="text-sm sm:text-base">Detailed Price Breakdown</span>
                         </h5>
-                        <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 border-2 border-gray-200 shadow-sm">
+                        <div className="bg-gradient-to-br from-white to-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4 lg:p-6 border-2 border-gray-200 shadow-sm">
                           {flight.price.breakdown ? (
                             <>
                               {/* Main Price Grid */}
-                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                                <div className="bg-white p-4 rounded-lg border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                    <div className="text-xs text-gray-600 uppercase tracking-wide font-semibold">Base Fare</div>
+                              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6">
+                                <div className="bg-white p-2 sm:p-3 lg:p-4 rounded-lg border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
+                                  <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
+                                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                                    <div className="text-[10px] sm:text-xs text-gray-600 uppercase tracking-wide font-semibold">Base Fare</div>
                                   </div>
-                                  <div className="text-2xl font-bold text-gray-900">৳{flight.price.breakdown.basePrice}</div>
-                                  <div className="text-xs text-gray-500 mt-1">Flight ticket cost</div>
+                                  <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">৳{flight.price.breakdown.basePrice}</div>
+                                  <div className="text-[10px] sm:text-xs text-gray-500 mt-1">Flight ticket cost</div>
                                 </div>
 
                                 <div className="bg-white p-4 rounded-lg border border-orange-200 shadow-sm hover:shadow-md transition-shadow">
@@ -938,36 +942,36 @@ const FlightResults = () => {
                                     <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                                     <div className="text-xs text-gray-600 uppercase tracking-wide font-semibold">Taxes & VAT</div>
                                   </div>
-                                  <div className="text-2xl font-bold text-gray-900">৳{flight.price.breakdown.taxes}</div>
-                                  <div className="text-xs text-gray-500 mt-1">Government charges</div>
+                                  <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">৳{flight.price.breakdown.taxes}</div>
+                                  <div className="text-[10px] sm:text-xs text-gray-500 mt-1">Government charges</div>
                                 </div>
 
-                                <div className="bg-white p-4 rounded-lg border border-purple-200 shadow-sm hover:shadow-md transition-shadow">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                                    <div className="text-xs text-gray-600 uppercase tracking-wide font-semibold">Service Fees</div>
+                                <div className="bg-white p-2 sm:p-3 lg:p-4 rounded-lg border border-purple-200 shadow-sm hover:shadow-md transition-shadow">
+                                  <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
+                                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-purple-500 rounded-full flex-shrink-0"></div>
+                                    <div className="text-[10px] sm:text-xs text-gray-600 uppercase tracking-wide font-semibold">Service Fees</div>
                                   </div>
-                                  <div className="text-2xl font-bold text-gray-900">৳{flight.price.breakdown.supplierFees}</div>
-                                  <div className="text-xs text-gray-500 mt-1">Booking & processing</div>
+                                  <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">৳{flight.price.breakdown.supplierFees}</div>
+                                  <div className="text-[10px] sm:text-xs text-gray-500 mt-1">Booking & processing</div>
                                 </div>
 
-                                <div className="bg-gradient-to-br from-teal-50 to-teal-100 p-4 rounded-lg border-2 border-teal-300 shadow-md">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <div className="w-2 h-2 bg-teal-600 rounded-full animate-pulse"></div>
-                                    <div className="text-xs text-teal-700 uppercase tracking-wide font-bold">Total Amount</div>
+                                <div className="bg-gradient-to-br from-teal-50 to-teal-100 p-2 sm:p-3 lg:p-4 rounded-lg border-2 border-teal-300 shadow-md">
+                                  <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
+                                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-teal-600 rounded-full animate-pulse flex-shrink-0"></div>
+                                    <div className="text-[10px] sm:text-xs text-teal-700 uppercase tracking-wide font-bold">Total Amount</div>
                                   </div>
-                                  <div className="text-3xl font-black text-teal-700">৳{flight.price.total}</div>
-                                  <div className="text-xs text-teal-600 mt-1 font-medium">All inclusive</div>
+                                  <div className="text-xl sm:text-2xl lg:text-3xl font-black text-teal-700 truncate">৳{flight.price.total}</div>
+                                  <div className="text-[10px] sm:text-xs text-teal-600 mt-1 font-medium">All inclusive</div>
                                 </div>
                               </div>
 
                               {/* Detailed Tax Breakdown */}
-                              <div className="bg-white rounded-lg p-4 border border-gray-200 mb-4">
-                                <h6 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                                  <Info className="w-4 h-4 text-orange-500" />
-                                  Tax & Fee Details
+                              <div className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200 mb-3 sm:mb-4">
+                                <h6 className="text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3 flex items-center gap-2">
+                                  <Info className="w-3 h-3 sm:w-4 sm:h-4 text-orange-500 flex-shrink-0" />
+                                  <span className="text-xs sm:text-sm">Tax & Fee Details</span>
                                 </h6>
-                                <div className="space-y-2 text-sm">
+                                <div className="space-y-2 text-xs sm:text-sm">
                                   <div className="flex justify-between items-center py-2 border-b border-gray-100">
                                     <span className="text-gray-600 flex items-center gap-2">
                                       <span className="w-1.5 h-1.5 bg-orange-400 rounded-full"></span>
@@ -1008,21 +1012,21 @@ const FlightResults = () => {
                               </div>
 
                               {/* Price Summary */}
-                              <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-4 border border-gray-300">
+                              <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-3 sm:p-4 border border-gray-300">
                                 <div className="space-y-2">
-                                  <div className="flex justify-between items-center text-sm">
+                                  <div className="flex justify-between items-center text-xs sm:text-sm gap-2">
                                     <span className="text-gray-600">Subtotal (Base + Fees)</span>
-                                    <span className="font-medium text-gray-900">
+                                    <span className="font-medium text-gray-900 truncate">
                                       ৳{Number(flight.price.breakdown.basePrice) + Number(flight.price.breakdown.supplierFees)}
                                     </span>
                                   </div>
-                                  <div className="flex justify-between items-center text-sm">
+                                  <div className="flex justify-between items-center text-xs sm:text-sm gap-2">
                                     <span className="text-gray-600">Total Taxes & VAT</span>
-                                    <span className="font-medium text-gray-900">৳{flight.price.breakdown.taxes}</span>
+                                    <span className="font-medium text-gray-900 truncate">৳{flight.price.breakdown.taxes}</span>
                                   </div>
-                                  <div className="flex justify-between items-center pt-3 border-t-2 border-gray-300">
-                                    <span className="text-base font-bold text-gray-900">Grand Total</span>
-                                    <span className="text-2xl font-black text-teal-600">৳{flight.price.total}</span>
+                                  <div className="flex justify-between items-center pt-2 sm:pt-3 border-t-2 border-gray-300 gap-2">
+                                    <span className="text-sm sm:text-base font-bold text-gray-900">Grand Total</span>
+                                    <span className="text-lg sm:text-xl lg:text-2xl font-black text-teal-600 truncate">৳{flight.price.total}</span>
                                   </div>
                                 </div>
                               </div>
@@ -1166,16 +1170,16 @@ const FlightResults = () => {
                       )}
 
                       {/* Comprehensive Flight Information */}
-                      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 transform transition-all duration-700 ease-out ${expandedFlights[flight.id]
+                      <div className={`grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 transform transition-all duration-700 ease-out ${expandedFlights[flight.id]
                         ? 'translate-y-0 opacity-100'
                         : 'translate-y-4 opacity-0'
                         }`} style={{ transitionDelay: expandedFlights[flight.id] ? '400ms' : '0ms' }}>
 
                         {/* Flight Information */}
                         <div>
-                          <h5 className="text-md font-semibold text-gray-800 mb-3">Flight Information</h5>
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <div className="space-y-2 text-sm">
+                          <h5 className="text-sm sm:text-base font-semibold text-gray-800 mb-2 sm:mb-3">Flight Information</h5>
+                          <div className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200">
+                            <div className="space-y-2 text-xs sm:text-sm">
                               <div className="flex justify-between">
                                 <span className="text-gray-600">Flight Number:</span>
                                 <span className="font-medium">{flight.flightNumber}</span>
@@ -1224,9 +1228,9 @@ const FlightResults = () => {
 
                         {/* Booking & Pricing Information */}
                         <div>
-                          <h5 className="text-md font-semibold text-gray-800 mb-3">Booking Information</h5>
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <div className="space-y-2 text-sm">
+                          <h5 className="text-sm sm:text-base font-semibold text-gray-800 mb-2 sm:mb-3">Booking Information</h5>
+                          <div className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200">
+                            <div className="space-y-2 text-xs sm:text-sm">
                               <div className="flex justify-between">
                                 <span className="text-gray-600">Currency:</span>
                                 <span className="font-medium">{flight.price.currency}</span>
@@ -1305,9 +1309,9 @@ const FlightResults = () => {
 
                         {/* Travel Class & Cabin Information */}
                         <div>
-                          <h5 className="text-md font-semibold text-gray-800 mb-3">Travel Class</h5>
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <div className="space-y-2 text-sm">
+                          <h5 className="text-sm sm:text-base font-semibold text-gray-800 mb-2 sm:mb-3">Travel Class</h5>
+                          <div className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200">
+                            <div className="space-y-2 text-xs sm:text-sm">
                               <div className="flex justify-between">
                                 <span className="text-gray-600">Class:</span>
                                 <span className="font-medium">{searchParams?.travel_class || 'ECONOMY'}</span>
@@ -1349,32 +1353,32 @@ const FlightResults = () => {
 
                       {/* Baggage Information */}
                       {flight.fareDetailsBySegment && flight.fareDetailsBySegment[0]?.includedCheckedBags && (
-                        <div className={`mt-6 transform transition-all duration-700 ease-out ${expandedFlights[flight.id]
+                        <div className={`mt-4 sm:mt-6 transform transition-all duration-700 ease-out ${expandedFlights[flight.id]
                           ? 'translate-y-0 opacity-100'
                           : 'translate-y-4 opacity-0'
                           }`} style={{ transitionDelay: expandedFlights[flight.id] ? '450ms' : '0ms' }}>
-                          <h5 className="text-md font-semibold text-gray-800 mb-3">Baggage Allowance</h5>
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <h5 className="text-sm sm:text-base font-semibold text-gray-800 mb-2 sm:mb-3">Baggage Allowance</h5>
+                          <div className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <div>
-                                <div className="text-sm text-gray-600 mb-2">Checked Baggage</div>
+                                <div className="text-xs sm:text-sm text-gray-600 mb-2">Checked Baggage</div>
                                 <div className="space-y-1">
-                                  <div className="flex justify-between text-sm">
+                                  <div className="flex justify-between text-xs sm:text-sm gap-2">
                                     <span>Quantity:</span>
                                     <span className="font-medium">{flight.fareDetailsBySegment[0].includedCheckedBags.quantity || 0}</span>
                                   </div>
                                   {flight.fareDetailsBySegment[0].includedCheckedBags.weight && (
-                                    <div className="flex justify-between text-sm">
+                                    <div className="flex justify-between text-xs sm:text-sm gap-2">
                                       <span>Weight:</span>
-                                      <span className="font-medium">{flight.fareDetailsBySegment[0].includedCheckedBags.weight} {flight.fareDetailsBySegment[0].includedCheckedBags.weightUnit}</span>
+                                      <span className="font-medium truncate">{flight.fareDetailsBySegment[0].includedCheckedBags.weight} {flight.fareDetailsBySegment[0].includedCheckedBags.weightUnit}</span>
                                     </div>
                                   )}
                                 </div>
                               </div>
                               <div>
-                                <div className="text-sm text-gray-600 mb-2">Carry-on Baggage</div>
-                                <div className="text-sm text-green-600 font-medium">Usually included</div>
-                                <div className="text-xs text-gray-500 mt-1">Check with airline for specific limits</div>
+                                <div className="text-xs sm:text-sm text-gray-600 mb-2">Carry-on Baggage</div>
+                                <div className="text-xs sm:text-sm text-green-600 font-medium">Usually included</div>
+                                <div className="text-[10px] sm:text-xs text-gray-500 mt-1">Check with airline for specific limits</div>
                               </div>
                             </div>
                           </div>
@@ -1383,48 +1387,48 @@ const FlightResults = () => {
 
                       {/* Stop Locations Details */}
                       {flight.stopLocations && flight.stopLocations.length > 0 && (
-                        <div className={`mt-6 transform transition-all duration-700 ease-out ${expandedFlights[flight.id]
+                        <div className={`mt-4 sm:mt-6 transform transition-all duration-700 ease-out ${expandedFlights[flight.id]
                           ? 'translate-y-0 opacity-100'
                           : 'translate-y-4 opacity-0'
                           }`} style={{ transitionDelay: expandedFlights[flight.id] ? '500ms' : '0ms' }}>
-                          <h5 className="text-md font-semibold text-gray-800 mb-3">Layover Information</h5>
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <div className="space-y-3">
+                          <h5 className="text-sm sm:text-base font-semibold text-gray-800 mb-2 sm:mb-3">Layover Information</h5>
+                          <div className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200">
+                            <div className="space-y-2 sm:space-y-3">
                               {flight.stopLocations.map((stop, index) => (
-                                <div key={stop.iataCode || index} className="p-4 bg-orange-50 rounded-lg border border-orange-200">
-                                  <div className="flex items-start justify-between">
-                                    <div className="flex-1">
+                                <div key={stop.iataCode || index} className="p-3 sm:p-4 bg-orange-50 rounded-lg border border-orange-200">
+                                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
+                                    <div className="flex-1 min-w-0">
                                       <div className="flex items-center gap-2 mb-2">
-                                        <div className="text-sm font-medium text-orange-600">Layover {index + 1}</div>
-                                        <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                                        <div className="text-xs sm:text-sm font-medium text-orange-600">Layover {index + 1}</div>
+                                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-orange-400 rounded-full flex-shrink-0"></div>
                                       </div>
 
                                       {/* Airport Name */}
                                       {stop.name && (
-                                        <div className="font-semibold text-gray-900 mb-1">{stop.name}</div>
+                                        <div className="font-semibold text-gray-900 mb-1 text-sm sm:text-base truncate">{stop.name}</div>
                                       )}
 
                                       {/* Airport Code */}
                                       {stop.iataCode && (
-                                        <div className="text-sm font-medium text-gray-700 mb-1">
-                                          Airport Code: <span className="bg-gray-200 px-2 py-1 rounded text-xs font-mono">{stop.iataCode}</span>
+                                        <div className="text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                          Airport Code: <span className="bg-gray-200 px-2 py-1 rounded text-[10px] sm:text-xs font-mono">{stop.iataCode}</span>
                                         </div>
                                       )}
 
                                       {/* City and Country */}
                                       {stop.cityCountry && (
-                                        <div className="text-sm text-gray-600 mb-2">{stop.cityCountry}</div>
+                                        <div className="text-xs sm:text-sm text-gray-600 mb-2 truncate">{stop.cityCountry}</div>
                                       )}
 
                                       {/* Full Name if different from name */}
                                       {stop.fullName && stop.fullName !== stop.name && (
-                                        <div className="text-xs text-gray-500 italic">{stop.fullName}</div>
+                                        <div className="text-[10px] sm:text-xs text-gray-500 italic truncate">{stop.fullName}</div>
                                       )}
                                     </div>
 
-                                    <div className="text-right ml-4">
-                                      <div className="text-xs text-gray-500">Duration varies</div>
-                                      <div className="text-xs text-orange-600 mt-1">Connection time</div>
+                                    <div className="text-left sm:text-right flex-shrink-0">
+                                      <div className="text-[10px] sm:text-xs text-gray-500">Duration varies</div>
+                                      <div className="text-[10px] sm:text-xs text-orange-600 mt-1">Connection time</div>
                                     </div>
                                   </div>
                                 </div>
@@ -1436,16 +1440,16 @@ const FlightResults = () => {
 
 
                       {/* Quick Book Button in Dropdown */}
-                      <div className={`mt-6 text-center transform transition-all duration-700 ease-out ${expandedFlights[flight.id]
+                      <div className={`mt-4 sm:mt-6 text-center transform transition-all duration-700 ease-out ${expandedFlights[flight.id]
                         ? 'translate-y-0 opacity-100 scale-100'
                         : 'translate-y-4 opacity-0 scale-95'
                         }`} style={{ transitionDelay: expandedFlights[flight.id] ? '500ms' : '0ms' }}>
                         <button
                           onClick={() => handleSelectFlight(flight)}
-                          className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors shadow-md hover:shadow-lg flex items-center gap-2 mx-auto cursor-pointer"
+                          className="bg-teal-500 hover:bg-teal-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold transition-colors shadow-md hover:shadow-lg flex items-center justify-center gap-2 mx-auto cursor-pointer touch-manipulation text-sm sm:text-base w-full sm:w-auto"
                         >
-                          <CreditCard className="w-5 h-5" />
-                          Book This Flight - ৳{flight.price.total}
+                          <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                          <span className="truncate">Book This Flight - ৳{flight.price.total}</span>
                         </button>
                       </div>
                     </div>
