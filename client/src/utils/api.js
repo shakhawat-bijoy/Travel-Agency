@@ -322,10 +322,71 @@ export const paymentAPI = {
 
 // Authentication helpers
 export const auth = {
-    // Save user data to localStorage
+    // Save user data to localStorage (excluding large image data to avoid quota issues)
     saveUserData: (token, user) => {
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
+        try {
+            localStorage.setItem('token', token);
+            
+            // Create a lightweight version of user data without Base64 images
+            // This prevents localStorage quota exceeded errors
+            const lightweightUser = {
+                _id: user._id,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                phoneNumber: user.phoneNumber,
+                name: user.name,
+                phone: user.phone,
+                address: user.address,
+                dateOfBirth: user.dateOfBirth,
+                bio: user.bio,
+                location: user.location,
+                website: user.website,
+                // Store only metadata for images, not the actual Base64 data
+                avatar: user.avatar ? {
+                    hasImage: !!user.avatar.url,
+                    mimeType: user.avatar.mimeType,
+                    size: user.avatar.size
+                } : null,
+                coverImage: user.coverImage ? {
+                    hasImage: !!user.coverImage.url,
+                    mimeType: user.coverImage.mimeType,
+                    size: user.coverImage.size
+                } : null
+            };
+            
+            localStorage.setItem('user', JSON.stringify(lightweightUser));
+        } catch (error) {
+            console.error('Failed to save user data to localStorage:', error);
+            
+            // If quota exceeded, clear old data and try with minimal user data
+            if (error.name === 'QuotaExceededError') {
+                console.log('LocalStorage quota exceeded, clearing old data...');
+                
+                // Clear non-essential items
+                const keysToKeep = ['token', 'user'];
+                const allKeys = Object.keys(localStorage);
+                allKeys.forEach(key => {
+                    if (!keysToKeep.includes(key)) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                
+                // Try again with minimal user data
+                try {
+                    const minimalUser = {
+                        _id: user._id,
+                        email: user.email,
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        phoneNumber: user.phoneNumber
+                    };
+                    localStorage.setItem('user', JSON.stringify(minimalUser));
+                } catch (retryError) {
+                    console.error('Failed to save even minimal user data:', retryError);
+                }
+            }
+        }
     },
 
     // Get user data from localStorage
