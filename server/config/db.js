@@ -2,9 +2,11 @@ import mongoose from 'mongoose';
 
 const connectDB = async () => {
     try {
-        // Check if MONGO_URI is defined
-        if (!process.env.MONGO_URI) {
-            console.warn('⚠️ MONGO_URI not defined. Running without database connection.');
+        // Support both MONGO_URI and MONGODB_URI for flexibility in hosting envs
+        const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
+
+        if (!mongoUri) {
+            console.warn('⚠️ MONGO_URI/MONGODB_URI not defined. Running without database connection.');
             return null;
         }
 
@@ -13,9 +15,9 @@ const connectDB = async () => {
         mongoose.set('bufferCommands', false); // Disable buffering
         
         console.log('🔄 Attempting MongoDB connection...');
-        console.log('🔗 Connection string:', process.env.MONGO_URI.replace(/:[^:@]+@/, ':****@'));
+        console.log('🔗 Connection string:', mongoUri.replace(/:[^:@]+@/, ':****@'));
         
-        const conn = await mongoose.connect(process.env.MONGO_URI, {
+        const conn = await mongoose.connect(mongoUri, {
             serverSelectionTimeoutMS: 30000, // Increase to 30s
             socketTimeoutMS: 45000,
             connectTimeoutMS: 30000,
@@ -54,7 +56,7 @@ mongoose.connection.on('error', (err) => {
 mongoose.connection.on('disconnected', () => {
     console.warn('⚠️ MongoDB disconnected');
     // Attempt to reconnect
-    if (process.env.NODE_ENV === 'production' && process.env.MONGO_URI) {
+    if (process.env.NODE_ENV === 'production' && (process.env.MONGO_URI || process.env.MONGODB_URI)) {
         console.log('🔄 Attempting to reconnect to MongoDB...');
         setTimeout(() => {
             connectDB().catch(err => console.error('Reconnection failed:', err));
