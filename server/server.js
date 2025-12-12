@@ -23,16 +23,23 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
   'http://localhost:5174',
-  'https://nomadic-eta.vercel.app',
-  process.env.CLIENT_URL
+  process.env.CLIENT_URL, // Primary frontend URL from env
+  'https://nomadic-eta.vercel.app' // Legacy/alternate frontend
 ].filter(Boolean);
 
 console.log('🔒 CORS allowed origins:', allowedOrigins);
 console.log('🔒 NODE_ENV:', process.env.NODE_ENV);
 
-// Simple CORS - allow all origins in production for now
+// CORS: allow specific origins when provided, otherwise allow all (fallback)
 app.use(cors({
-  origin: true,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g., mobile apps, curl) and allowed origins
+    if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    console.warn(`CORS blocked for origin: ${origin}`);
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']

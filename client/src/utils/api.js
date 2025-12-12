@@ -1,10 +1,28 @@
 // API base URL
-const API_BASE_URL = import.meta.env.VITE_API_URL 
-    ? `${import.meta.env.VITE_API_URL}/api` 
-    : 'http://localhost:5001/api';
+const API_BASE_URL = (() => {
+    // Check environment variables
+    const envUrl = import.meta.env.VITE_API_URL;
+    const isDevelopment = import.meta.env.DEV;
+    
+    // If VITE_API_URL is set and not empty
+    if (envUrl && envUrl.trim() && !envUrl.includes('your-backend')) {
+        return `${envUrl}/api`;
+    }
+    
+    // Default to localhost for development
+    if (isDevelopment) {
+        return 'http://localhost:5001/api';
+    }
+    
+    // If no valid URL found in production, log error
+    console.error('⚠️ VITE_API_URL not configured. Please set VITE_API_URL in your environment variables.');
+    // Fallback to current origin as last resort
+    return `${window.location.origin}/api`;
+})();
 
 console.log('🔗 API Base URL:', API_BASE_URL);
 console.log('🔗 VITE_API_URL env:', import.meta.env.VITE_API_URL);
+console.log('🔗 Environment:', import.meta.env.MODE);
 
 // Get token from localStorage
 const getToken = () => {
@@ -132,28 +150,53 @@ export const userAPI = {
     // Upload user image (profile or cover)
     uploadImage: async (formData) => {
         const token = getToken();
-        console.log('Making upload request to:', `${API_BASE_URL}/auth/upload-image`);
+        const uploadUrl = `${API_BASE_URL}/auth/upload-image`;
+        console.log('📤 Upload Request Details:');
+        console.log('  URL:', uploadUrl);
+        console.log('  Token Present:', !!token);
+        console.log('  FormData contents:', {
+            image: formData.get('image')?.name,
+            type: formData.get('type')
+        });
 
         try {
-            const response = await fetch(`${API_BASE_URL}/auth/upload-image`, {
+            const response = await fetch(uploadUrl, {
                 method: 'POST',
+                // IMPORTANT: Do NOT set Content-Type header for FormData
+                // Browser will automatically set it to multipart/form-data with boundary
                 headers: {
                     ...(token && { Authorization: `Bearer ${token}` }),
                 },
+                credentials: 'include', // Include credentials (cookies, auth)
                 body: formData,
             });
 
-            console.log('Upload response status:', response.status);
-            const data = await response.json();
-            console.log('Upload response data:', data);
+            console.log('📥 Upload Response Status:', response.status, response.statusText);
 
-            if (!response.ok) {
-                throw new Error(data.message || 'Upload failed');
+            // Get response text first to debug
+            const responseText = await response.text();
+            console.log('📋 Response Text:', responseText);
+
+            // Parse JSON from response
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch {
+                console.error('Failed to parse response as JSON');
+                throw new Error(`Server error: ${response.status} ${response.statusText}`);
             }
 
+            console.log('✅ Parsed Response Data:', data);
+
+            if (!response.ok) {
+                console.error('❌ Upload failed:', data);
+                throw new Error(data.message || `Upload failed with status ${response.status}`);
+            }
+
+            console.log('✅ Upload successful');
             return data;
         } catch (error) {
-            console.error('Upload API error:', error);
+            console.error('❌ Upload API Error:', error);
             throw error;
         }
     },
