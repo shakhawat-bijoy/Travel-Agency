@@ -52,3 +52,6 @@ export const admin = (req, res, next) => {
     });
   }
 };
+
+// Alias for protect middleware
+export const authenticate = protect;

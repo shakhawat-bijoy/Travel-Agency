@@ -3,9 +3,9 @@ import {
   User, Mail, Phone, MapPin, Calendar, Camera,
   X, Check, CreditCard, History, Settings,
   Edit3, Bell, Shield, Globe, LogOut, Trash2, AlertTriangle, Plus, Star, Trash,
-  Plane, Download, Eye, RefreshCw, Lock
+  Plane, Download, Eye, RefreshCw, Lock, MapPin as LocationIcon, Backpack
 } from 'lucide-react'
-import { auth, authAPI, userAPI, paymentAPI, flightAPI } from '../utils/api'
+import { auth, authAPI, userAPI, paymentAPI, flightAPI, packageAPI } from '../utils/api'
 import { Link } from 'react-router-dom'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
@@ -35,10 +35,15 @@ const Account = () => {
   const [paymentMethods, setPaymentMethods] = useState([])
   const [loadingPayments, setLoadingPayments] = useState(false)
   const [bookings, setBookings] = useState([])
+  const [packageBookings, setPackageBookings] = useState([])
   const [loadingBookings, setLoadingBookings] = useState(false)
+  const [loadingPackageBookings, setLoadingPackageBookings] = useState(false)
   const [bookingError, setBookingError] = useState('')
+  const [packageBookingError, setPackageBookingError] = useState('')
   const [selectedBooking, setSelectedBooking] = useState(null)
   const [showBookingDetails, setShowBookingDetails] = useState(false)
+  const [selectedPackageBooking, setSelectedPackageBooking] = useState(null)
+  const [showPackageBookingDetails, setShowPackageBookingDetails] = useState(false)
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
   const [bookingToDelete, setBookingToDelete] = useState(null)
   const [deleteConfirmationText, setDeleteConfirmationText] = useState('')
@@ -98,6 +103,7 @@ const Account = () => {
   useEffect(() => {
     if (activeTab === 'history') {
       loadBookings()
+      loadPackageBookings()
     }
      
   }, [activeTab, userId, userInfo.email])
@@ -157,6 +163,29 @@ const Account = () => {
     }
   }
 
+  const loadPackageBookings = async () => {
+    try {
+      setLoadingPackageBookings(true)
+      setPackageBookingError('')
+
+      if (userId) {
+        const response = await packageAPI.getUserPackageBookings(userId, 1, 100)
+
+        if (response.success) {
+          console.log('Package bookings loaded:', response.data?.length || 0, 'bookings')
+          setPackageBookings(response.data || [])
+        } else {
+          setPackageBookingError(response.message || 'Failed to load package bookings')
+        }
+      }
+    } catch (error) {
+      console.error('Error loading package bookings:', error)
+      setPackageBookingError('Error loading package bookings. Please try again.')
+    } finally {
+      setLoadingPackageBookings(false)
+    }
+  }
+
   const handleDeletePayment = async (paymentId) => {
     if (!window.confirm('Are you sure you want to delete this payment method?')) {
       return
@@ -205,6 +234,16 @@ const Account = () => {
   const handleCloseBookingDetails = () => {
     setSelectedBooking(null)
     setShowBookingDetails(false)
+  }
+
+  const handleViewPackageBookingDetails = (booking) => {
+    setSelectedPackageBooking(booking)
+    setShowPackageBookingDetails(true)
+  }
+
+  const handleClosePackageBookingDetails = () => {
+    setSelectedPackageBooking(null)
+    setShowPackageBookingDetails(false)
   }
 
   const handleDownloadTicket = (booking) => {
@@ -465,6 +504,230 @@ const Account = () => {
     
     // Save PDF
     doc.save(`DreamHolidays-Ticket-${booking.bookingReference}.pdf`)
+  }
+
+  const handleDownloadPackageBooking = (booking) => {
+    const doc = new jsPDF()
+    const pageHeight = doc.internal.pageSize.getHeight()
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const margin = 15
+    const maxWidth = pageWidth - (margin * 2)
+
+    // Helper functions
+    const formatDate = (dateStr) => {
+      if (!dateStr) return 'N/A'
+      const date = new Date(dateStr)
+      const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+      return `${String(date.getDate()).padStart(2, '0')} ${months[date.getMonth()]} ${date.getFullYear()}`
+    }
+
+    // Colors
+    const teal = [20, 184, 166]
+    const darkBlue = [30, 58, 138]
+    const lightGray = [243, 244, 246]
+    const darkGray = [31, 41, 55]
+    const mediumGray = [107, 114, 128]
+    const white = [255, 255, 255]
+    const green = [34, 197, 94]
+    const red = [239, 68, 68]
+
+    let yPos = 10
+
+    // ===== Header Section =====
+    doc.setFillColor(...teal)
+    doc.rect(0, yPos, pageWidth, 30, 'F')
+
+    doc.setTextColor(...white)
+    doc.setFontSize(24)
+    doc.setFont('helvetica', 'bold')
+    doc.text('DREAM HOLIDAYS', pageWidth / 2, yPos + 10, { align: 'center' })
+
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'normal')
+    doc.text('Package Booking Confirmation', pageWidth / 2, yPos + 20, { align: 'center' })
+
+    yPos += 35
+
+    // ===== Booking Reference =====
+    doc.setFillColor(...darkBlue)
+    doc.rect(margin, yPos, maxWidth, 12, 'F')
+
+    doc.setTextColor(...white)
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'normal')
+    doc.text('BOOKING REFERENCE', margin + 5, yPos + 8)
+
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'bold')
+    doc.text(booking.bookingReference || 'N/A', pageWidth - margin - 5, yPos + 8, { align: 'right' })
+
+    yPos += 18
+
+    // ===== Package Title Section =====
+    doc.setTextColor(...darkGray)
+    doc.setFontSize(13)
+    doc.setFont('helvetica', 'bold')
+    doc.text(booking.packageData?.title || 'Package Tour', margin, yPos)
+
+    yPos += 7
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`Location: ${booking.packageData?.location || 'N/A'}`, margin, yPos)
+
+    yPos += 2
+    doc.setFontSize(8)
+    doc.text(`Status: ${booking.status?.toUpperCase() || 'PENDING'}`, margin, yPos)
+
+    yPos += 8
+
+    // ===== Key Information Grid =====
+    doc.setFillColor(...lightGray)
+    doc.rect(margin, yPos, maxWidth, 24, 'F')
+
+    doc.setTextColor(...darkGray)
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'bold')
+
+    const colWidth = maxWidth / 4
+    doc.text('Duration', margin + 3, yPos + 5)
+    doc.text('Travelers', margin + colWidth + 3, yPos + 5)
+    doc.text('Travel Date', margin + colWidth * 2 + 3, yPos + 5)
+    doc.text('Total Price', margin + colWidth * 3 + 3, yPos + 5)
+
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(10)
+    doc.text(booking.packageData?.duration || 'N/A', margin + 3, yPos + 14)
+    doc.text(`${booking.numberOfTravelers || 0}`, margin + colWidth + 3, yPos + 14)
+    doc.text(formatDate(booking.selectedDate), margin + colWidth * 2 + 3, yPos + 14)
+    doc.setFont('helvetica', 'bold')
+    doc.text(`$${booking.totalPrice?.toFixed(2) || '0.00'}`, margin + colWidth * 3 + 3, yPos + 14)
+
+    yPos += 32
+
+    // ===== Itinerary Section =====
+    doc.setTextColor(...white)
+    doc.setFillColor(...teal)
+    doc.rect(margin, yPos, maxWidth, 7, 'F')
+
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'bold')
+    doc.text('ITINERARY HIGHLIGHTS', margin + 3, yPos + 5)
+
+    yPos += 10
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(...darkGray)
+
+    let itinerayShown = 0
+    booking.packageData?.itinerary?.forEach((day) => {
+      if (itinerayShown < 3 && yPos < pageHeight - 40) {
+        doc.text(`Day ${day.day}: ${day.title}`, margin + 3, yPos)
+        yPos += 5
+        itinerayShown++
+      }
+    })
+
+    if (booking.packageData?.itinerary && booking.packageData.itinerary.length > 3) {
+      doc.text(`+ ${booking.packageData.itinerary.length - 3} more days`, margin + 3, yPos)
+      yPos += 5
+    }
+
+    yPos += 3
+
+    // ===== What's Included =====
+    doc.setTextColor(...white)
+    doc.setFillColor(...green)
+    doc.rect(margin, yPos, maxWidth / 2 - 2, 7, 'F')
+
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'bold')
+    doc.text('INCLUDED', margin + 3, yPos + 5)
+
+    yPos += 10
+    doc.setFontSize(7)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(...darkGray)
+
+    let includedCount = 0
+    booking.packageData?.included?.forEach((item) => {
+      if (includedCount < 3 && yPos < pageHeight - 30) {
+        doc.text(`✓ ${item}`, margin + 3, yPos)
+        yPos += 4
+        includedCount++
+      }
+    })
+
+    // Reset Y position for Not Included section
+    yPos -= (includedCount > 0 ? (includedCount * 4) + 10 : 0)
+    yPos = yPos || 200
+
+    // ===== Not Included =====
+    doc.setTextColor(...white)
+    doc.setFillColor(...red)
+    doc.rect(margin + maxWidth / 2 + 2, yPos - 10 - (includedCount > 0 ? includedCount * 4 : 0), maxWidth / 2 - 2, 7, 'F')
+
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'bold')
+    doc.text('NOT INCLUDED', margin + maxWidth / 2 + 5, yPos - 5 - (includedCount > 0 ? includedCount * 4 : 0))
+
+    doc.setFontSize(7)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(...darkGray)
+
+    yPos = yPos || 200
+    let notIncludedCount = 0
+    booking.packageData?.notIncluded?.forEach((item) => {
+      if (notIncludedCount < 2 && yPos < pageHeight - 30) {
+        doc.text(`✗ ${item}`, margin + maxWidth / 2 + 5, yPos)
+        yPos += 4
+        notIncludedCount++
+      }
+    })
+
+    yPos = Math.max(yPos || 200, 220)
+    yPos += 10
+
+    // ===== Travelers =====
+    doc.setTextColor(...white)
+    doc.setFillColor(...darkBlue)
+    doc.rect(margin, yPos, maxWidth, 7, 'F')
+
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'bold')
+    doc.text('TRAVELERS', margin + 3, yPos + 5)
+
+    yPos += 10
+    doc.setFontSize(7)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(...darkGray)
+
+    let travelerCount = 0
+    booking.travelers?.forEach((traveler) => {
+      if (travelerCount < 3 && yPos < pageHeight - 20) {
+        doc.text(`${travelerCount + 1}. ${traveler.firstName} ${traveler.lastName}`, margin + 3, yPos)
+        yPos += 4
+        travelerCount++
+      }
+    })
+
+    if (booking.travelers && booking.travelers.length > 3) {
+      doc.text(`... and ${booking.travelers.length - 3} more`, margin + 3, yPos)
+    }
+
+    // ===== Footer =====
+    yPos = pageHeight - 15
+    doc.setDrawColor(...mediumGray)
+    doc.setLineWidth(0.3)
+    doc.line(margin, yPos, pageWidth - margin, yPos)
+
+    yPos += 5
+    doc.setFontSize(7)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(...mediumGray)
+    doc.text('24/7 Customer Support: +880-1234-567890 | support@dreamholidays.com', pageWidth / 2, yPos, { align: 'center' })
+
+    // Save PDF
+    doc.save(`DreamHolidays-Package-${booking.bookingReference}.pdf`)
   }
 
   const handleDeleteBooking = (booking) => {
@@ -1340,6 +1603,197 @@ const Account = () => {
           </div>
         )}
       </div>
+
+      {/* Package Bookings Section */}
+      <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl border border-gray-100 p-4 sm:p-6 lg:p-8 mt-6 sm:mt-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
+          <div className="flex-1">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">My Package Bookings</h2>
+            <p className="text-sm sm:text-base text-gray-500 mt-1">View and manage your tour package bookings</p>
+          </div>
+          <button
+            onClick={loadPackageBookings}
+            className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-teal-50 text-teal-600 rounded-lg hover:bg-teal-100 transition-colors text-sm whitespace-nowrap touch-manipulation"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </button>
+        </div>
+
+        {/* Loading State */}
+        {loadingPackageBookings ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your package bookings...</p>
+          </div>
+        ) : packageBookingError ? (
+          /* Error State */
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <X className="w-8 h-8 text-red-500" />
+            </div>
+            <p className="text-red-600 font-medium mb-2">Error Loading Packages</p>
+            <p className="text-gray-500 text-sm mb-4">{packageBookingError}</p>
+            <button
+              onClick={loadPackageBookings}
+              className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : packageBookings.length === 0 ? (
+          /* Empty State */
+          <div className="text-center py-12">
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Backpack className="w-12 h-12 text-gray-400" />
+            </div>
+            <p className="text-gray-500 text-lg mb-2">No package bookings found</p>
+            <p className="text-gray-400 text-sm mb-6">Your tour package bookings will appear here after you make a reservation</p>
+            <Link
+              to="/hotels"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors font-medium"
+            >
+              <Backpack className="w-5 h-5" />
+              Book a Package Tour
+            </Link>
+          </div>
+        ) : (
+          /* Packages List */
+          <div className="space-y-4 sm:space-y-6">
+            {packageBookings.map((booking) => (
+              <div key={booking._id} className="border border-gray-200 rounded-lg sm:rounded-xl p-4 sm:p-6 hover:shadow-lg transition-all duration-300">
+                {/* Package Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Backpack className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
+                        {booking.packageData?.title || 'Package Tour'}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-gray-500 truncate">
+                        Ref: <span className="font-medium text-gray-700">{booking.bookingReference}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-3 py-1 text-xs sm:text-sm font-medium rounded-full ${
+                      booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                      booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                      booking.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {booking.status?.charAt(0).toUpperCase() + booking.status?.slice(1)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Package Details */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4 pb-4 border-b border-gray-200">
+                  <div>
+                    <p className="text-xs text-gray-500">Location</p>
+                    <p className="text-sm sm:text-base font-medium text-gray-900 flex items-center gap-1 mt-1">
+                      <LocationIcon className="w-4 h-4 text-teal-600" />
+                      {booking.packageData?.location || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Duration</p>
+                    <p className="text-sm sm:text-base font-medium text-gray-900 mt-1">
+                      {booking.packageData?.duration || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Travelers</p>
+                    <p className="text-sm sm:text-base font-medium text-gray-900 mt-1">
+                      {booking.numberOfTravelers || 0} person(s)
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Total Price</p>
+                    <p className="text-sm sm:text-base font-bold text-teal-600 mt-1">
+                      ${booking.totalPrice?.toFixed(2) || '0.00'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Package Highlights */}
+                {booking.packageData?.highlights && booking.packageData.highlights.length > 0 && (
+                  <div className="mb-4 pb-4 border-b border-gray-200">
+                    <p className="text-sm font-semibold text-gray-900 mb-2">Highlights</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {booking.packageData.highlights.slice(0, 3).map((highlight, idx) => (
+                        <p key={idx} className="text-xs text-gray-600 flex items-center gap-1">
+                          <Check className="w-3 h-3 text-green-500 flex-shrink-0" />
+                          {highlight}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Travelers Info */}
+                {booking.travelers && booking.travelers.length > 0 && (
+                  <div className="mb-4 pb-4 border-b border-gray-200">
+                    <p className="text-sm font-semibold text-gray-900 mb-2">Travelers</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {booking.travelers.map((traveler, idx) => (
+                        <p key={idx} className="text-xs text-gray-600">
+                          {traveler.firstName} {traveler.lastName}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Booking Dates */}
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4 pb-4 border-b border-gray-200">
+                  <div>
+                    <p className="text-xs text-gray-500">Selected Date</p>
+                    <p className="text-sm font-medium text-gray-900 mt-1">
+                      {booking.selectedDate ? new Date(booking.selectedDate).toLocaleDateString() : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Booked On</p>
+                    <p className="text-sm font-medium text-gray-900 mt-1">
+                      {booking.createdAt ? new Date(booking.createdAt).toLocaleDateString() : 'N/A'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                  <button
+                    onClick={() => handleViewPackageBookingDetails(booking)}
+                    className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-xs sm:text-sm font-medium touch-manipulation flex-1 sm:flex-none"
+                  >
+                    <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">View Details</span>
+                    <span className="sm:hidden">View</span>
+                  </button>
+                  <button
+                    onClick={() => handleDownloadPackageBooking(booking)}
+                    className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors text-xs sm:text-sm font-medium touch-manipulation flex-1 sm:flex-none"
+                  >
+                    <Download className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Download</span>
+                    <span className="sm:hidden">PDF</span>
+                  </button>
+                  <button
+                    className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-xs sm:text-sm font-medium touch-manipulation flex-1 sm:flex-none"
+                  >
+                    <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Cancel</span>
+                    <span className="sm:hidden">Cancel</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 
@@ -2036,6 +2490,239 @@ const Account = () => {
                 >
                   Close
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Package Booking Details Modal */}
+      {showPackageBookingDetails && selectedPackageBooking && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 sm:p-8">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900">Package Booking Details</h3>
+                  <p className="text-gray-500">Booking Reference: {selectedPackageBooking.bookingReference}</p>
+                </div>
+                <button
+                  onClick={handleClosePackageBookingDetails}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-6 h-6 text-gray-500" />
+                </button>
+              </div>
+
+              {/* Package Header Card */}
+              <div className="bg-gradient-to-br from-teal-600 via-cyan-500 to-blue-600 rounded-2xl p-6 sm:p-8 text-white mb-6 shadow-lg">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex-1">
+                    <h4 className="text-2xl sm:text-3xl font-bold mb-2">{selectedPackageBooking.packageData?.title || 'Package Tour'}</h4>
+                    <p className="text-teal-100 text-sm flex items-center gap-1 mt-1">
+                      <LocationIcon className="w-4 h-4" />
+                      {selectedPackageBooking.packageData?.location || 'N/A'}
+                    </p>
+                  </div>
+                  <div className={`px-4 py-2 rounded-full text-white font-semibold backdrop-blur-sm ${
+                    selectedPackageBooking.status === 'confirmed' ? 'bg-emerald-500/80' :
+                    selectedPackageBooking.status === 'pending' ? 'bg-amber-500/80' :
+                    selectedPackageBooking.status === 'cancelled' ? 'bg-rose-500/80' :
+                    'bg-gray-500/80'
+                  }`}>
+                    {selectedPackageBooking.status?.charAt(0).toUpperCase() + selectedPackageBooking.status?.slice(1)}
+                  </div>
+                </div>
+
+                {/* Key Details */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-white/10 backdrop-blur-sm p-4 rounded-xl">
+                  <div>
+                    <div className="text-teal-100 text-xs uppercase tracking-wide mb-1 font-semibold">Duration</div>
+                    <div className="font-bold text-lg">{selectedPackageBooking.packageData?.duration || 'N/A'}</div>
+                  </div>
+                  <div>
+                    <div className="text-teal-100 text-xs uppercase tracking-wide mb-1 font-semibold">Travelers</div>
+                    <div className="font-bold text-lg">{selectedPackageBooking.numberOfTravelers || 0} person(s)</div>
+                  </div>
+                  <div>
+                    <div className="text-teal-100 text-xs uppercase tracking-wide mb-1 font-semibold">Travel Date</div>
+                    <div className="font-bold">
+                      {selectedPackageBooking.selectedDate ? new Date(selectedPackageBooking.selectedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A'}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-teal-100 text-xs uppercase tracking-wide mb-1 font-semibold">Total Price</div>
+                    <div className="font-semibold text-xl">${selectedPackageBooking.totalPrice?.toFixed(2) || '0.00'}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Package Information */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                {/* Itinerary */}
+                <div className="lg:col-span-2 bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-6 border border-teal-200">
+                  <h5 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <div className="w-1 h-6 bg-teal-600 rounded"></div>
+                    Itinerary
+                  </h5>
+                  <div className="space-y-3">
+                    {selectedPackageBooking.packageData?.itinerary?.slice(0, 5).map((day, idx) => (
+                      <div key={idx} className="bg-white p-4 rounded-lg border border-teal-100 hover:shadow-md transition-shadow">
+                        <div className="flex gap-3">
+                          <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">
+                            {day.day}
+                          </div>
+                          <div className="flex-1">
+                            <h6 className="font-semibold text-gray-900">{day.title}</h6>
+                            <p className="text-sm text-gray-600 mt-1">{day.description}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {selectedPackageBooking.packageData?.itinerary && selectedPackageBooking.packageData.itinerary.length > 5 && (
+                      <p className="text-sm text-teal-600 text-center py-2 font-medium">
+                        + {selectedPackageBooking.packageData.itinerary.length - 5} more days
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* What's Included */}
+                <div className="space-y-4">
+                  <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-6 border border-emerald-200">
+                    <h5 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                      <Check className="w-5 h-5 text-emerald-600" />
+                      Included
+                    </h5>
+                    <ul className="space-y-2">
+                      {selectedPackageBooking.packageData?.included?.slice(0, 5).map((item, idx) => (
+                        <li key={idx} className="flex gap-2 text-sm text-gray-700">
+                          <Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-6 border border-rose-200">
+                    <h5 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                      <X className="w-5 h-5 text-rose-600" />
+                      Not Included
+                    </h5>
+                    <ul className="space-y-2">
+                      {selectedPackageBooking.packageData?.notIncluded?.slice(0, 3).map((item, idx) => (
+                        <li key={idx} className="flex gap-2 text-sm text-gray-700">
+                          <X className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Travelers */}
+              {selectedPackageBooking.travelers && selectedPackageBooking.travelers.length > 0 && (
+                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 mb-6 border border-blue-200">
+                  <h5 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <div className="w-1 h-6 bg-blue-600 rounded"></div>
+                    Travelers Information ({selectedPackageBooking.travelers.length})
+                  </h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {selectedPackageBooking.travelers.map((traveler, idx) => (
+                      <div key={idx} className="bg-white p-4 rounded-lg border border-blue-100 hover:shadow-md transition-shadow">
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <User className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-gray-900">
+                              {traveler.firstName} {traveler.lastName}
+                            </p>
+                            <p className="text-sm text-gray-600 truncate">{traveler.email}</p>
+                            <p className="text-sm text-gray-600">{traveler.phone}</p>
+                            {traveler.passportNumber && (
+                              <p className="text-xs text-gray-500 mt-1">Passport: {traveler.passportNumber}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Payment Information */}
+              <div className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl p-6 mb-6 border border-violet-200">
+                <h5 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-violet-600" />
+                  Payment Information
+                </h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-white p-4 rounded-lg border border-violet-100">
+                    <div className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">Payment Method</div>
+                    <div className="font-bold text-gray-900 capitalize">{selectedPackageBooking.payment?.paymentMethod || 'N/A'}</div>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg border border-violet-100">
+                    <div className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">Booking Date</div>
+                    <div className="font-bold text-gray-900">
+                      {new Date(selectedPackageBooking.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </div>
+                  </div>
+                </div>
+                {selectedPackageBooking.payment?.cardholderName && (
+                  <div className="mt-4 p-4 bg-white rounded-lg border border-violet-100">
+                    <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">Card Holder</p>
+                    <p className="font-bold text-gray-900">{selectedPackageBooking.payment.cardholderName}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Booking Summary */}
+              <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-6 mb-6 border border-teal-200">
+                <h5 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <div className="w-1 h-6 bg-teal-600 rounded"></div>
+                  Booking Summary
+                </h5>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-teal-100">
+                    <span className="text-gray-700 font-medium">Base Price</span>
+                    <span className="font-bold text-gray-900">${(selectedPackageBooking.totalPrice / selectedPackageBooking.numberOfTravelers)?.toFixed(2) || '0.00'}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-teal-100">
+                    <span className="text-gray-700 font-medium">Number of Travelers</span>
+                    <span className="font-bold text-gray-900">x {selectedPackageBooking.numberOfTravelers}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-lg text-white">
+                    <span className="font-bold">Total Amount</span>
+                    <span className="font-bold text-xl">${selectedPackageBooking.totalPrice?.toFixed(2) || '0.00'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={handleClosePackageBookingDetails}
+                  className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => handleDownloadPackageBooking(selectedPackageBooking)}
+                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-lg hover:from-teal-600 hover:to-cyan-600 transition-colors font-medium shadow-md hover:shadow-lg"
+                >
+                  <Download className="w-5 h-5" />
+                  Download Confirmation
+                </button>
+                {selectedPackageBooking.status !== 'cancelled' && (
+                  <button
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                    Cancel Booking
+                  </button>
+                )}
               </div>
             </div>
           </div>

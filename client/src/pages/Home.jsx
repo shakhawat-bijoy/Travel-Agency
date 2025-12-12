@@ -4,6 +4,7 @@ import FlightHotelSearch from '../components/home/FlightHotelSearch'
 import TripPlan from '../components/home/TripPlan'
 import FlightHotelCard from '../components/home/FlightHotelCard'
 import Reviews from '../components/home/Reviews'
+import Packeges from '../components/home/Packeges'
 
 const Home = () => {
   return (
@@ -12,6 +13,7 @@ const Home = () => {
         <FlightHotelSearch className='static md:absolute md:top-1/2 md:left-1/2 md:translate-x-[-50%] md:translate-y-[15%]'/>
         <TripPlan className={'md:mt-[380px]'}/>
         <FlightHotelCard/>
+        <Packeges/>
         <Reviews className={`hidden md:block`}/>
     </div>
   )

@@ -290,6 +290,27 @@ export const savedCardsAPI = {
     },
 };
 
+// Package Booking API functions
+export const packageAPI = {
+    // Book a package
+    bookPackage: (bookingData) => {
+        return apiCall('/packages/book', {
+            method: 'POST',
+            body: JSON.stringify(bookingData),
+        });
+    },
+
+    // Get user's package bookings
+    getUserPackageBookings: (userId, page = 1, limit = 20) => {
+        return apiCall(`/packages/bookings/${userId}?page=${page}&limit=${limit}`);
+    },
+
+    // Get all package bookings
+    getAllPackageBookings: (page = 1, limit = 50) => {
+        return apiCall(`/packages/bookings/all?page=${page}&limit=${limit}`);
+    },
+};
+
 // Payment API functions
 export const paymentAPI = {
     // Add payment method

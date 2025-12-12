@@ -11,6 +11,8 @@ import ProtectedRoute from './components/common/ProtectedRoute'
 import FlightBooking from './components/flights/FlightBooking'
 import ConfirmBooking from './pages/ConfirmBooking'
 import BookingSuccess from './components/flights/BookingSuccess'
+import PackageDetail from './pages/PackageDetail'
+import ConfirmPackageBooking from './pages/ConfirmPackageBooking'
 
 import {
   createRoutesFromElements,
@@ -52,6 +54,10 @@ const App = () => {
             <ConfirmBooking />
           </ProtectedRoute>}></Route>
         <Route path="/booking-success" element={<BookingSuccess />}></Route>
+        <Route path="/packages/:id" element={<PackageDetail />}></Route>
+        <Route path="/confirm-package-booking" element={<ProtectedRoute>
+            <ConfirmPackageBooking />
+          </ProtectedRoute>}></Route>
 
         {/* Catch-all route - must be last */}
         <Route path="*" element={<Home />}></Route>
