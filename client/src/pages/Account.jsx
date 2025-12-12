@@ -54,6 +54,9 @@ const Account = () => {
     confirmPassword: ''
   })
   const [passwordError, setPasswordError] = useState('')
+  const [showCancelPopup, setShowCancelPopup] = useState(false)
+  const [packageToCancel, setPackageToCancel] = useState(null)
+  const [cancelConfirmationText, setCancelConfirmationText] = useState('')
 
   const profileImageRef = useRef(null)
   const coverImageRef = useRef(null)
@@ -778,6 +781,52 @@ const Account = () => {
     setShowDeleteConfirmation(false)
     setBookingToDelete(null)
     setDeleteConfirmationText('')
+  }
+
+  const handleCancelPackageBooking = (booking) => {
+    setPackageToCancel(booking)
+    setShowCancelPopup(true)
+    setCancelConfirmationText('')
+  }
+
+  const confirmCancelPackageBooking = async () => {
+    if (cancelConfirmationText !== 'CANCEL') {
+      setSaveMessage('Please type "CANCEL" to confirm')
+      setTimeout(() => setSaveMessage(''), 3000)
+      return
+    }
+
+    try {
+      setLoading(true)
+      console.log('Cancelling package booking:', packageToCancel._id)
+      
+      const response = await packageAPI.cancelPackageBooking(packageToCancel._id)
+      console.log('Cancel response:', response)
+
+      if (response.success) {
+        setSaveMessage('Package booking cancelled successfully!')
+        setTimeout(() => setSaveMessage(''), 3000)
+        setShowCancelPopup(false)
+        setPackageToCancel(null)
+        setCancelConfirmationText('')
+        loadPackageBookings()
+      } else {
+        setSaveMessage(response.message || 'Failed to cancel booking')
+        setTimeout(() => setSaveMessage(''), 3000)
+      }
+    } catch (error) {
+      console.error('Error cancelling booking:', error)
+      setSaveMessage(`Error cancelling booking: ${error.message || 'Please try again.'}`)
+      setTimeout(() => setSaveMessage(''), 5000)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const closeCancelPopup = () => {
+    setShowCancelPopup(false)
+    setPackageToCancel(null)
+    setCancelConfirmationText('')
   }
 
   const handleImageUpload = async (file, type) => {
@@ -1764,10 +1813,10 @@ const Account = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => handleViewPackageBookingDetails(booking)}
-                    className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-xs sm:text-sm font-medium touch-manipulation flex-1 sm:flex-none"
+                    className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-xs sm:text-sm font-medium touch-manipulation"
                   >
                     <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span className="hidden sm:inline">View Details</span>
@@ -1775,18 +1824,20 @@ const Account = () => {
                   </button>
                   <button
                     onClick={() => handleDownloadPackageBooking(booking)}
-                    className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors text-xs sm:text-sm font-medium touch-manipulation flex-1 sm:flex-none"
+                    className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors text-xs sm:text-sm font-medium touch-manipulation"
                   >
                     <Download className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span className="hidden sm:inline">Download</span>
                     <span className="sm:hidden">PDF</span>
                   </button>
                   <button
-                    className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-xs sm:text-sm font-medium touch-manipulation flex-1 sm:flex-none"
+                    onClick={() => handleCancelPackageBooking(booking)}
+                    disabled={loading || booking.status === 'cancelled'}
+                    className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-xs sm:text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                   >
                     <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">Cancel</span>
-                    <span className="sm:hidden">Cancel</span>
+                    <span className="hidden sm:inline">{booking.status === 'cancelled' ? 'Cancelled' : 'Cancel'}</span>
+                    <span className="sm:hidden">{booking.status === 'cancelled' ? 'Cancelled' : 'Cancel'}</span>
                   </button>
                 </div>
               </div>
@@ -2268,40 +2319,40 @@ const Account = () => {
 
       {/* Booking Details Modal */}
       {showBookingDetails && selectedBooking && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+            <div className="p-4 sm:p-6 lg:p-8">
               {/* Modal Header */}
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-2xl font-bold text-gray-900">Flight Ticket</h3>
-                  <p className="text-gray-500">Booking Reference: {selectedBooking.bookingReference}</p>
+              <div className="flex items-start justify-between mb-4 sm:mb-6 gap-2">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Flight Ticket</h3>
+                  <p className="text-xs sm:text-sm text-gray-500 truncate">Ref: {selectedBooking.bookingReference}</p>
                 </div>
                 <button
                   onClick={handleCloseBookingDetails}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
                 >
-                  <X className="w-6 h-6 text-gray-500" />
+                  <X className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500" />
                 </button>
               </div>
 
               {/* Ticket Design */}
-              <div className="bg-gradient-to-r from-teal-500 to-blue-600 rounded-2xl p-8 text-white mb-6">
-                <div className="flex items-center justify-between mb-8">
+              <div className="bg-gradient-to-r from-teal-500 to-blue-600 rounded-lg sm:rounded-xl lg:rounded-2xl p-4 sm:p-6 lg:p-8 text-white mb-4 sm:mb-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-3">
                   <div>
-                    <h4 className="text-2xl font-bold">Dream Holidays</h4>
-                    <p className="text-teal-100">Electronic Ticket</p>
+                    <h4 className="text-lg sm:text-xl lg:text-2xl font-bold">Dream Holidays</h4>
+                    <p className="text-xs sm:text-sm text-teal-100">Electronic Ticket</p>
                   </div>
-                  <div className="text-right">
-                    <div className="text-3xl font-bold">{selectedBooking.flightNumber || selectedBooking.flight?.flightNumber || 'N/A'}</div>
-                    <div className="text-teal-100">{selectedBooking.airline || selectedBooking.flight?.airline || selectedBooking.flight?.airlineName || 'N/A'}</div>
+                  <div className="sm:text-right">
+                    <div className="text-xl sm:text-2xl lg:text-3xl font-bold">{selectedBooking.flightNumber || selectedBooking.flight?.flightNumber || 'N/A'}</div>
+                    <div className="text-xs sm:text-sm text-teal-100 truncate">{selectedBooking.airline || selectedBooking.flight?.airline || selectedBooking.flight?.airlineName || 'N/A'}</div>
                   </div>
                 </div>
 
                 {/* Flight Route */}
-                <div className="flex items-center justify-between mb-8">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold mb-2">
+                <div className="flex flex-col sm:flex-row items-center justify-between mb-6 sm:mb-8 gap-4">
+                  <div className="text-center flex-1">
+                    <div className="text-2xl sm:text-3xl font-bold mb-2">
                       {selectedBooking.departureTime || selectedBooking.flight?.departureTime 
                         ? new Date(selectedBooking.departureTime || selectedBooking.flight.departureTime).toLocaleTimeString('en-US', {
                           hour: '2-digit',
@@ -2309,34 +2360,34 @@ const Account = () => {
                         }) 
                         : 'N/A'}
                     </div>
-                    <div className="text-xl font-semibold mb-1">{selectedBooking.departureAirport || selectedBooking.flight?.departureAirport || 'N/A'}</div>
-                    <div className="text-teal-100">
+                    <div className="text-base sm:text-lg lg:text-xl font-semibold mb-1">{selectedBooking.departureAirport || selectedBooking.flight?.departureAirport || 'N/A'}</div>
+                    <div className="text-xs sm:text-sm text-teal-100">
                       {selectedBooking.departureTime || selectedBooking.flight?.departureTime 
                         ? new Date(selectedBooking.departureTime || selectedBooking.flight.departureTime).toLocaleDateString() 
                         : 'N/A'}
                     </div>
                   </div>
 
-                  <div className="flex-1 mx-8">
+                  <div className="flex-1 mx-2 sm:mx-4 lg:mx-8 min-w-0">
                     <div className="relative">
                       <div className="absolute inset-0 flex items-center">
                         <div className="w-full border-t-2 border-white/30"></div>
                       </div>
                       <div className="relative flex justify-center">
-                        <div className="bg-white/20 px-4 py-2 rounded-full">
-                          <Plane className="w-8 h-8 text-white transform rotate-90" />
+                        <div className="bg-white/20 px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 rounded-full">
+                          <Plane className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white transform rotate-90" />
                         </div>
                       </div>
                     </div>
-                    <div className="text-center mt-3">
-                      <div className="text-sm text-teal-100">
+                    <div className="text-center mt-2 sm:mt-3">
+                      <div className="text-xs sm:text-sm text-teal-100">
                         {(selectedBooking.duration || selectedBooking.flight?.duration)?.replace('PT', '').replace('H', 'h ').replace('M', 'm') || 'N/A'}
                       </div>
                     </div>
                   </div>
 
-                  <div className="text-center">
-                    <div className="text-3xl font-bold mb-2">
+                  <div className="text-center flex-1">
+                    <div className="text-2xl sm:text-3xl font-bold mb-2">
                       {selectedBooking.arrivalTime || selectedBooking.flight?.arrivalTime 
                         ? new Date(selectedBooking.arrivalTime || selectedBooking.flight.arrivalTime).toLocaleTimeString('en-US', {
                           hour: '2-digit',
@@ -2344,8 +2395,8 @@ const Account = () => {
                         }) 
                         : 'N/A'}
                     </div>
-                    <div className="text-xl font-semibold mb-1">{selectedBooking.arrivalAirport || selectedBooking.flight?.arrivalAirport || 'N/A'}</div>
-                    <div className="text-teal-100">
+                    <div className="text-base sm:text-lg lg:text-xl font-semibold mb-1">{selectedBooking.arrivalAirport || selectedBooking.flight?.arrivalAirport || 'N/A'}</div>
+                    <div className="text-xs sm:text-sm text-teal-100">
                       {selectedBooking.arrivalTime || selectedBooking.flight?.arrivalTime 
                         ? new Date(selectedBooking.arrivalTime || selectedBooking.flight.arrivalTime).toLocaleDateString() 
                         : 'N/A'}
@@ -2354,22 +2405,22 @@ const Account = () => {
                 </div>
 
                 {/* Passenger Info */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
                   <div>
-                    <div className="text-teal-100 text-sm mb-1">PASSENGER</div>
-                    <div className="font-semibold text-lg">
+                    <div className="text-teal-100 text-xs sm:text-sm mb-1">PASSENGER</div>
+                    <div className="font-semibold text-sm sm:text-base lg:text-lg truncate">
                       {selectedBooking.passenger?.firstName} {selectedBooking.passenger?.lastName}
                     </div>
                   </div>
                   <div>
-                    <div className="text-teal-100 text-sm mb-1">BOOKING DATE</div>
-                    <div className="font-semibold">
+                    <div className="text-teal-100 text-xs sm:text-sm mb-1">BOOKING DATE</div>
+                    <div className="font-semibold text-sm sm:text-base">
                       {new Date(selectedBooking.bookingDate).toLocaleDateString()}
                     </div>
                   </div>
                   <div>
-                    <div className="text-teal-100 text-sm mb-1">STATUS</div>
-                    <div className="font-semibold">
+                    <div className="text-teal-100 text-xs sm:text-sm mb-1">STATUS</div>
+                    <div className="font-semibold text-sm sm:text-base capitalize">
                       {selectedBooking.status.charAt(0).toUpperCase() + selectedBooking.status.slice(1)}
                     </div>
                   </div>
@@ -2377,27 +2428,27 @@ const Account = () => {
               </div>
 
               {/* Detailed Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
                 {/* Passenger Details */}
-                <div className="bg-gray-50 rounded-lg p-6">
-                  <h5 className="font-semibold text-gray-900 mb-4">Passenger Information</h5>
-                  <div className="space-y-3">
+                <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
+                  <h5 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">Passenger Information</h5>
+                  <div className="space-y-2 sm:space-y-3">
                     <div>
-                      <div className="text-sm text-gray-500">Full Name</div>
-                      <div className="font-medium">{selectedBooking.passenger?.firstName} {selectedBooking.passenger?.lastName}</div>
+                      <div className="text-xs sm:text-sm text-gray-500">Full Name</div>
+                      <div className="font-medium text-sm sm:text-base">{selectedBooking.passenger?.firstName} {selectedBooking.passenger?.lastName}</div>
                     </div>
                     <div>
-                      <div className="text-sm text-gray-500">Email</div>
-                      <div className="font-medium">{selectedBooking.passenger?.email}</div>
+                      <div className="text-xs sm:text-sm text-gray-500">Email</div>
+                      <div className="font-medium text-sm sm:text-base break-all">{selectedBooking.passenger?.email}</div>
                     </div>
                     <div>
-                      <div className="text-sm text-gray-500">Phone</div>
-                      <div className="font-medium">{selectedBooking.passenger?.phone || 'N/A'}</div>
+                      <div className="text-xs sm:text-sm text-gray-500">Phone</div>
+                      <div className="font-medium text-sm sm:text-base">{selectedBooking.passenger?.phone || 'N/A'}</div>
                     </div>
                     {selectedBooking.passenger?.dateOfBirth && (
                       <div>
-                        <div className="text-sm text-gray-500">Date of Birth</div>
-                        <div className="font-medium">
+                        <div className="text-xs sm:text-sm text-gray-500">Date of Birth</div>
+                        <div className="font-medium text-sm sm:text-base">
                           {new Date(selectedBooking.passenger.dateOfBirth).toLocaleDateString()}
                         </div>
                       </div>
@@ -2406,30 +2457,30 @@ const Account = () => {
                 </div>
 
                 {/* Flight Details */}
-                <div className="bg-gray-50 rounded-lg p-6">
-                  <h5 className="font-semibold text-gray-900 mb-4">Flight Information</h5>
-                  <div className="space-y-3">
+                <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
+                  <h5 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">Flight Information</h5>
+                  <div className="space-y-2 sm:space-y-3">
                     <div>
-                      <div className="text-sm text-gray-500">Aircraft</div>
-                      <div className="font-medium">{selectedBooking.aircraftModel || selectedBooking.flight?.aircraftModel || 'N/A'}</div>
+                      <div className="text-xs sm:text-sm text-gray-500">Aircraft</div>
+                      <div className="font-medium text-sm sm:text-base">{selectedBooking.aircraftModel || selectedBooking.flight?.aircraftModel || 'N/A'}</div>
                     </div>
                     <div>
-                      <div className="text-sm text-gray-500">Duration</div>
-                      <div className="font-medium">
+                      <div className="text-xs sm:text-sm text-gray-500">Duration</div>
+                      <div className="font-medium text-sm sm:text-base">
                         {(selectedBooking.duration || selectedBooking.flight?.duration)?.replace('PT', '').replace('H', 'h ').replace('M', 'm') || 'N/A'}
                       </div>
                     </div>
                     <div>
-                      <div className="text-sm text-gray-500">Stops</div>
-                      <div className="font-medium">
+                      <div className="text-xs sm:text-sm text-gray-500">Stops</div>
+                      <div className="font-medium text-sm sm:text-base">
                         {(selectedBooking.stops !== undefined ? selectedBooking.stops : selectedBooking.flight?.stops) === 0 
                           ? 'Direct Flight' 
                           : `${selectedBooking.stops !== undefined ? selectedBooking.stops : selectedBooking.flight?.stops || 0} stop(s)`}
                       </div>
                     </div>
                     <div>
-                      <div className="text-sm text-gray-500">Total Amount</div>
-                      <div className="font-medium text-teal-600">
+                      <div className="text-xs sm:text-sm text-gray-500">Total Amount</div>
+                      <div className="font-medium text-sm sm:text-base text-teal-600">
                         ৳{selectedBooking.totalAmount} {selectedBooking.currency}
                       </div>
                     </div>
@@ -2439,9 +2490,9 @@ const Account = () => {
 
               {/* Search Parameters */}
               {selectedBooking.searchParams && (
-                <div className="bg-blue-50 rounded-lg p-6 mb-6">
-                  <h5 className="font-semibold text-gray-900 mb-4">Booking Details</h5>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-blue-50 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
+                  <h5 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">Booking Details</h5>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                     {(() => {
                       try {
                         const searchParams = typeof selectedBooking.searchParams === 'string'
@@ -2450,25 +2501,25 @@ const Account = () => {
                         return (
                           <>
                             <div>
-                              <div className="text-sm text-gray-500">Trip Type</div>
-                              <div className="font-medium">{searchParams.type || 'N/A'}</div>
+                              <div className="text-xs sm:text-sm text-gray-500">Trip Type</div>
+                              <div className="font-medium text-sm sm:text-base capitalize">{searchParams.type || 'N/A'}</div>
                             </div>
                             <div>
-                              <div className="text-sm text-gray-500">Travel Class</div>
-                              <div className="font-medium">{searchParams.travel_class || 'N/A'}</div>
+                              <div className="text-xs sm:text-sm text-gray-500">Travel Class</div>
+                              <div className="font-medium text-sm sm:text-base capitalize">{searchParams.travel_class || 'N/A'}</div>
                             </div>
                             <div>
-                              <div className="text-sm text-gray-500">Adults</div>
-                              <div className="font-medium">{searchParams.adults || 'N/A'}</div>
+                              <div className="text-xs sm:text-sm text-gray-500">Adults</div>
+                              <div className="font-medium text-sm sm:text-base">{searchParams.adults || 'N/A'}</div>
                             </div>
                             <div>
-                              <div className="text-sm text-gray-500">Children</div>
-                              <div className="font-medium">{searchParams.children || 0}</div>
+                              <div className="text-xs sm:text-sm text-gray-500">Children</div>
+                              <div className="font-medium text-sm sm:text-base">{searchParams.children || 0}</div>
                             </div>
                           </>
                         );
                       } catch {
-                        return <div className="text-sm text-gray-500">Search details not available</div>;
+                        return <div className="text-xs sm:text-sm text-gray-500 col-span-2 sm:col-span-4">Search details not available</div>;
                       }
                     })()}
                   </div>
@@ -2476,17 +2527,17 @@ const Account = () => {
               )}
 
               {/* Action Buttons */}
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
                 <button
                   onClick={() => handleDownloadTicket(selectedBooking)}
-                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors font-medium"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors font-medium text-sm sm:text-base"
                 >
-                  <Download className="w-5 h-5" />
+                  <Download className="w-4 h-4 sm:w-5 sm:h-5" />
                   Download Ticket
                 </button>
                 <button
                   onClick={handleCloseBookingDetails}
-                  className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                  className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm sm:text-base"
                 >
                   Close
                 </button>
@@ -2498,29 +2549,29 @@ const Account = () => {
 
       {/* Package Booking Details Modal */}
       {showPackageBookingDetails && selectedPackageBooking && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 sm:p-8">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+            <div className="p-4 sm:p-6 lg:p-8">
               {/* Modal Header */}
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-2xl font-bold text-gray-900">Package Booking Details</h3>
-                  <p className="text-gray-500">Booking Reference: {selectedPackageBooking.bookingReference}</p>
+              <div className="flex items-start justify-between mb-4 sm:mb-6 gap-2">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Package Details</h3>
+                  <p className="text-xs sm:text-sm text-gray-500 truncate">Ref: {selectedPackageBooking.bookingReference}</p>
                 </div>
                 <button
                   onClick={handleClosePackageBookingDetails}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
                 >
-                  <X className="w-6 h-6 text-gray-500" />
+                  <X className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500" />
                 </button>
               </div>
 
               {/* Package Header Card */}
-              <div className="bg-gradient-to-br from-teal-600 via-cyan-500 to-blue-600 rounded-2xl p-6 sm:p-8 text-white mb-6 shadow-lg">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="flex-1">
-                    <h4 className="text-2xl sm:text-3xl font-bold mb-2">{selectedPackageBooking.packageData?.title || 'Package Tour'}</h4>
-                    <p className="text-teal-100 text-sm flex items-center gap-1 mt-1">
+              <div className="bg-gradient-to-br from-teal-600 via-cyan-500 to-blue-600 rounded-lg sm:rounded-xl lg:rounded-2xl p-4 sm:p-6 lg:p-8 text-white mb-4 sm:mb-6 shadow-lg">
+                <div className="flex flex-col sm:flex-row items-start justify-between mb-4 sm:mb-6 gap-3">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">{selectedPackageBooking.packageData?.title || 'Package Tour'}</h4>
+                    <p className="text-teal-100 text-xs sm:text-sm flex items-center gap-1 mt-1">
                       <LocationIcon className="w-4 h-4" />
                       {selectedPackageBooking.packageData?.location || 'N/A'}
                     </p>
@@ -2536,10 +2587,10 @@ const Account = () => {
                 </div>
 
                 {/* Key Details */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-white/10 backdrop-blur-sm p-4 rounded-xl">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 bg-white/10 backdrop-blur-sm p-3 sm:p-4 rounded-lg sm:rounded-xl">
                   <div>
-                    <div className="text-teal-100 text-xs uppercase tracking-wide mb-1 font-semibold">Duration</div>
-                    <div className="font-bold text-lg">{selectedPackageBooking.packageData?.duration || 'N/A'}</div>
+                    <div className="text-teal-100 text-[10px] sm:text-xs uppercase tracking-wide mb-1 font-semibold">Duration</div>
+                    <div className="font-bold text-sm sm:text-base lg:text-lg">{selectedPackageBooking.packageData?.duration || 'N/A'}</div>
                   </div>
                   <div>
                     <div className="text-teal-100 text-xs uppercase tracking-wide mb-1 font-semibold">Travelers</div>
@@ -2559,9 +2610,9 @@ const Account = () => {
               </div>
 
               {/* Package Information */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
                 {/* Itinerary */}
-                <div className="lg:col-span-2 bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-6 border border-teal-200">
+                <div className="lg:col-span-2 bg-gradient-to-br from-teal-50 to-cyan-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-teal-200">
                   <h5 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <div className="w-1 h-6 bg-teal-600 rounded"></div>
                     Itinerary
@@ -2701,26 +2752,33 @@ const Account = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                 <button
                   onClick={handleClosePackageBookingDetails}
-                  className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                  className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm sm:text-base order-3 sm:order-1"
                 >
                   Close
                 </button>
                 <button
                   onClick={() => handleDownloadPackageBooking(selectedPackageBooking)}
-                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-lg hover:from-teal-600 hover:to-cyan-600 transition-colors font-medium shadow-md hover:shadow-lg"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-lg hover:from-teal-600 hover:to-cyan-600 transition-colors font-medium shadow-md hover:shadow-lg text-sm sm:text-base order-1 sm:order-2"
                 >
-                  <Download className="w-5 h-5" />
-                  Download Confirmation
+                  <Download className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="hidden sm:inline">Download Confirmation</span>
+                  <span className="sm:hidden">Download</span>
                 </button>
                 {selectedPackageBooking.status !== 'cancelled' && (
                   <button
-                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
+                    onClick={() => {
+                      handleClosePackageBookingDetails()
+                      handleCancelPackageBooking(selectedPackageBooking)
+                    }}
+                    disabled={loading}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base order-2 sm:order-3"
                   >
-                    <Trash2 className="w-5 h-5" />
-                    Cancel Booking
+                    <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="hidden sm:inline">Cancel Booking</span>
+                    <span className="sm:hidden">Cancel</span>
                   </button>
                 )}
               </div>
@@ -2797,6 +2855,87 @@ const Account = () => {
                   className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? 'Deleting...' : 'Delete Booking'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Package Booking Popup */}
+      {showCancelPopup && packageToCancel && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                  <AlertTriangle className="w-6 h-6 text-orange-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Cancel Package Booking</h3>
+                  <p className="text-sm text-gray-500">Request cancellation of this booking</p>
+                </div>
+              </div>
+
+              {/* Booking Info */}
+              <div className="mb-6 bg-gray-50 rounded-lg p-4">
+                <div className="text-sm text-gray-600 mb-2">You are about to cancel:</div>
+                <div className="font-semibold text-gray-900 mb-1">
+                  {packageToCancel.packageData?.title || 'Package Tour'}
+                </div>
+                <div className="text-sm text-gray-600">
+                  Reference: {packageToCancel.bookingReference}
+                </div>
+                <div className="text-sm text-gray-600">
+                  Location: {packageToCancel.packageData?.location || 'N/A'}
+                </div>
+                <div className="text-sm text-gray-600">
+                  Travelers: {packageToCancel.numberOfTravelers} person(s)
+                </div>
+                <div className="text-sm font-semibold text-teal-600 mt-2">
+                  Total: ${packageToCancel.totalPrice?.toFixed(2) || '0.00'}
+                </div>
+              </div>
+
+              {/* Warning */}
+              <div className="mb-6 bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <p className="text-sm text-orange-700">
+                  <strong>Important:</strong> Cancelling this booking will send a cancellation request. 
+                  Please review the cancellation policy for any applicable fees or refund details.
+                </p>
+              </div>
+
+              {/* Confirmation Input */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Type <span className="font-bold text-orange-600">CANCEL</span> to confirm:
+                </label>
+                <input
+                  type="text"
+                  value={cancelConfirmationText}
+                  onChange={(e) => setCancelConfirmationText(e.target.value)}
+                  placeholder="Type CANCEL"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  autoFocus
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={closeCancelPopup}
+                  disabled={loading}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
+                >
+                  Keep Booking
+                </button>
+                <button
+                  onClick={confirmCancelPackageBooking}
+                  disabled={loading || cancelConfirmationText !== 'CANCEL'}
+                  className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Cancelling...' : 'Cancel Booking'}
                 </button>
               </div>
             </div>
