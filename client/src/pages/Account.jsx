@@ -811,7 +811,7 @@ const Account = () => {
           {/* Cover Upload Button */}
           <button
             onClick={() => coverImageRef.current?.click()}
-            className="absolute top-6 right-6 bg-white/95 hover:bg-white text-gray-800 px-5 py-2.5 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl backdrop-blur-sm cursor-pointer"
+            className="absolute lg:top-6 lg:right-6 top-2 right-2 bg-white/65 hover:bg-white text-gray-900 lg:px-5 lg:py-2.5 py-1.5 px-3 lg:rounded-xl rounded-lg font-medium transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl backdrop-blur-sm cursor-pointer"
           >
             <Camera className="w-4 h-4" />
             Upload Cover
@@ -856,7 +856,7 @@ const Account = () => {
             </div>
 
             <div className="z-10 absolute lg:left-52 left-[150px] lg:top-100 top-52">
-              <h1 className="lg:text-4xl text-md lg:font-bold font-semibold text-black drop-shadow-lg">{userInfo.name || 'Welcome!'}</h1>
+              <h1 className="lg:text-4xl text-lg lg:font-bold font-semibold text-black drop-shadow-lg">{userInfo.name || 'Welcome!'}</h1>
             </div>
 
           </div>
@@ -1331,7 +1331,7 @@ const Account = () => {
                     >
                       <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                       <span className="hidden sm:inline">Delete</span>
-                      <span className="sm:hidden">Del</span>
+                      <span className="sm:hidden">Delete</span>
                     </button>
                   </div>
                 </div>
@@ -1659,7 +1659,7 @@ const Account = () => {
                 <p className="text-sm text-gray-500">Add an extra layer of security</p>
               </div>
             </div>
-            <button className="px-4 py-2 text-sm text-teal-600 hover:text-teal-700 font-medium">
+            <button className="px-4 py-2 text-sm text-gray-400 font-medium">
               Enable
             </button>
           </div>
@@ -1672,7 +1672,7 @@ const Account = () => {
                 <p className="text-sm text-gray-500">English (US)</p>
               </div>
             </div>
-            <button className="px-4 py-2 text-sm text-teal-600 hover:text-teal-700 font-medium">
+            <button className="px-4 py-2 text-sm text-gray-400  font-medium">
               Change
             </button>
           </div>

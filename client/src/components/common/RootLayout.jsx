@@ -11,7 +11,7 @@ const RootLayout = () => {
   const dispatch = useDispatch()
   
   const hideNavbarRoutes = ['/login', '/register', '/forgot-password', '/add-payment-method']
-  const hideFooterRoutes = ['/login', '/register', '/forgot-password', '/add-payment-method']
+  const hideFooterRoutes = ['/login', '/register', '/forgot-password', '/add-payment-method', '/account']
   const shouldHideNavbar = hideNavbarRoutes.includes(location.pathname)
   const shouldHideFooter = hideFooterRoutes.includes(location.pathname)
   const isHomePage = location.pathname === '/'

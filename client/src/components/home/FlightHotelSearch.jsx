@@ -65,13 +65,13 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
 
       console.log(`Searching airports for "${query}" (${type})...`)
       const response = await flightAPI.searchAirports(query, 20)
-      
+
       console.log(`Airport search response for "${query}":`, response)
-      
+
       if (response.success) {
         const airports = response.data || []
         console.log(`Found ${airports.length} airports for "${query}"`)
-        
+
         if (type === 'from') setFromAirports(airports)
         else setToAirports(airports)
       } else {
@@ -93,9 +93,9 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
   const handleFromQueryChange = (query) => {
     setFromQuery(query)
     setShowFromDropdown(true)
-    
+
     if (fromSearchTimer.current) clearTimeout(fromSearchTimer.current)
-    
+
     fromSearchTimer.current = setTimeout(() => {
       searchAirports(query, 'from')
     }, 300)
@@ -104,9 +104,9 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
   const handleToQueryChange = (query) => {
     setToQuery(query)
     setShowToDropdown(true)
-    
+
     if (toSearchTimer.current) clearTimeout(toSearchTimer.current)
-    
+
     toSearchTimer.current = setTimeout(() => {
       searchAirports(query, 'to')
     }, 300)
@@ -275,11 +275,20 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
                       onFocus={() => setShowFromDropdown(true)}
                       onBlur={() => setTimeout(() => setShowFromDropdown(false), 300)}
                       onTouchStart={() => setShowFromDropdown(true)}
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 touch-manipulation"
+                      className="w-full lg:pl-3 lg:pr-9 pl-2 pr-2 py-2 sm:py-3 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 touch-manipulation"
                       placeholder="Search departure city or airport"
                       autoComplete="off"
                     />
                     <MapPin className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-5 lg:h-5 text-gray-400" />
+
+
+                    {/* Swap Button */}
+                    <button
+                      onClick={handleSwapLocations}
+                      className="absolute -right-4 sm:-right-5 lg:-right-6 top-1/2 transform -translate-y-1/2 p-1 sm:p-2 hover:bg-gray-100 rounded-full transition-colors z-10"
+                    >
+                      <ArrowLeftRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
+                    </button>
 
                     {/* Airport Dropdown */}
                     {showFromDropdown && (
@@ -366,19 +375,13 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
                       onFocus={() => setShowToDropdown(true)}
                       onBlur={() => setTimeout(() => setShowToDropdown(false), 300)}
                       onTouchStart={() => setShowToDropdown(true)}
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 touch-manipulation"
+                      className="w-full lg:pl-3 lg:pr-9 pl-2 pr-2 py-2 sm:py-3 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 touch-manipulation"
                       placeholder="Search destination city or airport"
                       autoComplete="off"
                     />
                     <MapPin className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-5 lg:h-5 text-gray-400" />
 
-                    {/* Swap Button */}
-                    <button
-                      onClick={handleSwapLocations}
-                      className="absolute -right-4 sm:-right-5 lg:-right-6 top-1/2 transform -translate-y-1/2 p-1 sm:p-2 hover:bg-gray-100 rounded-full transition-colors z-10"
-                    >
-                      <ArrowLeftRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
-                    </button>
+
 
                     {/* Airport Dropdown */}
                     {showToDropdown && (
@@ -465,7 +468,7 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
                       min={new Date().toISOString().split('T')[0]}
                       className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                     />
-                    <Calendar className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-5 lg:h-5 text-gray-400 pointer-events-none" />
+                    <Calendar className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-5 lg:h-5 text-gray-800 pointer-events-none" />
                   </div>
                 </div>
 
@@ -483,7 +486,7 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
                         min={searchData.outbound_date || new Date().toISOString().split('T')[0]}
                         className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                       />
-                      <Calendar className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-5 lg:h-5 text-gray-400 pointer-events-none" />
+                      <Calendar className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-5 lg:h-5 text-gray-800 pointer-events-none" />
                     </div>
                   </div>
                 )}
@@ -623,7 +626,7 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
                         {/* Popular Destinations */}
                         {!destinationQuery && (
                           <>
-                           
+
                           </>
                         )}
 
@@ -673,7 +676,7 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
                       min={new Date().toISOString().split('T')[0]}
                       className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                     />
-                    <Calendar className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-5 lg:h-5 text-gray-400 pointer-events-none" />
+                    <Calendar className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-5 lg:h-5 text-gray-800 pointer-events-none" />
                   </div>
                 </div>
 
@@ -690,7 +693,7 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
                       min={hotelSearchData.check_in || new Date().toISOString().split('T')[0]}
                       className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                     />
-                    <Calendar className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-5 lg:h-5 text-gray-400 pointer-events-none" />
+                    <Calendar className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-5 lg:h-5 text-gray-800 pointer-events-none" />
                   </div>
                 </div>
 
