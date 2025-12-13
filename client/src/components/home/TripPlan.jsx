@@ -85,7 +85,7 @@ const TripPlan = ({className}) => {
                         <Button
                             text="See more places"
                             className="bg-white border border-teal-500 text-gray-800 px-4 sm:px-6 py-2 rounded-lg hover:bg-teal-500 hover:text-white transition-colors text-sm lg:text-base"
-                            to="/"
+                            to="/packages"
                         />
                     </div>
                 </div>

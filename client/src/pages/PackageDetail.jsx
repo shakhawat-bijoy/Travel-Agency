@@ -4,6 +4,7 @@ import Container from '../components/common/Container'
 import Button from '../components/common/Buttton'
 import { FaStar, FaCheck, FaClock, FaCalendar, FaUsers, FaPlane, FaHotel, FaMapMarkerAlt } from 'react-icons/fa'
 import { MdLocationOn } from 'react-icons/md'
+import { packagesData } from '../data/packages'
 
 const PackageDetail = () => {
   const { id } = useParams()
@@ -11,300 +12,7 @@ const PackageDetail = () => {
   const [selectedDate, setSelectedDate] = useState('')
   const [travelers, setTravelers] = useState(1)
 
-  // Package data (in real app, fetch from API)
-  const packages = {
-    1: {
-      id: 1,
-      title: 'Bangkok & Pattaya Adventure',
-      location: 'Thailand',
-      duration: '7 Days / 6 Nights',
-      images: [
-        'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80',
-        'https://images.unsplash.com/photo-1528181304800-259b08848526?w=800&q=80',
-        'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800&q=80'
-      ],
-      price: 899,
-      originalPrice: 1299,
-      rating: 4.8,
-      reviews: 342,
-      discount: '30% OFF',
-      badge: 'Best Seller',
-      description: 'Experience the perfect blend of culture, adventure, and relaxation in Thailand. Visit Bangkok\'s iconic temples, enjoy the vibrant nightlife of Pattaya, and indulge in authentic Thai cuisine.',
-      highlights: [
-        'Visit Grand Palace and Wat Pho in Bangkok',
-        'Coral Island tour with water sports',
-        'Alcazar Cabaret Show in Pattaya',
-        'Traditional Thai massage session',
-        'Shopping at floating markets',
-        'Airport transfers included'
-      ],
-      included: [
-        'Round-trip flights',
-        '6 nights hotel accommodation',
-        'Daily breakfast',
-        'Airport transfers',
-        'City tours with guide',
-        'Entrance fees to attractions'
-      ],
-      notIncluded: [
-        'Lunch and dinner',
-        'Personal expenses',
-        'Travel insurance',
-        'Optional activities'
-      ],
-      itinerary: [
-        { day: 1, title: 'Arrival in Bangkok', description: 'Arrive at Bangkok Airport, transfer to hotel. Evening free for leisure.' },
-        { day: 2, title: 'Bangkok City Tour', description: 'Visit Grand Palace, Wat Pho, and Wat Arun. Evening shopping at Asiatique.' },
-        { day: 3, title: 'Bangkok to Pattaya', description: 'Transfer to Pattaya. Check-in hotel. Evening Alcazar Show.' },
-        { day: 4, title: 'Coral Island Tour', description: 'Full day Coral Island tour with water sports and lunch.' },
-        { day: 5, title: 'Pattaya Free Day', description: 'Free day for shopping or optional activities.' },
-        { day: 6, title: 'Pattaya to Bangkok', description: 'Return to Bangkok. Free time for shopping.' },
-        { day: 7, title: 'Departure', description: 'Check out and transfer to airport for departure.' }
-      ]
-    },
-    2: {
-      id: 2,
-      title: 'Dubai Desert Safari',
-      location: 'United Arab Emirates',
-      duration: '5 Days / 4 Nights',
-      images: [
-        'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&q=80',
-        'https://images.unsplash.com/photo-1518684079-3c830dcef090?w=800&q=80',
-        'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80'
-      ],
-      price: 1199,
-      originalPrice: 1599,
-      rating: 4.9,
-      reviews: 528,
-      discount: '25% OFF',
-      badge: 'Trending',
-      description: 'Discover the glamour of Dubai with thrilling desert adventures, world-class shopping, and architectural marvels. Experience luxury and tradition in one unforgettable journey.',
-      highlights: [
-        'Burj Khalifa observation deck',
-        'Desert safari with BBQ dinner',
-        'Dubai Marina dhow cruise',
-        'Gold and spice souks visit',
-        'Dubai Mall and Dubai Fountain',
-        'Palm Jumeirah tour'
-      ],
-      included: [
-        'Round-trip flights',
-        '4 nights hotel accommodation',
-        'Daily breakfast',
-        'Desert safari with dinner',
-        'City tour',
-        'Airport transfers'
-      ],
-      notIncluded: [
-        'Visa fees',
-        'Lunch and dinner (except safari)',
-        'Personal expenses',
-        'Optional activities'
-      ],
-      itinerary: [
-        { day: 1, title: 'Arrival in Dubai', description: 'Airport pickup and hotel check-in. Evening at leisure.' },
-        { day: 2, title: 'Dubai City Tour', description: 'Visit Burj Khalifa, Dubai Mall, Dubai Fountain.' },
-        { day: 3, title: 'Desert Safari', description: 'Afternoon desert safari with dune bashing, camel ride, and BBQ dinner.' },
-        { day: 4, title: 'Free Day', description: 'Optional activities or shopping at Mall of Emirates.' },
-        { day: 5, title: 'Departure', description: 'Check out and airport transfer.' }
-      ]
-    },
-    3: {
-      id: 3,
-      title: 'Maldives Paradise Escape',
-      location: 'Maldives',
-      duration: '6 Days / 5 Nights',
-      images: [
-        'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=800&q=80',
-        'https://images.unsplash.com/photo-1573843981267-be1999ff37cd?w=800&q=80',
-        'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80'
-      ],
-      price: 1899,
-      originalPrice: 2499,
-      rating: 5.0,
-      reviews: 421,
-      discount: '24% OFF',
-      badge: 'Luxury',
-      description: 'Escape to paradise with pristine beaches, crystal-clear waters, and luxurious overwater villas. Enjoy world-class diving, spa treatments, and unforgettable sunsets.',
-      highlights: [
-        'Overwater villa accommodation',
-        'Snorkeling and diving',
-        'Spa and wellness treatments',
-        'Private beach access',
-        'Sunset cruise',
-        'All meals included'
-      ],
-      included: [
-        'Round-trip flights',
-        '5 nights overwater villa',
-        'All meals (breakfast, lunch, dinner)',
-        'Water sports equipment',
-        'Spa session',
-        'Sunset cruise'
-      ],
-      notIncluded: [
-        'Alcoholic beverages',
-        'Scuba diving certification courses',
-        'Personal expenses',
-        'Travel insurance'
-      ],
-      itinerary: [
-        { day: 1, title: 'Arrival', description: 'Airport pickup, speedboat transfer to resort.' },
-        { day: 2, title: 'Beach Day', description: 'Relax on private beach, snorkeling.' },
-        { day: 3, title: 'Water Sports', description: 'Kayaking, paddleboarding, jet skiing.' },
-        { day: 4, title: 'Spa & Wellness', description: 'Full spa treatment and yoga session.' },
-        { day: 5, title: 'Sunset Cruise', description: 'Private sunset cruise with champagne.' },
-        { day: 6, title: 'Departure', description: 'Check out and transfer to airport.' }
-      ]
-    },
-    4: {
-      id: 4,
-      title: 'Turkey Heritage Tour',
-      location: 'Turkey',
-      duration: '8 Days / 7 Nights',
-      images: [
-        'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800&q=80',
-        'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=800&q=80',
-        'https://images.unsplash.com/photo-1570939274717-7eda259b50ed?w=800&q=80'
-      ],
-      price: 1299,
-      originalPrice: 1799,
-      rating: 4.7,
-      reviews: 289,
-      discount: '28% OFF',
-      badge: 'Popular',
-      description: 'Journey through Turkey\'s rich history and stunning landscapes. From Istanbul\'s grand mosques to Cappadocia\'s fairy chimneys, experience the magic of this ancient land.',
-      highlights: [
-        'Hagia Sophia and Blue Mosque',
-        'Hot air balloon ride in Cappadocia',
-        'Pamukkale thermal pools',
-        'Ephesus ancient city',
-        'Bosphorus cruise',
-        'Turkish bath experience'
-      ],
-      included: [
-        'Round-trip flights',
-        '7 nights hotel accommodation',
-        'Daily breakfast',
-        'All transfers',
-        'Guided tours',
-        'Entrance fees'
-      ],
-      notIncluded: [
-        'Lunch and dinner',
-        'Hot air balloon ride',
-        'Personal expenses',
-        'Travel insurance'
-      ],
-      itinerary: [
-        { day: 1, title: 'Istanbul Arrival', description: 'Airport pickup and hotel check-in.' },
-        { day: 2, title: 'Istanbul Tour', description: 'Visit Hagia Sophia, Blue Mosque, Topkapi Palace.' },
-        { day: 3, title: 'Cappadocia', description: 'Flight to Cappadocia, explore underground city.' },
-        { day: 4, title: 'Hot Air Balloon', description: 'Optional balloon ride, valley tours.' },
-        { day: 5, title: 'Pamukkale', description: 'Travel to Pamukkale, visit thermal pools.' },
-        { day: 6, title: 'Ephesus', description: 'Explore ancient Ephesus ruins.' },
-        { day: 7, title: 'Return to Istanbul', description: 'Bosphorus cruise, Grand Bazaar.' },
-        { day: 8, title: 'Departure', description: 'Airport transfer.' }
-      ]
-    },
-    5: {
-      id: 5,
-      title: 'Singapore City Break',
-      location: 'Singapore',
-      duration: '4 Days / 3 Nights',
-      images: [
-        'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800&q=80',
-        'https://images.unsplash.com/photo-1565967511849-76a60a516170?w=800&q=80',
-        'https://images.unsplash.com/photo-1508964942454-1a56651d54ac?w=800&q=80'
-      ],
-      price: 799,
-      originalPrice: 1099,
-      rating: 4.6,
-      reviews: 312,
-      discount: '27% OFF',
-      badge: 'New',
-      description: 'Explore the modern metropolis of Singapore with its stunning skyline, diverse cuisine, and world-class attractions. Perfect for a quick getaway.',
-      highlights: [
-        'Gardens by the Bay',
-        'Marina Bay Sands',
-        'Universal Studios',
-        'Sentosa Island',
-        'Night Safari',
-        'Hawker center food tour'
-      ],
-      included: [
-        'Round-trip flights',
-        '3 nights hotel accommodation',
-        'Daily breakfast',
-        'City pass',
-        'Airport transfers',
-        'Night Safari ticket'
-      ],
-      notIncluded: [
-        'Lunch and dinner',
-        'Universal Studios ticket',
-        'Personal expenses',
-        'Travel insurance'
-      ],
-      itinerary: [
-        { day: 1, title: 'Arrival', description: 'Airport pickup, hotel check-in, Marina Bay area.' },
-        { day: 2, title: 'City Tour', description: 'Gardens by the Bay, Merlion, Chinatown.' },
-        { day: 3, title: 'Sentosa Island', description: 'Beach activities, cable car ride.' },
-        { day: 4, title: 'Departure', description: 'Last-minute shopping, airport transfer.' }
-      ]
-    },
-    6: {
-      id: 6,
-      title: 'Bali Tropical Paradise',
-      location: 'Indonesia',
-      duration: '7 Days / 6 Nights',
-      images: [
-        'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=80',
-        'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=800&q=80',
-        'https://images.unsplash.com/photo-1559628376-f3fe5f782a2e?w=800&q=80'
-      ],
-      price: 1099,
-      originalPrice: 1499,
-      rating: 4.8,
-      reviews: 456,
-      discount: '27% OFF',
-      badge: 'Top Rated',
-      description: 'Immerse yourself in Bali\'s natural beauty, ancient temples, and vibrant culture. From rice terraces to pristine beaches, experience the island of the gods.',
-      highlights: [
-        'Ubud rice terraces',
-        'Tanah Lot temple',
-        'Traditional Balinese spa',
-        'White water rafting',
-        'Beach clubs in Seminyak',
-        'Traditional dance performance'
-      ],
-      included: [
-        'Round-trip flights',
-        '6 nights resort accommodation',
-        'Daily breakfast',
-        'Temple tours',
-        'Spa treatment',
-        'Airport transfers'
-      ],
-      notIncluded: [
-        'Lunch and dinner',
-        'Water rafting',
-        'Personal expenses',
-        'Travel insurance'
-      ],
-      itinerary: [
-        { day: 1, title: 'Arrival', description: 'Airport pickup, resort check-in.' },
-        { day: 2, title: 'Ubud Tour', description: 'Rice terraces, monkey forest, traditional market.' },
-        { day: 3, title: 'Temple Tour', description: 'Visit Tanah Lot and Uluwatu temples.' },
-        { day: 4, title: 'Spa Day', description: 'Balinese massage and wellness treatments.' },
-        { day: 5, title: 'Beach Day', description: 'Relax at Seminyak beach, beach clubs.' },
-        { day: 6, title: 'Water Activities', description: 'Optional rafting or snorkeling.' },
-        { day: 7, title: 'Departure', description: 'Last shopping, airport transfer.' }
-      ]
-    }
-  }
-
-  const packageData = packages[id] || packages[1]
+  const packageData = packagesData.find(pkg => String(pkg.id) === id) || packagesData[0]
   const [currentImage, setCurrentImage] = useState(0)
 
   const handleBooking = () => {
@@ -355,7 +63,7 @@ const PackageDetail = () => {
                   {packageData.discount}
                 </span>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2 font-montserrat">
+              <h1 className="text-2xl lg:text-4xl font-bold text-gray-900 mb-2 font-montserrat">
                 {packageData.title}
               </h1>
               <div className="flex flex-wrap items-center gap-4 text-gray-600">
@@ -380,7 +88,7 @@ const PackageDetail = () => {
               <p className="text-sm text-gray-500 line-through mb-1">
                 ${packageData.originalPrice}
               </p>
-              <p className="text-4xl font-bold text-teal-600 mb-1">
+              <p className="lg:text-4xl text-2xl font-bold text-teal-600 mb-1">
                 ${packageData.price}
               </p>
               <p className="text-sm text-gray-600">per person</p>
@@ -393,16 +101,16 @@ const PackageDetail = () => {
               <img
                 src={packageData.images[currentImage]}
                 alt={packageData.title}
-                className="w-full h-96 object-cover rounded-xl"
+                className="w-full h-64 sm:h-80 lg:h-96 object-cover rounded-xl transition-all duration-500 ease-in-out hover:scale-[1.01]"
               />
             </div>
-            <div className="grid grid-cols-3 lg:grid-cols-1 gap-4">
+            <div className="grid grid-cols-3 lg:grid-cols-1 gap-3 sm:gap-4">
               {packageData.images.map((img, idx) => (
                 <img
                   key={idx}
                   src={img}
                   alt={`${packageData.title} ${idx + 1}`}
-                  className={`w-full h-28 lg:h-[120px] object-cover rounded-lg cursor-pointer border-2 transition-all ${
+                  className={`w-full h-20 sm:h-24 lg:h-[120px] object-cover rounded-lg cursor-pointer border-2 transition-all duration-300 ease-in-out hover:scale-105 ${
                     currentImage === idx ? 'border-teal-600' : 'border-transparent hover:border-teal-300'
                   }`}
                   onClick={() => setCurrentImage(idx)}
@@ -483,7 +191,7 @@ const PackageDetail = () => {
 
           {/* Right Column - Booking Card */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
+            <div className="bg-white rounded-2xl shadow-lg p-6 lg:sticky lg:top-24 transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1">
               <h3 className="text-xl font-bold text-gray-900 mb-4 font-montserrat">Book This Package</h3>
               
               <div className="space-y-4 mb-6">

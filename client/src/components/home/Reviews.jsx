@@ -132,14 +132,12 @@ const Reviews = ({className}) => {
 
   return (
     <div className={`md:my-20 my-4 ${className}`}>
-      <Container className="flex mb-10 px-4 md:px-0 justify-between items-center">
+      <Container className="mb-10 px-4 md:px-0">
         <div className='flex flex-col gap-4'>
           <h5 className='text-[#000000] text-[32px] leading-[44px] font-semibold font-montserrat tracking-[1.92px]'>Reviews</h5>
           <p className='font-montserrat text-[16px] leading-[24px] text-[#000000]'>What people says about Golobe facilities.</p>
         </div>
-        <Button 
-        text="View all" 
-        className="px-4 py-2 border border-[#8DD3BB] rounded-sm font-medium text-sm font-montserrat text-[#121] cursor-pointer hover:bg-teal-500 hover:text-white transition-all duration-300" to="/" />
+        
       </Container>
 
       <div className='w-full overflow-hidden'>

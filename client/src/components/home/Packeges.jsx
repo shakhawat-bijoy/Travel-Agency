@@ -4,6 +4,7 @@ import Button from '../common/Buttton'
 import { FaStar } from 'react-icons/fa6'
 import { MdLocationOn } from 'react-icons/md'
 import { X, Plus, Minus, Calendar, Users, MapPin, Plane, Hotel, Utensils, Camera, CheckCircle2 } from 'lucide-react'
+import { packagesData } from '../../data/packages'
 
 const Packeges = () => {
   const [showCustomModal, setShowCustomModal] = useState(false)
@@ -96,92 +97,7 @@ const Packeges = () => {
       setShowSuccessPopup(false)
     }, 5000)
   }
-  const recommendedPackages = [
-    {
-      id: 1,
-      title: 'Bangkok & Pattaya Adventure',
-      location: 'Thailand',
-      duration: '7 Days / 6 Nights',
-      image: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=600&q=80',
-      price: 899,
-      originalPrice: 1299,
-      rating: 4.8,
-      reviews: 342,
-      features: ['Flights', 'Hotels', 'Transfers', 'Breakfast'],
-      discount: '30% OFF',
-      badge: 'Best Seller'
-    },
-    {
-      id: 2,
-      title: 'Dubai Desert Safari',
-      location: 'United Arab Emirates',
-      duration: '5 Days / 4 Nights',
-      image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600&q=80',
-      price: 1199,
-      originalPrice: 1599,
-      rating: 4.9,
-      reviews: 528,
-      features: ['Flights', 'Hotels', 'Desert Safari', 'City Tour'],
-      discount: '25% OFF',
-      badge: 'Trending'
-    },
-    {
-      id: 3,
-      title: 'Maldives Paradise Escape',
-      location: 'Maldives',
-      duration: '6 Days / 5 Nights',
-      image: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=600&q=80',
-      price: 1899,
-      originalPrice: 2499,
-      rating: 5.0,
-      reviews: 421,
-      features: ['Flights', 'Resort', 'Water Sports', 'All Meals'],
-      discount: '24% OFF',
-      badge: 'Luxury'
-    },
-    {
-      id: 4,
-      title: 'Turkey Heritage Tour',
-      location: 'Turkey',
-      duration: '8 Days / 7 Nights',
-      image: 'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=600&q=80',
-      price: 1299,
-      originalPrice: 1799,
-      rating: 4.7,
-      reviews: 289,
-      features: ['Flights', 'Hotels', 'City Tours', 'Breakfast'],
-      discount: '28% OFF',
-      badge: 'Popular'
-    },
-    {
-      id: 5,
-      title: 'Singapore City Break',
-      location: 'Singapore',
-      duration: '4 Days / 3 Nights',
-      image: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=600&q=80',
-      price: 799,
-      originalPrice: 1099,
-      rating: 4.6,
-      reviews: 312,
-      features: ['Flights', 'Hotels', 'City Pass', 'Breakfast'],
-      discount: '27% OFF',
-      badge: 'New'
-    },
-    {
-      id: 6,
-      title: 'Bali Tropical Paradise',
-      location: 'Indonesia',
-      duration: '7 Days / 6 Nights',
-      image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&q=80',
-      price: 1099,
-      originalPrice: 1499,
-      rating: 4.8,
-      reviews: 456,
-      features: ['Flights', 'Resort', 'Temple Tours', 'Spa'],
-      discount: '27% OFF',
-      badge: 'Top Rated'
-    }
-  ]
+  const recommendedPackages = packagesData.slice(0, 6)
 
   return (
     <div className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-gray-50 to-white">
@@ -200,7 +116,7 @@ const Packeges = () => {
             <Button
               text="View All Packages"
               className="bg-teal-600 text-white px-5 sm:px-6 py-2.5 rounded-lg hover:bg-teal-700 transition-colors text-sm lg:text-base font-medium shadow-md"
-              to=""
+              to="/packages"
             />
           </div>
         </div>
@@ -215,7 +131,7 @@ const Packeges = () => {
               {/* Image Section */}
               <div className="relative h-56 sm:h-60 lg:h-64 overflow-hidden">
                 <img
-                  src={pkg.image}
+                  src={pkg.images?.[0]}
                   alt={pkg.title}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />

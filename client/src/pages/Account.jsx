@@ -1101,7 +1101,7 @@ const Account = () => {
 
       {/* Cover Photo Section */}
       <div className="relative">
-        <div className="lg:h-96 h-48 bg-gradient-to-r from-teal-600 via-orange-400 to-yellow-400 rounded-2xl overflow-hidden shadow-xl">
+        <div className="lg:h-96 h-48 bg-gray-100 rounded-2xl overflow-hidden">
           {userInfo.coverImage && userInfo.coverImage !== '' && userInfo.coverImage.startsWith('data:image') ? (
             <img
               id="coverAvatar"
@@ -1116,9 +1116,9 @@ const Account = () => {
               }}
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-r from-teal-600 via-orange-400 to-yellow-400"></div>
+            <div className="w-full h-full"></div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
+          
 
           {/* Cover Upload Button */}
           <button
