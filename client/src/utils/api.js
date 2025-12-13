@@ -62,6 +62,9 @@ const apiCall = async (endpoint, options = {}) => {
         if (!response.ok) {
             // Create error object with validation errors if available
             const error = new Error(data.message || data.error || `Request failed with status ${response.status}`);
+            // Preserve status code and server payload so callers can react accordingly
+            error.status = response.status;
+            error.data = data;
             if (data.errors) {
                 error.errors = data.errors;
             }

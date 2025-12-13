@@ -10,7 +10,6 @@ const ProtectedRoute = ({ children }) => {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                // Check if user has token in localStorage
                 const { token } = auth.getUserData()
 
                 if (!token) {
@@ -19,22 +18,28 @@ const ProtectedRoute = ({ children }) => {
                     return
                 }
 
-                // Verify token with backend
                 const response = await authAPI.getProfile()
+
                 if (response.success) {
                     setIsAuthenticated(true)
-                    // Update user data in localStorage if needed
                     auth.saveUserData(token, response.user)
-                } else {
-                    // Token is invalid, clear it
+                    return
+                }
+
+                // Non-success without explicit auth failure: keep user signed in but log for visibility
+                console.warn('Auth check returned non-success response, keeping session.', response)
+                setIsAuthenticated(true)
+            } catch (error) {
+                const isAuthError = error?.status === 401 || error?.status === 403
+
+                if (isAuthError) {
                     auth.logout()
                     setIsAuthenticated(false)
+                } else {
+                    // Transient/server errors should not force logout; allow access while backend recovers
+                    console.warn('Non-auth error during auth check, keeping session:', error)
+                    setIsAuthenticated(true)
                 }
-            } catch (error) {
-                console.error('Auth check failed:', error)
-                // Token is invalid or expired, clear it
-                auth.logout()
-                setIsAuthenticated(false)
             } finally {
                 setIsLoading(false)
             }

@@ -1,9 +1,23 @@
 import mongoose from 'mongoose';
 
+const connectionOptions = {
+    serverSelectionTimeoutMS: 30000,
+    socketTimeoutMS: 45000,
+    connectTimeoutMS: 30000,
+    maxPoolSize: 10,
+    minPoolSize: 2,
+    maxIdleTimeMS: 60000,
+    retryWrites: true,
+    retryReads: true,
+    heartbeatFrequencyMS: 10000,
+};
+
+const maskConnectionString = (uri = '') => uri.replace(/:[^:@]+@/, ':****@');
+const resolveMongoUri = () => process.env.MONGO_URI || process.env.MONGODB_URI;
+
 const connectDB = async () => {
     try {
-        // Support both MONGO_URI and MONGODB_URI for flexibility in hosting envs
-        const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
+        const mongoUri = resolveMongoUri();
 
         if (!mongoUri) {
             console.warn('⚠️ MONGO_URI/MONGODB_URI not defined. Running without database connection.');
@@ -15,19 +29,9 @@ const connectDB = async () => {
         mongoose.set('bufferCommands', false); // Disable buffering
         
         console.log('🔄 Attempting MongoDB connection...');
-        console.log('🔗 Connection string:', mongoUri.replace(/:[^:@]+@/, ':****@'));
+        console.log('🔗 Connection string:', maskConnectionString(mongoUri));
         
-        const conn = await mongoose.connect(mongoUri, {
-            serverSelectionTimeoutMS: 30000, // Increase to 30s
-            socketTimeoutMS: 45000,
-            connectTimeoutMS: 30000,
-            maxPoolSize: 10,
-            minPoolSize: 2,
-            maxIdleTimeMS: 60000, // Close idle connections after 60s
-            retryWrites: true,
-            retryReads: true,
-            heartbeatFrequencyMS: 10000, // Check connection health every 10s
-        });
+        const conn = await mongoose.connect(mongoUri, connectionOptions);
 
         console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
         console.log(`✅ Database: ${conn.connection.name}`);
@@ -45,6 +49,32 @@ const connectDB = async () => {
         
         // In development, exit on DB error
         process.exit(1);
+    }
+};
+
+export const ensureDbConnection = async () => {
+    const mongoUri = resolveMongoUri();
+
+    if (!mongoUri) {
+        console.warn('⚠️ No MongoDB URI configured; skipping reconnection attempt.');
+        return null;
+    }
+
+    const state = mongoose.connection.readyState;
+
+    // 0 = disconnected, 3 = disconnecting
+    if (state === 1 || state === 2) {
+        return mongoose.connection;
+    }
+
+    console.warn('⚠️ MongoDB not connected. Attempting reconnection...');
+    try {
+        const conn = await mongoose.connect(mongoUri, connectionOptions);
+        console.log('✅ Reconnected to MongoDB');
+        return conn;
+    } catch (error) {
+        console.error('❌ MongoDB reconnection failed:', error.message);
+        throw error;
     }
 };
 

@@ -5,7 +5,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import connectDB from './config/db.js';
+import connectDB, { ensureDbConnection } from './config/db.js';
 import authRoutes from './routes/auth.js';
 import paymentRoutes from './routes/payment.js';
 import flightRoutes from './routes/flights.js';
@@ -45,6 +45,27 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
+
+// Ensure database connection is alive for API routes; attempt reconnection when needed
+const ensureDbReady = async (req, res, next) => {
+  // Skip health checks to let them report actual state
+  if (req.path === '/api/health') {
+    return next();
+  }
+
+  try {
+    await ensureDbConnection();
+    next();
+  } catch (error) {
+    console.error('Database unavailable for request:', req.path, error.message);
+    return res.status(503).json({
+      success: false,
+      message: 'Database connection error. Please try again shortly.',
+    });
+  }
+};
+
+app.use('/api', ensureDbReady);
 
 // Serve static files from uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
