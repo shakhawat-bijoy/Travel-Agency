@@ -212,18 +212,31 @@ const Packeges = () => {
         </div>
 
         {/* CTA Section */}
-        <div className="mt-12 sm:mt-16 lg:mt-20 bg-gradient-to-r from-teal-600 to-teal-500 rounded-2xl p-8 sm:p-10 lg:p-12 text-center shadow-xl">
-          <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4 font-montserrat">
-            Can't find what you're looking for?
-          </h3>
-          <p className="text-white/90 text-sm sm:text-base lg:text-lg mb-6 max-w-2xl mx-auto">
-            Let us create a custom package just for you. Tell us your dream destination and we'll handle the rest.
-          </p>
-          <Button
-            text="Create Custom Package"
-            className="bg-white text-teal-600 px-6 sm:px-8 py-3 rounded-lg hover:bg-gray-100 transition-colors text-sm lg:text-base font-semibold shadow-lg"
-            onClick={() => setShowCustomModal(true)}
-          />
+        <div className="mt-12 sm:mt-16 lg:mt-20 relative overflow-hidden rounded-2xl text-center shadow-xl">
+          {/* Blurred background image */}
+          <div className="absolute inset-0">
+            <img
+              src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80"
+              alt="Tropical beach backdrop"
+              className="w-full h-full object-cover blur-xs scale-105"
+              loading="lazy"
+            />
+            
+          </div>
+
+          <div className="relative p-8 sm:p-10 lg:p-12">
+            <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4 font-montserrat">
+              Can't find what you're looking for?
+            </h3>
+            <p className="text-white/90 text-sm sm:text-base lg:text-lg mb-6 max-w-2xl mx-auto">
+              Let us create a custom package just for you. Tell us your dream destination and we'll handle the rest.
+            </p>
+            <Button
+              text="Create Custom Package"
+              className="bg-white text-teal-600 px-6 sm:px-8 py-3 rounded-lg hover:bg-gray-100 transition-colors text-sm lg:text-base font-semibold shadow-lg"
+              onClick={() => setShowCustomModal(true)}
+            />
+          </div>
         </div>
 
         {/* Custom Package Modal */}
