@@ -14,6 +14,7 @@ import BookingSuccess from './components/flights/BookingSuccess'
 import PackageDetail from './pages/PackageDetail'
 import ConfirmPackageBooking from './pages/ConfirmPackageBooking'
 import Packages from './pages/Packages'
+import Places from './pages/Places'
 
 import {
   createRoutesFromElements,
@@ -55,6 +56,7 @@ const App = () => {
             <ConfirmBooking />
           </ProtectedRoute>}></Route>
         <Route path="/booking-success" element={<BookingSuccess />}></Route>
+        <Route path="/places" element={<Places />}></Route>
         <Route path="/packages" element={<Packages />}></Route>
         <Route path="/packages/:id" element={<PackageDetail />}></Route>
         <Route path="/confirm-package-booking" element={<ProtectedRoute>

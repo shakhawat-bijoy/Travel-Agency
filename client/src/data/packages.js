@@ -1109,4 +1109,459 @@ export const packagesData = [
       { day: 7, title: 'Departure', description: 'Last swim, airport transfer.' }
     ]
   }
+  ,
+  {
+    id: 26,
+    title: 'Istanbul Classics & Bosphorus',
+    location: 'Turkey',
+    duration: '5 Days / 4 Nights',
+    images: [
+      'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800&q=80',
+      'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?w=800&q=80',
+      'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=800&q=80'
+    ],
+    price: 899,
+    originalPrice: 1199,
+    rating: 4.7,
+    reviews: 264,
+    discount: '25% OFF',
+    badge: 'City Break',
+    features: ['Flights', 'Hotel', 'Breakfast', 'Bosporus Cruise'],
+    description: 'Ottoman palaces, grand bazaars, and a sunset Bosphorus cruise between continents.',
+    highlights: [
+      'Hagia Sophia and Blue Mosque',
+      'Grand Bazaar and Spice Market',
+      'Topkapi Palace',
+      'Bosphorus sunset cruise',
+      'Galata Tower area walk'
+    ],
+    included: ['Round-trip flights', '4 nights hotel', 'Daily breakfast', 'City tour', 'Bosphorus cruise', 'Airport transfers'],
+    notIncluded: ['Lunch and dinner', 'Entrance fees not listed', 'Personal expenses', 'Travel insurance'],
+    itinerary: [
+      { day: 1, title: 'Arrive Istanbul', description: 'Check-in, evening stroll in Sultanahmet.' },
+      { day: 2, title: 'Old City Icons', description: 'Hagia Sophia, Blue Mosque, Basilica Cistern.' },
+      { day: 3, title: 'Palace & Bazaars', description: 'Topkapi, Grand Bazaar, Spice Market.' },
+      { day: 4, title: 'Bosphorus Day', description: 'Cruise and Galata neighborhood walk.' },
+      { day: 5, title: 'Departure', description: 'Free morning, transfer out.' }
+    ]
+  },
+  {
+    id: 27,
+    title: 'Maldives Lagoon Escape',
+    location: 'Maldives',
+    duration: '5 Days / 4 Nights',
+    images: [
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80',
+      'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?w=800&q=80',
+      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80'
+    ],
+    price: 1599,
+    originalPrice: 2099,
+    rating: 4.8,
+    reviews: 188,
+    discount: '24% OFF',
+    badge: 'Beach',
+    features: ['Flights', 'Resort', 'Breakfast', 'Transfers'],
+    description: 'Turquoise lagoons, sandbanks, and reef snorkeling from an overwater or beach villa.',
+    highlights: [
+      'Speedboat or seaplane transfer',
+      'House-reef snorkeling',
+      'Sandbank picnic',
+      'Sunset cruise option',
+      'Spa and water sports'
+    ],
+    included: ['Round-trip flights', '4 nights resort', 'Daily breakfast', 'Airport-resort transfers', 'Snorkel gear'],
+    notIncluded: ['Lunch and dinner', 'Alcoholic drinks', 'Personal expenses', 'Travel insurance'],
+    itinerary: [
+      { day: 1, title: 'Arrive Malé', description: 'Transfer to resort, sunset swim.' },
+      { day: 2, title: 'Reef Day', description: 'Snorkeling and spa time.' },
+      { day: 3, title: 'Sandbank & Cruise', description: 'Half-day sandbank, optional sunset cruise.' },
+      { day: 4, title: 'Leisure', description: 'Kayak, paddle board, or relax.' },
+      { day: 5, title: 'Departure', description: 'Transfer back to Malé and fly home.' }
+    ]
+  },
+  {
+    id: 28,
+    title: 'Baku Modern & Old City',
+    location: 'Azerbaijan',
+    duration: '4 Days / 3 Nights',
+    images: [
+      'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?w=800&q=80',
+      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80',
+      'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80'
+    ],
+    price: 699,
+    originalPrice: 999,
+    rating: 4.6,
+    reviews: 142,
+    discount: '30% OFF',
+    badge: 'City Break',
+    features: ['Flights', 'Hotel', 'Breakfast', 'City Tour'],
+    description: 'Flame Towers skyline, Caspian promenade, and UNESCO-listed Icherisheher.',
+    highlights: [
+      'Icherisheher walking tour',
+      'Heydar Aliyev Center photo stop',
+      'Flame Towers viewpoint',
+      'Caspian Boulevard evening',
+      'Ateshgah or Gobustan option'
+    ],
+    included: ['Round-trip flights', '3 nights hotel', 'Daily breakfast', 'City tour', 'Airport transfers'],
+    notIncluded: ['Lunch and dinner', 'Entrance fees not listed', 'Personal expenses', 'Travel insurance'],
+    itinerary: [
+      { day: 1, title: 'Arrive Baku', description: 'Transfer and Bulvar stroll.' },
+      { day: 2, title: 'Old City & Museums', description: 'Maiden Tower, Shirvanshah Palace, Carpet Museum.' },
+      { day: 3, title: 'Modern Baku', description: 'Heydar Aliyev Center and Flame Towers evening.' },
+      { day: 4, title: 'Departure', description: 'Free morning, airport transfer.' }
+    ]
+  },
+  {
+    id: 29,
+    title: 'Paris Essentials',
+    location: 'France',
+    duration: '5 Days / 4 Nights',
+    images: [
+      'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800&q=80',
+      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80',
+      'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?w=800&q=80'
+    ],
+    price: 999,
+    originalPrice: 1399,
+    rating: 4.8,
+    reviews: 512,
+    discount: '28% OFF',
+    badge: 'Classic',
+    features: ['Flights', 'Hotel', 'Breakfast', 'Seine Cruise'],
+    description: 'Iconic Paris sights with time for cafés, museums, and river sunsets.',
+    highlights: [
+      'Eiffel Tower area visit',
+      'Louvre timed entry',
+      'Montmartre walk',
+      'Seine cruise',
+      'Le Marais free time'
+    ],
+    included: ['Round-trip flights', '4 nights hotel', 'Daily breakfast', 'Seine cruise', 'Airport transfers'],
+    notIncluded: ['Museum tickets not listed', 'Lunch and dinner', 'Personal expenses', 'Travel insurance'],
+    itinerary: [
+      { day: 1, title: 'Arrive Paris', description: 'Check-in, Seine evening walk.' },
+      { day: 2, title: 'Louvre & Marais', description: 'Museum morning, café time in Marais.' },
+      { day: 3, title: 'Eiffel & Seine', description: 'Trocadéro photos and evening cruise.' },
+      { day: 4, title: 'Montmartre', description: 'Sacré-Cœur views, artists square.' },
+      { day: 5, title: 'Departure', description: 'Last pastries, airport transfer.' }
+    ]
+  },
+  {
+    id: 30,
+    title: 'New York Highlights',
+    location: 'USA',
+    duration: '4 Days / 3 Nights',
+    images: [
+      'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=800&q=80',
+      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80',
+      'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80'
+    ],
+    price: 899,
+    originalPrice: 1199,
+    rating: 4.7,
+    reviews: 603,
+    discount: '25% OFF',
+    badge: 'City Break',
+    features: ['Flights', 'Hotel', 'Breakfast', 'City Pass'],
+    description: 'Skyline views, parks, and neighborhoods that never sleep.',
+    highlights: [
+      'Statue of Liberty or Harbor cruise',
+      'Times Square and Broadway area',
+      'Central Park stroll',
+      'Brooklyn Bridge walk',
+      'Museum or observatory option'
+    ],
+    included: ['Round-trip flights', '3 nights hotel', 'Daily breakfast', 'City pass', 'Airport transfers'],
+    notIncluded: ['Lunch and dinner', 'Broadway tickets', 'Personal expenses', 'Travel insurance'],
+    itinerary: [
+      { day: 1, title: 'Arrive NYC', description: 'Check-in, Times Square night lights.' },
+      { day: 2, title: 'Downtown', description: 'Statue of Liberty option, 9/11 Memorial, Brooklyn Bridge.' },
+      { day: 3, title: 'Midtown & Park', description: 'Central Park, Fifth Ave, observatory choice.' },
+      { day: 4, title: 'Departure', description: 'Last bagel, airport transfer.' }
+    ]
+  },
+  {
+    id: 31,
+    title: 'Tokyo City & Culture',
+    location: 'Japan',
+    duration: '5 Days / 4 Nights',
+    images: [
+      'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&q=80',
+      'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?w=800&q=80',
+      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80'
+    ],
+    price: 1199,
+    originalPrice: 1549,
+    rating: 4.8,
+    reviews: 275,
+    discount: '23% OFF',
+    badge: 'Culture',
+    features: ['Flights', 'Hotel', 'Breakfast', 'Metro Card'],
+    description: 'Shrines, neon districts, and food alleys across Tokyo.',
+    highlights: [
+      'Asakusa and Senso-ji',
+      'Shibuya Crossing and Shinjuku',
+      'Meiji Shrine',
+      'TeamLab or museum option',
+      'Street food in Omoide Yokocho'
+    ],
+    included: ['Round-trip flights', '4 nights hotel', 'Daily breakfast', 'Metro card', 'Airport transfers'],
+    notIncluded: ['Lunch and dinner', 'Attraction tickets', 'Personal expenses', 'Travel insurance'],
+    itinerary: [
+      { day: 1, title: 'Arrive Tokyo', description: 'Check-in, Shibuya evening.' },
+      { day: 2, title: 'Tradition Day', description: 'Asakusa, Sumida views, Ueno area.' },
+      { day: 3, title: 'Modern Tokyo', description: 'Shinjuku, observatory option, night alleys.' },
+      { day: 4, title: 'Parks & Culture', description: 'Meiji Shrine, Harajuku, museum pick.' },
+      { day: 5, title: 'Departure', description: 'Last ramen, airport transfer.' }
+    ]
+  },
+  {
+    id: 32,
+    title: 'Dubai City & Desert',
+    location: 'UAE',
+    duration: '5 Days / 4 Nights',
+    images: [
+      'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&q=80',
+      'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?w=800&q=80',
+      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80'
+    ],
+    price: 949,
+    originalPrice: 1299,
+    rating: 4.7,
+    reviews: 389,
+    discount: '27% OFF',
+    badge: 'City & Adventure',
+    features: ['Flights', 'Hotel', 'Breakfast', 'Desert Safari'],
+    description: 'Skyline icons, souks, and dune adventures in Dubai.',
+    highlights: [
+      'Burj Khalifa area visit',
+      'Dubai Mall & fountain show',
+      'Old Dubai creek and souks',
+      'Desert safari with dinner',
+      'Marina or JBR evening'
+    ],
+    included: ['Round-trip flights', '4 nights hotel', 'Daily breakfast', 'Desert safari', 'Airport transfers'],
+    notIncluded: ['Lunch and dinner', 'Burj Khalifa ticket', 'Personal expenses', 'Travel insurance'],
+    itinerary: [
+      { day: 1, title: 'Arrive Dubai', description: 'Check-in, fountain show night.' },
+      { day: 2, title: 'Old & New Dubai', description: 'Creek abras, gold/spice souks, Marina evening.' },
+      { day: 3, title: 'Desert Day', description: 'Dune bashing, BBQ dinner, shows.' },
+      { day: 4, title: 'Leisure', description: 'Beach or mall day, optional Burj deck.' },
+      { day: 5, title: 'Departure', description: 'Last coffee, airport transfer.' }
+    ]
+  },
+  {
+    id: 33,
+    title: 'Barcelona City & Coast',
+    location: 'Spain',
+    duration: '5 Days / 4 Nights',
+    images: [
+      'https://images.unsplash.com/photo-1464790719320-516ecd75af6c?w=800&q=80',
+      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80',
+      'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?w=800&q=80'
+    ],
+    price: 949,
+    originalPrice: 1299,
+    rating: 4.8,
+    reviews: 341,
+    discount: '27% OFF',
+    badge: 'City & Beach',
+    features: ['Flights', 'Hotel', 'Breakfast', 'City Pass'],
+    description: 'Gaudí masterpieces, Gothic lanes, and Mediterranean sunsets.',
+    highlights: [
+      'Sagrada Família timed entry',
+      'Park Güell visit',
+      'Gothic Quarter walk',
+      'Barceloneta beach time',
+      'Tapas crawl evening'
+    ],
+    included: ['Round-trip flights', '4 nights hotel', 'Daily breakfast', 'City pass', 'Airport transfers'],
+    notIncluded: ['Lunch and dinner', 'Tapas crawl cost', 'Personal expenses', 'Travel insurance'],
+    itinerary: [
+      { day: 1, title: 'Arrive Barcelona', description: 'Check-in, Gothic Quarter evening.' },
+      { day: 2, title: 'Gaudí Day', description: 'Sagrada Família and Passeig de Gràcia.' },
+      { day: 3, title: 'Parks & Views', description: 'Park Güell and Montjuïc option.' },
+      { day: 4, title: 'Beach & Tapas', description: 'Barceloneta, tapas crawl in El Born.' },
+      { day: 5, title: 'Departure', description: 'Market visit, airport transfer.' }
+    ]
+  },
+  {
+    id: 34,
+    title: 'Cape Town Coast & Winelands',
+    location: 'South Africa',
+    duration: '6 Days / 5 Nights',
+    images: [
+      'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=800&q=80',
+      'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80',
+      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80'
+    ],
+    price: 1299,
+    originalPrice: 1699,
+    rating: 4.8,
+    reviews: 227,
+    discount: '24% OFF',
+    badge: 'Scenic',
+    features: ['Flights', 'Hotel', 'Breakfast', 'Tours'],
+    description: 'Table Mountain views, penguin beaches, and Stellenbosch wine country.',
+    highlights: [
+      'Table Mountain ticket',
+      'Cape Peninsula tour',
+      'Boulders penguins stop',
+      'Stellenbosch wine tasting',
+      'V&A Waterfront evening'
+    ],
+    included: ['Round-trip flights', '5 nights hotel', 'Daily breakfast', 'Peninsula tour', 'Wine tasting', 'Airport transfers'],
+    notIncluded: ['Lunch and dinner', 'Cableway if wind-closed', 'Personal expenses', 'Travel insurance'],
+    itinerary: [
+      { day: 1, title: 'Arrive Cape Town', description: 'Check-in, Waterfront dinner.' },
+      { day: 2, title: 'City & Mountain', description: 'City tour and Table Mountain (weather permitting).' },
+      { day: 3, title: 'Cape Peninsula', description: 'Cape Point, Chapmans Peak, penguins.' },
+      { day: 4, title: 'Winelands', description: 'Stellenbosch tastings and scenery.' },
+      { day: 5, title: 'Leisure', description: 'Bo-Kaap, beaches, markets.' },
+      { day: 6, title: 'Departure', description: 'Free time, airport transfer.' }
+    ]
+  },
+  {
+    id: 35,
+    title: 'Bali Beaches & Ubud',
+    location: 'Indonesia',
+    duration: '6 Days / 5 Nights',
+    images: [
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80',
+      'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?w=800&q=80',
+      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80'
+    ],
+    price: 1099,
+    originalPrice: 1499,
+    rating: 4.8,
+    reviews: 312,
+    discount: '27% OFF',
+    badge: 'Island',
+    features: ['Flights', 'Hotels', 'Breakfast', 'Transfers'],
+    description: 'Surf sunsets in Canggu, temples in Ubud, and rice-terrace mornings.',
+    highlights: [
+      'Uluwatu Temple sunset',
+      'Ubud rice terraces and waterfalls',
+      'Canggu beach time',
+      'Nusa Penida day option',
+      'Balinese dance evening'
+    ],
+    included: ['Round-trip flights', '5 nights hotels (split Ubud/beach)', 'Daily breakfast', 'Airport and inter-hotel transfers', 'One guided day tour'],
+    notIncluded: ['Lunch and dinner', 'Entrance fees not listed', 'Personal expenses', 'Travel insurance'],
+    itinerary: [
+      { day: 1, title: 'Arrive Bali', description: 'Transfer to Canggu/Uluwatu, beach sunset.' },
+      { day: 2, title: 'Beach Day', description: 'Surf, cafés, or spa.' },
+      { day: 3, title: 'To Ubud', description: 'Move inland, evening market walk.' },
+      { day: 4, title: 'Ubud Sights', description: 'Rice terraces, Tirta Empul, waterfalls.' },
+      { day: 5, title: 'Free Day', description: 'Optional Nusa Penida or cooking class.' },
+      { day: 6, title: 'Departure', description: 'Transfer to airport.' }
+    ]
+  },
+  {
+    id: 36,
+    title: 'Rio Sunsets & Samba',
+    location: 'Brazil',
+    duration: '5 Days / 4 Nights',
+    images: [
+      'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80',
+      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80',
+      'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?w=800&q=80'
+    ],
+    price: 1099,
+    originalPrice: 1499,
+    rating: 4.7,
+    reviews: 241,
+    discount: '27% OFF',
+    badge: 'City & Beach',
+    features: ['Flights', 'Hotel', 'Breakfast', 'City Tour'],
+    description: 'Beaches, samba nights, and mountain viewpoints in Rio.',
+    highlights: [
+      'Christ the Redeemer visit',
+      'Sugarloaf cable car',
+      'Copacabana and Ipanema time',
+      'Lapa arches evening',
+      'Selarón Steps stop'
+    ],
+    included: ['Round-trip flights', '4 nights hotel', 'Daily breakfast', 'City tour', 'Airport transfers'],
+    notIncluded: ['Lunch and dinner', 'Cable car ticket if not listed', 'Personal expenses', 'Travel insurance'],
+    itinerary: [
+      { day: 1, title: 'Arrive Rio', description: 'Check-in, Copacabana sunset.' },
+      { day: 2, title: 'Rio Classics', description: 'Christ the Redeemer and Sugarloaf.' },
+      { day: 3, title: 'Beaches & Lapa', description: 'Beach day and samba night.' },
+      { day: 4, title: 'City Colors', description: 'Selarón Steps and Santa Teresa walk.' },
+      { day: 5, title: 'Departure', description: 'Morning swim, airport transfer.' }
+    ]
+  },
+  {
+    id: 37,
+    title: 'Bangkok Temples & Markets',
+    location: 'Thailand',
+    duration: '4 Days / 3 Nights',
+    images: [
+      'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?w=800&q=80',
+      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80',
+      'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80'
+    ],
+    price: 699,
+    originalPrice: 999,
+    rating: 4.6,
+    reviews: 198,
+    discount: '30% OFF',
+    badge: 'City Break',
+    features: ['Flights', 'Hotel', 'Breakfast', 'City Tour'],
+    description: 'Golden temples, river cruises, and street-food filled nights in Bangkok.',
+    highlights: [
+      'Grand Palace and Wat Phra Kaew',
+      'Wat Arun riverside',
+      'Chao Phraya cruise',
+      'Chatuchak or night markets',
+      'Chinatown food walk'
+    ],
+    included: ['Round-trip flights', '3 nights hotel', 'Daily breakfast', 'City tour', 'Airport transfers'],
+    notIncluded: ['Lunch and dinner', 'Temple dress code items', 'Personal expenses', 'Travel insurance'],
+    itinerary: [
+      { day: 1, title: 'Arrive Bangkok', description: 'Check-in, riverfront evening.' },
+      { day: 2, title: 'Temple Day', description: 'Grand Palace, Wat Pho, Wat Arun.' },
+      { day: 3, title: 'Markets & Food', description: 'Chatuchak or Chinatown night bites.' },
+      { day: 4, title: 'Departure', description: 'Souvenir stop, airport transfer.' }
+    ]
+  },
+  {
+    id: 38,
+    title: 'Vancouver Mountains & Seawall',
+    location: 'Canada',
+    duration: '5 Days / 4 Nights',
+    images: [
+      'https://images.unsplash.com/photo-1503264116251-35a269479413?w=800&q=80',
+      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80',
+      'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?w=800&q=80'
+    ],
+    price: 1049,
+    originalPrice: 1399,
+    rating: 4.8,
+    reviews: 184,
+    discount: '25% OFF',
+    badge: 'Outdoors',
+    features: ['Flights', 'Hotel', 'Breakfast', 'Tours'],
+    description: 'Seawall rides, mountain views, and market bites in Vancouver.',
+    highlights: [
+      'Stanley Park and seawall bike',
+      'Capilano Suspension Bridge',
+      'Grouse Mountain views',
+      'Granville Island market',
+      'Gastown evening stroll'
+    ],
+    included: ['Round-trip flights', '4 nights hotel', 'Daily breakfast', 'Capilano ticket', 'Airport transfers'],
+    notIncluded: ['Lunch and dinner', 'Bike rental', 'Personal expenses', 'Travel insurance'],
+    itinerary: [
+      { day: 1, title: 'Arrive Vancouver', description: 'Check-in, Gastown evening.' },
+      { day: 2, title: 'Parks & Markets', description: 'Stanley Park bike, Granville Island lunch.' },
+      { day: 3, title: 'North Shore', description: 'Capilano and Grouse Mountain day.' },
+      { day: 4, title: 'Leisure', description: 'Museums or shopping, waterfront sunset.' },
+      { day: 5, title: 'Departure', description: 'Coffee and farewell, airport transfer.' }
+    ]
+  }
 ]

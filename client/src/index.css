@@ -5,3 +5,13 @@
 @import "slick-carousel/slick/slick-theme.css";
 
 /* Global Font Styles */
+
+/* Hide scrollbars where applied without disabling scrolling */
+.no-scrollbar {
+	-ms-overflow-style: none; /* IE and Edge */
+	scrollbar-width: none; /* Firefox */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+	display: none; /* Chrome, Safari */
+}

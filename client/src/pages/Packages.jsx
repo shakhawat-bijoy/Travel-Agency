@@ -64,6 +64,14 @@ const Packages = () => {
           className="mb-4"
         />
 
+        <div className="text-center mb-8 sm:mb-10 lg:mb-12">
+          <p className="uppercase tracking-[0.25em] text-blue-700 text-xs sm:text-sm font-semibold mb-2">All packages</p>
+          <h1 className="text-3xl sm:text-4xl lg:text-[40px] font-bold text-gray-900 leading-tight">Find your next escape</h1>
+          <p className="text-gray-600 mt-3 text-sm sm:text-base">
+            Browse curated stays, city breaks, and bucket-list adventures ready to book.
+          </p>
+        </div>
+
         {/* Hero Carousel */}
         <div className="relative overflow-hidden rounded-3xl bg-gray-900 text-white shadow-2xl mb-8 sm:mb-12 lg:mb-16 min-h-[420px] sm:min-h-[460px] lg:min-h-[520px]">
           <div

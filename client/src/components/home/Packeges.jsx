@@ -101,24 +101,28 @@ const Packeges = () => {
   const recommendedPackages = packagesData.slice(0, 6)
 
   return (
-    <div className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-gray-50 to-white">
+    <div className="py-12 sm:py-16 lg:py-20 bg-white">
       <Container className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Section */}
-        <div className="mb-8 sm:mb-12 lg:mb-16 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-2xl sm:text-3xl lg:text-[32px] font-bold text-gray-900 mb-2 font-montserrat">
-              Recommended for You
+        <div className="mb-10 sm:mb-14 lg:mb-16 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="max-w-3xl">
+            <p className="uppercase tracking-[0.2em] text-teal-700 text-xs sm:text-sm font-semibold mb-2">
+              Curated packages
+            </p>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 font-montserrat leading-tight">
+              Handpicked getaways for you
             </h2>
             <p className="text-sm sm:text-base lg:text-lg text-gray-600 font-montserrat">
-              Handpicked travel packages tailored to your preferences
+              Choose from immersive itineraries crafted by our travel experts - flights, stays, and experiences bundled for a stress-free holiday.
             </p>
           </div>
           <div className="flex justify-start sm:justify-end">
-            <Button
-              text="View All Packages"
-              className="bg-teal-600 text-white px-5 sm:px-6 py-2.5 rounded-lg hover:bg-teal-700 transition-colors text-sm lg:text-base font-medium shadow-md"
+            <Link
               to="/packages"
-            />
+              className="inline-flex items-center rounded-lg border border-teal-600 text-teal-700 px-4 lg:px-6 py-2.5 text-sm lg:text-base hover:text-white hover:bg-teal-700  transition-all duration-300"
+            >
+              All packages
+            </Link>
           </div>
         </div>
 

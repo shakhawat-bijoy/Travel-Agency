@@ -46,7 +46,7 @@ const Navbar = () => {
 
     return (
         <nav className={`${isOtherRoute ? '' : isAccountPage ? 'absolute top-0' : 'absolute md:top-5 top-0'} ${!isOtherRoute ? 'absolute' : ''} left-0 right-0 z-50 bg-transparent`}>
-            <Container className='px-2'>
+            <Container className='px-2 relative'>
                 <div className="relative z-10 flex items-center justify-between py-4">
                     {/* Left Side - Navigation Tabs (Desktop) */}
                     <div className="hidden lg:flex items-center gap-4">
@@ -153,13 +153,13 @@ const Navbar = () => {
 
                 {/* Mobile Menu Overlay */}
                 {isMobileMenuOpen && (
-                    <div className="lg:hidden absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-white/20">
+                    <div className="lg:hidden absolute left-0 right-0 mt-2 bg-white/45 backdrop-blur-md rounded-xl shadow-lg border border-white/20 top-[calc(100%+6px)] z-50">
                         <div className="p-4 space-y-4">
                             {/* Mobile Navigation Links */}
                             <div className="space-y-2">
                                 <Link
-                                    to={'/'}
-                                    className='flex items-center gap-2 px-4 py-3 rounded-lg transition-all duration-300 hover:bg-gray-100 text-gray-800'
+                                    to={'/flights'}
+                                    className='flex items-center gap-2 px-4 py-3 rounded-lg transition-all duration-300 hover:bg-gray-100 text-gray-900 text-md'
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                     <Plane className="w-5 h-5 text-teal-600" />
@@ -168,7 +168,7 @@ const Navbar = () => {
 
                                 <Link
                                     to={'/hotels'}
-                                    className='flex items-center gap-2 px-4 py-3 rounded-lg transition-all duration-300 hover:bg-gray-100 text-gray-800'
+                                    className='flex items-center gap-2 px-4 py-3 rounded-lg transition-all duration-300 hover:bg-gray-100 text-gray-900 text-md'
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                     <Building2 className="w-5 h-5 text-teal-600" />
@@ -183,7 +183,7 @@ const Navbar = () => {
                                         <Button
                                             text="My Account"
                                             to="/account"
-                                            className="w-full text-center bg-transparent border border-teal-600 text-teal-600 hover:bg-teal-600 hover:text-white font-medium px-4 py-3 transition-all duration-300 rounded-lg"
+                                            className="w-full text-center bg-transparent border border-teal-600 text-teal-700 hover:bg-teal-600 hover:text-white font-medium px-4 py-3 transition-all duration-300 rounded-lg text-md "
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         />
 
@@ -192,7 +192,7 @@ const Navbar = () => {
                                                 handleLogout()
                                                 setIsMobileMenuOpen(false)
                                             }}
-                                            className="w-full text-center bg-transparent border border-red-600 text-red-600 hover:bg-red-600 hover:text-white font-medium px-4 py-3 transition-all duration-300 rounded-lg"
+                                            className="w-full text-center bg-transparent border border-red-600 text-red-600 hover:bg-red-600 hover:text-white font-medium px-4 py-3 transition-all duration-300 rounded-lg text-md"
                                         >
                                             Logout
                                         </button>
@@ -202,14 +202,14 @@ const Navbar = () => {
                                         <Button
                                             text="Login"
                                             to="/login"
-                                            className="w-full text-center bg-transparent border border-teal-600 text-teal-600 hover:bg-teal-600 hover:text-white font-medium px-4 py-3 transition-all duration-300 rounded-lg"
+                                            className="w-full text-center bg-transparent border border-teal-600 text-gray-900 hover:bg-teal-600 hover:text-white font-medium px-4 py-3 transition-all duration-300 rounded-lg text-md"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         />
 
                                         <Button
                                             text="Sign up"
                                             to="/register"
-                                            className="w-full text-center bg-transparent border border-teal-600 text-teal-600 hover:bg-teal-600 hover:text-white font-medium px-4 py-3 transition-all duration-300 rounded-lg"
+                                            className="w-full text-center bg-transparent border border-teal-600 text-gray-900 hover:bg-teal-600 hover:text-white font-medium px-4 py-3 transition-all duration-300 rounded-lg text-md"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         />
                                     </>
