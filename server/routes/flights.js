@@ -1444,7 +1444,7 @@ router.get("/search-direct", async (req, res) => {
 
     res.status(500).json({
       success: false,
-      message: 'Unable to fetch flights at the moment. Please try again shortly.',
+      message: 'Unable to search flights at the moment. Please try again shortly.',
       error: error.response?.data || error.message
     });
   }
