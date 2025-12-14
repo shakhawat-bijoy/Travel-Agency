@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import Container from '../common/Container'
 import Button from '../common/Buttton'
 import { FaStar } from 'react-icons/fa6'
@@ -159,9 +160,12 @@ const Packeges = () => {
                 </div>
 
                 {/* Title */}
-                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 font-montserrat line-clamp-2 group-hover:text-teal-600 transition-colors">
+                <Link
+                  to={`/packages/${pkg.id}`}
+                  className="text-lg sm:text-xl font-bold text-gray-900 mb-2 font-montserrat line-clamp-2 group-hover:text-teal-600 transition-colors block"
+                >
                   {pkg.title}
-                </h3>
+                </Link>
 
                 {/* Duration */}
                 <p className="text-sm text-gray-600 mb-3 font-medium">

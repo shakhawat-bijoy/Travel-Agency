@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import Container from '../components/common/Container'
+import Breadcrumb from '../components/common/Breadcrumb'
 import Button from '../components/common/Buttton'
 import { FaStar } from 'react-icons/fa6'
 import { MdLocationOn } from 'react-icons/md'
@@ -54,6 +56,14 @@ const Packages = () => {
   return (
     <div className="bg-gray-50 min-h-screen py-5 lg:py-8">
       <Container className="max-w-[1280px] mx-auto px-2 lg:px-0">
+        <Breadcrumb
+          items={[
+            { label: 'Home', to: '/' },
+            { label: 'Packages' }
+          ]}
+          className="mb-4"
+        />
+
         {/* Hero Carousel */}
         <div className="relative overflow-hidden rounded-3xl bg-gray-900 text-white shadow-2xl mb-8 sm:mb-12 lg:mb-16 min-h-[420px] sm:min-h-[460px] lg:min-h-[520px]">
           <div
@@ -111,7 +121,12 @@ const Packages = () => {
                       loading="lazy"
                     />
                     <div className="flex-1">
-                      <p className="text-sm font-semibold line-clamp-1">{pkg.title}</p>
+                      <Link
+                        to={`/packages/${pkg.id}`}
+                        className="text-sm font-semibold line-clamp-1 hover:text-teal-200"
+                      >
+                        {pkg.title}
+                      </Link>
                       <p className="text-xs text-white/75">{pkg.location}</p>
                       <div className="flex items-center gap-1 text-xs text-amber-200 mt-1">
                         <FaStar className="w-3.5 h-3.5" />
@@ -181,9 +196,12 @@ const Packages = () => {
                   <span className="text-xs sm:text-sm font-medium">{pkg.location}</span>
                 </div>
 
-                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 font-montserrat line-clamp-2 group-hover:text-teal-600 transition-colors">
+                <Link
+                  to={`/packages/${pkg.id}`}
+                  className="text-lg sm:text-xl font-bold text-gray-900 mb-2 font-montserrat line-clamp-2 group-hover:text-teal-600 transition-colors block"
+                >
                   {pkg.title}
-                </h3>
+                </Link>
 
                 <p className="text-sm text-gray-600 mb-3 font-medium">{pkg.duration}</p>
 

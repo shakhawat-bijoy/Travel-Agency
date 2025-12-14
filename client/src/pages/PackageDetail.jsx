@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Container from '../components/common/Container'
+import Breadcrumb from '../components/common/Breadcrumb'
 import Button from '../components/common/Buttton'
 import { FaStar, FaCheck, FaClock, FaCalendar, FaUsers, FaPlane, FaHotel, FaMapMarkerAlt } from 'react-icons/fa'
 import { MdLocationOn } from 'react-icons/md'
@@ -42,14 +43,14 @@ const PackageDetail = () => {
   return (
     <div className="bg-gray-50 min-h-screen py-8 sm:py-12">
       <Container className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Breadcrumb */}
-        <div className="mb-6 text-sm text-gray-600">
-          <span className="cursor-pointer hover:text-teal-600" onClick={() => navigate('/')}>Home</span>
-          <span className="mx-2">/</span>
-          <span className="cursor-pointer hover:text-teal-600" onClick={() => navigate('/')}>Packages</span>
-          <span className="mx-2">/</span>
-          <span className="text-gray-900">{packageData.title}</span>
-        </div>
+        <Breadcrumb
+          items={[
+            { label: 'Home', to: '/' },
+            { label: 'Packages', to: '/packages' },
+            { label: packageData.title }
+          ]}
+          className="mb-6"
+        />
 
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 mb-6">
