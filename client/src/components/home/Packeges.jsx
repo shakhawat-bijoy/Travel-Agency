@@ -6,10 +6,13 @@ import { FaStar } from 'react-icons/fa6'
 import { MdLocationOn } from 'react-icons/md'
 import { X, Plus, Minus, Calendar, Users, MapPin, Plane, Hotel, Utensils, Camera, CheckCircle2 } from 'lucide-react'
 import { packagesData } from '../../data/packages'
+import { packageAPI } from '../../utils/api'
 
 const Packeges = () => {
   const [showCustomModal, setShowCustomModal] = useState(false)
   const [showSuccessPopup, setShowSuccessPopup] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
   const [customPackage, setCustomPackage] = useState({
     destination: '',
     duration: 3,
@@ -71,32 +74,39 @@ const Packeges = () => {
 
   const handleSubmitCustomPackage = (e) => {
     e.preventDefault()
-    console.log('Custom Package Request:', customPackage)
-    // Here you can add API call to save the custom package request
-    
-    // Close modal and show success popup
-    setShowCustomModal(false)
-    setShowSuccessPopup(true)
-    
-    // Reset form
-    setCustomPackage({
-      destination: '',
-      duration: 3,
-      travelers: 1,
-      startDate: '',
-      endDate: '',
-      budget: 'moderate',
-      accommodation: 'standard',
-      activities: [],
-      meals: 'breakfast',
-      transportation: 'flight',
-      specialRequests: ''
-    })
+    setSubmitError('')
+    setIsSubmitting(true)
 
-    // Auto close success popup after 5 seconds
-    setTimeout(() => {
-      setShowSuccessPopup(false)
-    }, 5000)
+    packageAPI.submitCustomPackageRequest(customPackage)
+      .then(() => {
+        setShowCustomModal(false)
+        setShowSuccessPopup(true)
+
+        setCustomPackage({
+          destination: '',
+          duration: 3,
+          travelers: 1,
+          startDate: '',
+          endDate: '',
+          budget: 'moderate',
+          accommodation: 'standard',
+          activities: [],
+          meals: 'breakfast',
+          transportation: 'flight',
+          specialRequests: ''
+        })
+
+        setTimeout(() => {
+          setShowSuccessPopup(false)
+        }, 10000)
+      })
+      .catch((error) => {
+        console.error('Custom package submission failed:', error)
+        setSubmitError(error.message || 'Failed to submit your request. Please try again.')
+      })
+      .finally(() => {
+        setIsSubmitting(false)
+      })
   }
   const recommendedPackages = packagesData.slice(0, 6)
 
@@ -242,7 +252,11 @@ const Packeges = () => {
             <Button
               text="Create Custom Package"
               className="bg-white text-teal-600 px-6 sm:px-8 py-3 rounded-lg hover:bg-gray-100 transition-colors text-sm lg:text-base font-semibold shadow-lg"
-              onClick={() => setShowCustomModal(true)}
+              onClick={() => {
+                setSubmitError('')
+                setIsSubmitting(false)
+                setShowCustomModal(true)
+              }}
             />
           </div>
         </div>
@@ -504,6 +518,12 @@ const Packeges = () => {
                   />
                 </div>
 
+                {submitError && (
+                  <div className="p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-100">
+                    {submitError}
+                  </div>
+                )}
+
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 border-t">
                   <button
@@ -515,9 +535,10 @@ const Packeges = () => {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-teal-600 to-teal-500 text-white rounded-lg hover:from-teal-700 hover:to-teal-600 transition-all font-semibold shadow-lg"
+                    disabled={isSubmitting}
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-teal-600 to-teal-500 text-white rounded-lg hover:from-teal-700 hover:to-teal-600 transition-all font-semibold shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
                   >
-                    Submit Custom Package Request
+                    {isSubmitting ? 'Submitting...' : 'Submit Custom Package Request'}
                   </button>
                 </div>
               </form>

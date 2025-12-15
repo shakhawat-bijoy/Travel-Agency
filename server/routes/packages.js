@@ -9,7 +9,9 @@ import {
     cancelPackageBooking,
     updatePackageBookingStatus,
     deletePackageBooking,
-    getPackageBookingsByEmail
+    getPackageBookingsByEmail,
+    submitCustomPackageRequest,
+    getUserCustomPackageRequests
 } from '../controllers/packageController.js';
 
 const router = express.Router();
@@ -40,5 +42,9 @@ router.put('/:bookingId/status', authenticate, updatePackageBookingStatus);
 
 // Delete package booking
 router.delete('/:bookingId', authenticate, deletePackageBooking);
+
+// Custom package requests
+router.post('/custom-requests', authenticate, submitCustomPackageRequest);
+router.get('/custom-requests/:userId', authenticate, getUserCustomPackageRequests);
 
 export default router;

@@ -36,10 +36,13 @@ const Account = () => {
   const [loadingPayments, setLoadingPayments] = useState(false)
   const [bookings, setBookings] = useState([])
   const [packageBookings, setPackageBookings] = useState([])
+  const [customRequests, setCustomRequests] = useState([])
   const [loadingBookings, setLoadingBookings] = useState(false)
   const [loadingPackageBookings, setLoadingPackageBookings] = useState(false)
+  const [loadingCustomRequests, setLoadingCustomRequests] = useState(false)
   const [bookingError, setBookingError] = useState('')
   const [packageBookingError, setPackageBookingError] = useState('')
+  const [customRequestError, setCustomRequestError] = useState('')
   const [selectedBooking, setSelectedBooking] = useState(null)
   const [showBookingDetails, setShowBookingDetails] = useState(false)
   const [selectedPackageBooking, setSelectedPackageBooking] = useState(null)
@@ -107,6 +110,7 @@ const Account = () => {
     if (activeTab === 'history') {
       loadBookings()
       loadPackageBookings()
+      loadCustomRequests()
     }
      
   }, [activeTab, userId, userInfo.email])
@@ -186,6 +190,28 @@ const Account = () => {
       setPackageBookingError('Error loading package bookings. Please try again.')
     } finally {
       setLoadingPackageBookings(false)
+    }
+  }
+
+  const loadCustomRequests = async () => {
+    try {
+      setLoadingCustomRequests(true)
+      setCustomRequestError('')
+
+      if (userId) {
+        const response = await packageAPI.getUserCustomPackageRequests(userId, 1, 100)
+
+        if (response.success) {
+          setCustomRequests(response.data || [])
+        } else {
+          setCustomRequestError(response.message || 'Failed to load custom package requests')
+        }
+      }
+    } catch (error) {
+      console.error('Error loading custom package requests:', error)
+      setCustomRequestError(error.message || 'Error loading custom package requests. Please try again.')
+    } finally {
+      setLoadingCustomRequests(false)
     }
   }
 
@@ -1840,6 +1866,167 @@ const Account = () => {
                     <span className="sm:hidden">{booking.status === 'cancelled' ? 'Cancelled' : 'Cancel'}</span>
                   </button>
                 </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Custom Package Requests */}
+      <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl border border-gray-100 p-4 sm:p-6 lg:p-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
+          <div className="flex-1">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Custom Package Requests</h2>
+            <p className="text-sm sm:text-base text-gray-500 mt-1">Track the custom trips you've asked us to craft</p>
+          </div>
+          <button
+            onClick={loadCustomRequests}
+            className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-teal-50 text-teal-600 rounded-lg hover:bg-teal-100 transition-colors text-sm whitespace-nowrap touch-manipulation"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </button>
+        </div>
+
+        {loadingCustomRequests ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your custom requests...</p>
+          </div>
+        ) : customRequestError ? (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <X className="w-8 h-8 text-red-500" />
+            </div>
+            <p className="text-red-600 font-medium mb-2">Error Loading Requests</p>
+            <p className="text-gray-500 text-sm mb-4">{customRequestError}</p>
+            <button
+              onClick={loadCustomRequests}
+              className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : customRequests.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Backpack className="w-12 h-12 text-gray-400" />
+            </div>
+            <p className="text-gray-500 text-lg mb-2">No custom requests yet</p>
+            <p className="text-gray-400 text-sm mb-6">Submit a custom package from the Packages page to see it here</p>
+            <Link
+              to="/packages"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors font-medium"
+            >
+              <Plus className="w-5 h-5" />
+              Create a Request
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-4 sm:space-y-6">
+            {customRequests.map((request) => (
+              <div key={request._id} className="border border-gray-200 rounded-lg sm:rounded-xl p-4 sm:p-6 hover:shadow-lg transition-all duration-300">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Backpack className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
+                        {request.destination}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-gray-500 truncate">
+                        Ref: <span className="font-medium text-gray-700">{request.reference}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <span className={`px-3 py-1 text-xs sm:text-sm font-medium rounded-full ${
+                    request.status === 'submitted' ? 'bg-blue-100 text-blue-700' :
+                    request.status === 'in_review' ? 'bg-yellow-100 text-yellow-700' :
+                    request.status === 'quoted' ? 'bg-purple-100 text-purple-700' :
+                    request.status === 'scheduled' ? 'bg-green-100 text-green-700' :
+                    request.status === 'completed' ? 'bg-green-100 text-green-700' :
+                    request.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                    'bg-gray-100 text-gray-700'
+                  }`}>
+                    {request.status?.replace('_', ' ')?.replace(/\b\w/g, (c) => c.toUpperCase())}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4 pb-4 border-b border-gray-200">
+                  <div>
+                    <p className="text-xs text-gray-500">Dates</p>
+                    <p className="text-sm sm:text-base font-medium text-gray-900 mt-1 flex items-center gap-1">
+                      <Calendar className="w-4 h-4 text-teal-600" />
+                      {request.startDate ? new Date(request.startDate).toLocaleDateString() : 'N/A'}
+                      <span className="text-gray-400">-</span>
+                      {request.endDate ? new Date(request.endDate).toLocaleDateString() : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Travelers</p>
+                    <p className="text-sm sm:text-base font-medium text-gray-900 mt-1">
+                      {request.travelers} person(s)
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Budget</p>
+                    <p className="text-sm sm:text-base font-medium text-gray-900 mt-1 capitalize">
+                      {request.budget}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Accommodation</p>
+                    <p className="text-sm sm:text-base font-medium text-gray-900 mt-1 capitalize">
+                      {request.accommodation}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Transportation</p>
+                    <p className="text-sm sm:text-base font-medium text-gray-900 mt-1 capitalize flex items-center gap-1">
+                      <Plane className="w-4 h-4 text-teal-600" />
+                      {request.transportation?.replace('-', ' ')}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Meals</p>
+                    <p className="text-sm sm:text-base font-medium text-gray-900 mt-1 capitalize">
+                      {request.meals?.replace('-', ' ')}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Duration</p>
+                    <p className="text-sm sm:text-base font-medium text-gray-900 mt-1">
+                      {request.duration} days
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Submitted</p>
+                    <p className="text-sm sm:text-base font-medium text-gray-900 mt-1">
+                      {request.createdAt ? new Date(request.createdAt).toLocaleDateString() : 'N/A'}
+                    </p>
+                  </div>
+                </div>
+
+                {request.activities && request.activities.length > 0 && (
+                  <div className="mb-4 pb-4 border-b border-gray-200">
+                    <p className="text-sm font-semibold text-gray-900 mb-2">Preferred Activities</p>
+                    <div className="flex flex-wrap gap-2">
+                      {request.activities.map((activity, idx) => (
+                        <span key={idx} className="px-3 py-1 rounded-full bg-teal-50 text-teal-700 text-xs font-medium">
+                          {activity}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {request.specialRequests && (
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-xs text-gray-500 mb-1">Special Requests</p>
+                    <p className="text-sm text-gray-800">{request.specialRequests}</p>
+                  </div>
+                )}
               </div>
             ))}
           </div>

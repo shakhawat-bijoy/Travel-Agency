@@ -352,6 +352,19 @@ export const packageAPI = {
     getAllPackageBookings: (page = 1, limit = 50) => {
         return apiCall(`/packages/bookings/all?page=${page}&limit=${limit}`);
     },
+
+    // Submit a custom package request
+    submitCustomPackageRequest: (requestData) => {
+        return apiCall('/packages/custom-requests', {
+            method: 'POST',
+            body: JSON.stringify(requestData),
+        });
+    },
+
+    // Get a user's custom package requests
+    getUserCustomPackageRequests: (userId, page = 1, limit = 50) => {
+        return apiCall(`/packages/custom-requests/${userId}?page=${page}&limit=${limit}`);
+    },
 };
 
 // Payment API functions

@@ -1,4 +1,5 @@
 import PackageBooking from '../models/PackageBooking.js';
+import CustomPackageRequest from '../models/CustomPackageRequest.js';
 import User from '../models/User.js';
 import SavedCard from '../models/SavedCard.js';
 
@@ -364,6 +365,128 @@ export const getPackageBookingsByEmail = async (req, res) => {
         res.status(500).json({
             success: false,
             message: error.message || 'Error fetching bookings'
+        });
+    }
+};
+
+// Submit a custom package request
+export const submitCustomPackageRequest = async (req, res) => {
+    try {
+        const {
+            destination,
+            duration,
+            travelers = 1,
+            startDate,
+            endDate,
+            budget = 'moderate',
+            accommodation = 'standard',
+            activities = [],
+            meals = 'breakfast',
+            transportation = 'flight',
+            specialRequests = '',
+            notes = ''
+        } = req.body;
+
+        const userId = req.user?._id || req.body.userId;
+
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required to submit a custom package request'
+            });
+        }
+
+        if (!destination || !duration || !startDate || !endDate) {
+            return res.status(400).json({
+                success: false,
+                message: 'Destination, duration, start date, and end date are required'
+            });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        const request = await CustomPackageRequest.create({
+            userId,
+            destination,
+            duration,
+            travelers,
+            startDate: new Date(startDate),
+            endDate: new Date(endDate),
+            budget,
+            accommodation,
+            activities,
+            meals,
+            transportation,
+            specialRequests,
+            notes
+        });
+
+        res.status(201).json({
+            success: true,
+            message: 'Custom package request submitted successfully',
+            data: request
+        });
+    } catch (error) {
+        console.error('Error submitting custom package request:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Error submitting custom package request'
+        });
+    }
+};
+
+// Get a user's custom package requests
+export const getUserCustomPackageRequests = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { page = 1, limit = 20 } = req.query;
+
+        const requesterId = req.user?._id?.toString();
+        const isAdmin = req.user?.role === 'admin';
+        if (requesterId && requesterId !== userId && !isAdmin) {
+            return res.status(403).json({
+                success: false,
+                message: 'You are not allowed to view these requests'
+            });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        const skip = (page - 1) * limit;
+        const requests = await CustomPackageRequest.find({ userId })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        const total = await CustomPackageRequest.countDocuments({ userId });
+
+        res.status(200).json({
+            success: true,
+            data: requests,
+            pagination: {
+                total,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                pages: Math.ceil(total / limit)
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching custom package requests:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Error fetching custom package requests'
         });
     }
 };
