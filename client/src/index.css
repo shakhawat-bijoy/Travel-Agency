@@ -15,3 +15,13 @@
 .no-scrollbar::-webkit-scrollbar {
 	display: none; /* Chrome, Safari */
 }
+
+/* Hide scrollbars while retaining scroll behavior for modals */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

@@ -11,6 +11,7 @@ import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 
 const Account = () => {
+  // ---------------------- State & Refs ----------------------
   const [activeTab, setActiveTab] = useState('profile')
   const [userId, setUserId] = useState(null)
   const [userInfo, setUserInfo] = useState({
@@ -64,6 +65,7 @@ const Account = () => {
   const profileImageRef = useRef(null)
   const coverImageRef = useRef(null)
 
+  // ---------------------- Lifecycle Effects ----------------------
   // Load user data on component mount
   useEffect(() => {
     const loadUserData = async () => {
@@ -129,6 +131,7 @@ const Account = () => {
     }
   }, [activeTab])
 
+  // ---------------------- Data Loaders ----------------------
   const loadPaymentMethods = async () => {
     try {
       setLoadingPayments(true)
@@ -275,6 +278,7 @@ const Account = () => {
     setShowPackageBookingDetails(false)
   }
 
+  // ---------------------- Download Handlers ----------------------
   const handleDownloadTicket = (booking) => {
     const doc = new jsPDF()
     
@@ -759,6 +763,7 @@ const Account = () => {
     doc.save(`DreamHolidays-Package-${booking.bookingReference}.pdf`)
   }
 
+  // ---------------------- Booking & Package Actions ----------------------
   const handleDeleteBooking = (booking) => {
     // Show custom confirmation modal
     setBookingToDelete(booking)
@@ -855,6 +860,7 @@ const Account = () => {
     setCancelConfirmationText('')
   }
 
+  // ---------------------- Profile Media & Editing ----------------------
   const handleImageUpload = async (file, type) => {
     if (!file) return
 
@@ -1064,6 +1070,7 @@ const Account = () => {
     setPasswordError('')
   }
 
+  // ---------------------- Early Returns ----------------------
   if (initialLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -1075,6 +1082,7 @@ const Account = () => {
     )
   }
 
+  // ---------------------- Render Helpers ----------------------
   const renderProfileContent = () => (
     <div className="space-y-8">
       {/* Account Navigation */}
@@ -1839,7 +1847,7 @@ const Account = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 justify-end">
                   <button
                     onClick={() => handleViewPackageBookingDetails(booking)}
                     className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-xs sm:text-sm font-medium touch-manipulation"
@@ -2042,7 +2050,7 @@ const Account = () => {
       case 'mastercard':
         return 'bg-gradient-to-br from-red-500 via-orange-600 to-yellow-500'
       case 'amex':
-        return 'bg-gradient-to-br from-gray-600 via-black-600 to-cyan-700'
+        return 'bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900'
       case 'discover':
         return 'bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700'
       default:
@@ -2054,7 +2062,7 @@ const Account = () => {
     switch (cardType) {
       case 'visa':
         return (
-          <div className="text-white font-bold text-2xl italic tracking-wider">
+          <div className="text-white font-bold text-2xl tracking-wider">
             VISA
           </div>
         )
@@ -2507,7 +2515,7 @@ const Account = () => {
       {/* Booking Details Modal */}
       {showBookingDetails && selectedBooking && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto scrollbar-hide">
             <div className="p-4 sm:p-6 lg:p-8">
               {/* Modal Header */}
               <div className="flex items-start justify-between mb-4 sm:mb-6 gap-2">
@@ -2737,7 +2745,7 @@ const Account = () => {
       {/* Package Booking Details Modal */}
       {showPackageBookingDetails && selectedPackageBooking && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto scrollbar-hide">
             <div className="p-4 sm:p-6 lg:p-8">
               {/* Modal Header */}
               <div className="flex items-start justify-between mb-4 sm:mb-6 gap-2">
@@ -3133,7 +3141,7 @@ const Account = () => {
       {/* Delete Account Popup */}
       {showDeletePopup && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto scrollbar-hide">
             <div className="p-6">
               {/* Header */}
               <div className="flex items-center gap-3 mb-6">
