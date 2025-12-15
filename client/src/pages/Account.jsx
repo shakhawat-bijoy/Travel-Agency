@@ -58,9 +58,9 @@ const Account = () => {
     confirmPassword: ''
   })
   const [passwordError, setPasswordError] = useState('')
-  const [showCancelPopup, setShowCancelPopup] = useState(false)
-  const [packageToCancel, setPackageToCancel] = useState(null)
-  const [cancelConfirmationText, setCancelConfirmationText] = useState('')
+  const [showDeletePackagePopup, setShowDeletePackagePopup] = useState(false)
+  const [packageBookingToDelete, setPackageBookingToDelete] = useState(null)
+  const [deletePackageConfirmationText, setDeletePackageConfirmationText] = useState('')
 
   const profileImageRef = useRef(null)
   const coverImageRef = useRef(null)
@@ -814,50 +814,50 @@ const Account = () => {
     setDeleteConfirmationText('')
   }
 
-  const handleCancelPackageBooking = (booking) => {
-    setPackageToCancel(booking)
-    setShowCancelPopup(true)
-    setCancelConfirmationText('')
+  const handleDeletePackageBooking = (booking) => {
+    setPackageBookingToDelete(booking)
+    setShowDeletePackagePopup(true)
+    setDeletePackageConfirmationText('')
   }
 
-  const confirmCancelPackageBooking = async () => {
-    if (cancelConfirmationText !== 'CANCEL') {
-      setSaveMessage('Please type "CANCEL" to confirm')
+  const confirmDeletePackageBooking = async () => {
+    if (deletePackageConfirmationText !== 'DELETE') {
+      setSaveMessage('Please type "DELETE" to confirm')
       setTimeout(() => setSaveMessage(''), 3000)
       return
     }
 
     try {
       setLoading(true)
-      console.log('Cancelling package booking:', packageToCancel._id)
-      
-      const response = await packageAPI.cancelPackageBooking(packageToCancel._id)
-      console.log('Cancel response:', response)
+      console.log('Deleting package booking:', packageBookingToDelete._id)
+
+      const response = await packageAPI.deletePackageBooking(packageBookingToDelete._id)
+      console.log('Delete response:', response)
 
       if (response.success) {
-        setSaveMessage('Package booking cancelled successfully!')
+        setSaveMessage('Package booking deleted successfully!')
         setTimeout(() => setSaveMessage(''), 3000)
-        setShowCancelPopup(false)
-        setPackageToCancel(null)
-        setCancelConfirmationText('')
+        setShowDeletePackagePopup(false)
+        setPackageBookingToDelete(null)
+        setDeletePackageConfirmationText('')
         loadPackageBookings()
       } else {
-        setSaveMessage(response.message || 'Failed to cancel booking')
+        setSaveMessage(response.message || 'Failed to delete booking')
         setTimeout(() => setSaveMessage(''), 3000)
       }
     } catch (error) {
-      console.error('Error cancelling booking:', error)
-      setSaveMessage(`Error cancelling booking: ${error.message || 'Please try again.'}`)
+      console.error('Error deleting package booking:', error)
+      setSaveMessage(`Error deleting package booking: ${error.message || 'Please try again.'}`)
       setTimeout(() => setSaveMessage(''), 5000)
     } finally {
       setLoading(false)
     }
   }
 
-  const closeCancelPopup = () => {
-    setShowCancelPopup(false)
-    setPackageToCancel(null)
-    setCancelConfirmationText('')
+  const closeDeletePackagePopup = () => {
+    setShowDeletePackagePopup(false)
+    setPackageBookingToDelete(null)
+    setDeletePackageConfirmationText('')
   }
 
   // ---------------------- Profile Media & Editing ----------------------
@@ -1506,7 +1506,7 @@ const Account = () => {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
-            <button
+            {/* <button
               onClick={async () => {
                 if (userId && userInfo.email) {
                   try {
@@ -1526,7 +1526,7 @@ const Account = () => {
               <Check className="w-4 h-4" />
               <span className="hidden sm:inline">Link My Bookings</span>
               <span className="sm:hidden">Link Bookings</span>
-            </button>
+            </button> */}
             <button
               onClick={loadBookings}
               className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-teal-50 text-teal-600 rounded-lg hover:bg-teal-100 transition-colors text-sm whitespace-nowrap touch-manipulation"
@@ -1865,13 +1865,13 @@ const Account = () => {
                     <span className="sm:hidden">PDF</span>
                   </button>
                   <button
-                    onClick={() => handleCancelPackageBooking(booking)}
-                    disabled={loading || booking.status === 'cancelled'}
+                    onClick={() => handleDeletePackageBooking(booking)}
+                    disabled={loading}
                     className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-xs sm:text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                   >
                     <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">{booking.status === 'cancelled' ? 'Cancelled' : 'Cancel'}</span>
-                    <span className="sm:hidden">{booking.status === 'cancelled' ? 'Cancelled' : 'Cancel'}</span>
+                    <span className="hidden sm:inline">Delete</span>
+                    <span className="sm:hidden">Delete</span>
                   </button>
                 </div>
               </div>
@@ -2962,20 +2962,18 @@ const Account = () => {
                   <span className="hidden sm:inline">Download Confirmation</span>
                   <span className="sm:hidden">Download</span>
                 </button>
-                {selectedPackageBooking.status !== 'cancelled' && (
-                  <button
-                    onClick={() => {
-                      handleClosePackageBookingDetails()
-                      handleCancelPackageBooking(selectedPackageBooking)
-                    }}
-                    disabled={loading}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base order-2 sm:order-3"
-                  >
-                    <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="hidden sm:inline">Cancel Booking</span>
-                    <span className="sm:hidden">Cancel</span>
-                  </button>
-                )}
+                <button
+                  onClick={() => {
+                    handleClosePackageBookingDetails()
+                    handleDeletePackageBooking(selectedPackageBooking)
+                  }}
+                  disabled={loading}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base order-2 sm:order-3"
+                >
+                  <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="hidden sm:inline">Delete Booking</span>
+                  <span className="sm:hidden">Delete</span>
+                </button>
               </div>
             </div>
           </div>
@@ -3057,61 +3055,61 @@ const Account = () => {
         </div>
       )}
 
-      {/* Cancel Package Booking Popup */}
-      {showCancelPopup && packageToCancel && (
+      {/* Delete Package Booking Popup */}
+      {showDeletePackagePopup && packageBookingToDelete && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
             <div className="p-6">
               {/* Header */}
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                  <AlertTriangle className="w-6 h-6 text-orange-600" />
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                  <AlertTriangle className="w-6 h-6 text-red-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Cancel Package Booking</h3>
-                  <p className="text-sm text-gray-500">Request cancellation of this booking</p>
+                  <h3 className="text-lg font-semibold text-gray-900">Delete Package Booking</h3>
+                  <p className="text-sm text-gray-500">This action cannot be undone</p>
                 </div>
               </div>
 
               {/* Booking Info */}
               <div className="mb-6 bg-gray-50 rounded-lg p-4">
-                <div className="text-sm text-gray-600 mb-2">You are about to cancel:</div>
+                <div className="text-sm text-gray-600 mb-2">You are about to delete:</div>
                 <div className="font-semibold text-gray-900 mb-1">
-                  {packageToCancel.packageData?.title || 'Package Tour'}
+                  {packageBookingToDelete.packageData?.title || 'Package Tour'}
                 </div>
                 <div className="text-sm text-gray-600">
-                  Reference: {packageToCancel.bookingReference}
+                  Reference: {packageBookingToDelete.bookingReference}
                 </div>
                 <div className="text-sm text-gray-600">
-                  Location: {packageToCancel.packageData?.location || 'N/A'}
+                  Location: {packageBookingToDelete.packageData?.location || 'N/A'}
                 </div>
                 <div className="text-sm text-gray-600">
-                  Travelers: {packageToCancel.numberOfTravelers} person(s)
+                  Travelers: {packageBookingToDelete.numberOfTravelers} person(s)
                 </div>
                 <div className="text-sm font-semibold text-teal-600 mt-2">
-                  Total: ${packageToCancel.totalPrice?.toFixed(2) || '0.00'}
+                  Total: ${packageBookingToDelete.totalPrice?.toFixed(2) || '0.00'}
                 </div>
               </div>
 
               {/* Warning */}
-              <div className="mb-6 bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <p className="text-sm text-orange-700">
-                  <strong>Important:</strong> Cancelling this booking will send a cancellation request. 
-                  Please review the cancellation policy for any applicable fees or refund details.
+              <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-sm text-red-700">
+                  <strong>Warning:</strong> Deleting this booking will permanently remove it from your history.
+                  This cannot be undone.
                 </p>
               </div>
 
               {/* Confirmation Input */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Type <span className="font-bold text-orange-600">CANCEL</span> to confirm:
+                  Type <span className="font-bold text-red-600">DELETE</span> to confirm:
                 </label>
                 <input
                   type="text"
-                  value={cancelConfirmationText}
-                  onChange={(e) => setCancelConfirmationText(e.target.value)}
-                  placeholder="Type CANCEL"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  value={deletePackageConfirmationText}
+                  onChange={(e) => setDeletePackageConfirmationText(e.target.value)}
+                  placeholder="Type DELETE"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   autoFocus
                 />
               </div>
@@ -3119,18 +3117,18 @@ const Account = () => {
               {/* Action Buttons */}
               <div className="flex gap-3">
                 <button
-                  onClick={closeCancelPopup}
+                  onClick={closeDeletePackagePopup}
                   disabled={loading}
                   className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
                 >
                   Keep Booking
                 </button>
                 <button
-                  onClick={confirmCancelPackageBooking}
-                  disabled={loading || cancelConfirmationText !== 'CANCEL'}
-                  className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={confirmDeletePackageBooking}
+                  disabled={loading || deletePackageConfirmationText !== 'DELETE'}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? 'Cancelling...' : 'Cancel Booking'}
+                  {loading ? 'Deleting...' : 'Delete Booking'}
                 </button>
               </div>
             </div>

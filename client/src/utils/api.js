@@ -353,6 +353,13 @@ export const packageAPI = {
         return apiCall(`/packages/bookings/all?page=${page}&limit=${limit}`);
     },
 
+    // Delete a package booking
+    deletePackageBooking: (bookingId) => {
+        return apiCall(`/packages/${bookingId}`, {
+            method: 'DELETE',
+        });
+    },
+
     // Submit a custom package request
     submitCustomPackageRequest: (requestData) => {
         return apiCall('/packages/custom-requests', {

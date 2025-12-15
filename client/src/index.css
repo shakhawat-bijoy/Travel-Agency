@@ -6,6 +6,11 @@
 
 /* Global Font Styles */
 
+/* Make all buttons show pointer cursor for clear affordance */
+button {
+  cursor: pointer;
+}
+
 /* Hide scrollbars where applied without disabling scrolling */
 .no-scrollbar {
 	-ms-overflow-style: none; /* IE and Edge */
