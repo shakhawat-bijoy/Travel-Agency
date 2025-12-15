@@ -250,7 +250,7 @@ const Packeges = () => {
         {/* Custom Package Modal */}
         {showCustomModal && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="bg-white rounded-2xl w-full max-w-[95vw] md:max-w-4xl lg:max-w-5xl max-h-[90vh] overflow-y-auto no-scrollbar shadow-2xl">
               {/* Modal Header */}
               <div className="sticky top-0 bg-gradient-to-r from-teal-600 to-teal-500 p-6 flex items-center justify-between z-10">
                 <div>
@@ -266,7 +266,7 @@ const Packeges = () => {
               </div>
 
               {/* Modal Content */}
-              <form onSubmit={handleSubmitCustomPackage} className="p-6 space-y-6">
+              <form onSubmit={handleSubmitCustomPackage} className="p-5 sm:p-6 space-y-6">
                 {/* Destination & Duration */}
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
@@ -376,7 +376,7 @@ const Packeges = () => {
                   <label className="text-sm font-semibold text-gray-700 mb-3 block">
                     Budget Range
                   </label>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {['budget', 'moderate', 'luxury'].map((budget) => (
                       <button
                         key={budget}
@@ -400,7 +400,7 @@ const Packeges = () => {
                     <Hotel className="w-4 h-4 text-teal-600" />
                     Accommodation Preference
                   </label>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {['standard', 'deluxe', 'luxury'].map((acc) => (
                       <button
                         key={acc}
@@ -448,7 +448,7 @@ const Packeges = () => {
                     <Utensils className="w-4 h-4 text-teal-600" />
                     Meal Plan
                   </label>
-                  <div className="grid grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                     {['breakfast', 'half-board', 'full-board', 'all-inclusive'].map((meal) => (
                       <button
                         key={meal}
@@ -472,7 +472,7 @@ const Packeges = () => {
                     <Camera className="w-4 h-4 text-teal-600" />
                     Preferred Activities (Select all that apply)
                   </label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                     {activityOptions.map((activity) => (
                       <button
                         key={activity}
@@ -505,7 +505,7 @@ const Packeges = () => {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-4 pt-4 border-t">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 border-t">
                   <button
                     type="button"
                     onClick={() => setShowCustomModal(false)}
