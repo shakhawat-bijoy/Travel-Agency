@@ -179,7 +179,7 @@ export const destinations = [
     accommodation: "Haussmann hotels, Left Bank boutiques, and chic apartments",
     food: "Croissants, cheese, patisserie, and bistro classics",
     bestTime:
-      "April–June and September–October for terrace weather and softer light",
+      "April - June and September – October for terrace weather and softer light",
     blogPosts: [
       {
         title: "Left Bank Strolls and Seine Sunsets",
