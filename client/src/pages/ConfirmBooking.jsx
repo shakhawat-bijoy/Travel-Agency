@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { User, Mail, Phone, CreditCard, Calendar, Plane, Check, AlertCircle, Plus, Trash2, ArrowLeft } from 'lucide-react'
+import { User, Mail, Phone, CreditCard, Calendar, Plane, PlaneTakeoff, PlaneLanding, Check, AlertCircle, Plus, Trash2, ArrowLeft, Shield } from 'lucide-react'
 import { bookFlight, clearBookingState } from '../store/slices/flightSlice'
-import { savedCardsAPI, authAPI } from '../utils/api'
+import { savedCardsAPI, authAPI, paymentAPI } from '../utils/api'
 import Container from '../components/common/Container'
 
 const ConfirmBooking = () => {
@@ -45,6 +45,28 @@ const ConfirmBooking = () => {
     const [saveCard, setSaveCard] = useState(false)
     const [cardNickname, setCardNickname] = useState('')
     const [loadingSavedCards, setLoadingSavedCards] = useState(false)
+    const [accountPassportNumber, setAccountPassportNumber] = useState('')
+    const [useAccountPassport, setUseAccountPassport] = useState(true)
+    const [accountDob, setAccountDob] = useState('')
+    const [useAccountDob, setUseAccountDob] = useState(true)
+
+    const normalizeAccountCards = (cards = []) => cards.map(card => ({
+        _id: card._id,
+        cardNumber: card.cardNumber,
+        expiryDate: card.expiryDate,
+        cardholderName: card.nameOnCard,
+        cardType: card.cardType || 'card',
+        nickname: card.country ? `${card.country} card` : 'Account card',
+        isDefault: card.isDefault,
+        source: 'account'
+    }))
+
+    const normalizeSavedCards = (cards = []) => cards.map(card => ({
+        ...card,
+        cardholderName: card.cardholderName || card.nameOnCard || '',
+        cardType: card.cardType || 'card',
+        source: card.source || 'saved'
+    }))
 
     // Restore flight data if missing (after login redirect)
     useEffect(() => {
@@ -126,11 +148,16 @@ const ConfirmBooking = () => {
     useEffect(() => {
         const loadUserDataAndCards = async () => {
             try {
+                setLoadingSavedCards(true)
                 // Fetch user profile to get userId (same as Account component)
                 const profileResponse = await authAPI.getProfile()
                 if (profileResponse.success) {
                     const fetchedUserId = profileResponse.user._id || profileResponse.user.id
                     setUserId(fetchedUserId)
+
+                    const profileDob = profileResponse.user.dateOfBirth
+                        ? new Date(profileResponse.user.dateOfBirth).toISOString().split('T')[0]
+                        : ''
 
                     // Pre-populate passenger data with user information
                     setPassengerData(prev => ({
@@ -138,21 +165,41 @@ const ConfirmBooking = () => {
                         firstName: profileResponse.user.firstName || profileResponse.user.name?.split(' ')[0] || '',
                         lastName: profileResponse.user.lastName || profileResponse.user.name?.split(' ').slice(1).join(' ') || '',
                         email: profileResponse.user.email || '',
-                        phone: profileResponse.user.phone || ''
+                        phone: profileResponse.user.phone || '',
+                        passportNumber: profileResponse.user.passportNumber || '',
+                        dateOfBirth: profileDob
                     }))
 
-                    // Load saved cards
-                    setLoadingSavedCards(true)
-                    const cardsResponse = await savedCardsAPI.getSavedCards(fetchedUserId)
-                    if (cardsResponse.success) {
-                        setSavedCards(cardsResponse.data)
-                        // If user has saved cards, default to using saved card
-                        if (cardsResponse.data.length > 0) {
-                            setUseNewCard(false)
-                            // Select default card or first card
-                            const defaultCard = cardsResponse.data.find(card => card.isDefault) || cardsResponse.data[0]
-                            setSelectedSavedCard(defaultCard)
-                        }
+                    const passportValue = profileResponse.user.passportNumber || ''
+                    setAccountPassportNumber(passportValue)
+                    setUseAccountPassport(!!passportValue)
+                    setAccountDob(profileDob)
+                    setUseAccountDob(!!profileDob)
+
+                    const [savedCardsResponse, paymentMethodsResponse] = await Promise.allSettled([
+                        savedCardsAPI.getSavedCards(fetchedUserId),
+                        paymentAPI.getPaymentMethods()
+                    ])
+
+                    const savedCardsFromApi = savedCardsResponse.status === 'fulfilled' && savedCardsResponse.value?.success
+                        ? savedCardsResponse.value.data
+                        : []
+
+                    const accountCards = paymentMethodsResponse.status === 'fulfilled' && paymentMethodsResponse.value?.success
+                        ? paymentMethodsResponse.value.payments || []
+                        : []
+
+                    const mergedCards = [
+                        ...normalizeAccountCards(accountCards),
+                        ...normalizeSavedCards(savedCardsFromApi)
+                    ]
+
+                    setSavedCards(mergedCards)
+
+                    if (mergedCards.length > 0) {
+                        setUseNewCard(false)
+                        const defaultCard = mergedCards.find(card => card.isDefault) || mergedCards[0]
+                        setSelectedSavedCard(defaultCard)
                     }
                 }
             } catch (error) {
@@ -206,6 +253,12 @@ const ConfirmBooking = () => {
         else if (!/\S+@\S+\.\S+/.test(passengerData.email)) errors.email = 'Email is invalid'
         if (!passengerData.phone.trim()) errors.phone = 'Phone number is required'
         if (!passengerData.dateOfBirth) errors.dateOfBirth = 'Date of birth is required'
+        if (!passengerData.passportNumber?.trim()) {
+            errors.passportNumber = 'Passport number is required'
+        }
+        if (!passengerData.nationality?.trim()) {
+            errors.nationality = 'Nationality is required'
+        }
 
         // Payment validation
         if (useNewCard) {
@@ -233,8 +286,11 @@ const ConfirmBooking = () => {
 
             // If using saved card, merge saved card data with CVV
             if (!useNewCard && selectedSavedCard) {
+                const last4 = selectedSavedCard.cardNumber?.replace(/\D/g, '').slice(-4) || ''
+                const paddedCardNumber = `${'0'.repeat(12)}${last4.padStart(4, '0')}`
+
                 finalPaymentData = {
-                    cardNumber: selectedSavedCard.cardNumber,
+                    cardNumber: paddedCardNumber,
                     expiryDate: selectedSavedCard.expiryDate,
                     cardholderName: selectedSavedCard.cardholderName,
                     cvv: paymentData.cvv,
@@ -344,17 +400,25 @@ const ConfirmBooking = () => {
         }))
     }
 
-    const handleDeleteSavedCard = async (cardId, e) => {
+    const handleDeleteSavedCard = async (card, e) => {
         e.stopPropagation()
         try {
-            await savedCardsAPI.deleteCard(cardId)
-            setSavedCards(prev => prev.filter(card => card._id !== cardId))
-            if (selectedSavedCard?._id === cardId) {
-                setSelectedSavedCard(null)
-                if (savedCards.length <= 1) {
-                    setUseNewCard(true)
-                }
+            if (card.source === 'account') {
+                await paymentAPI.deletePaymentMethod(card._id)
+            } else {
+                await savedCardsAPI.deleteCard(card._id)
             }
+
+            setSavedCards(prev => {
+                const updated = prev.filter(item => item._id !== card._id)
+                if (selectedSavedCard?._id === card._id) {
+                    setSelectedSavedCard(updated[0] || null)
+                    if (updated.length === 0) {
+                        setUseNewCard(true)
+                    }
+                }
+                return updated
+            })
         } catch (error) {
             console.error('Error deleting card:', error)
         }
@@ -373,6 +437,34 @@ const ConfirmBooking = () => {
         } else {
             return v
         }
+    }
+
+    const maskPassport = (value = '') => (value ? `****${value.slice(-4)}` : 'Not provided')
+
+    const handlePassportMode = (useAccount) => {
+        setUseAccountPassport(useAccount)
+        setPassengerData(prev => ({
+            ...prev,
+            passportNumber: useAccount ? accountPassportNumber : ''
+        }))
+        setValidationErrors(prev => {
+            const next = { ...prev }
+            delete next.passportNumber
+            return next
+        })
+    }
+
+    const handleDobMode = (useAccount) => {
+        setUseAccountDob(useAccount)
+        setPassengerData(prev => ({
+            ...prev,
+            dateOfBirth: useAccount ? accountDob : ''
+        }))
+        setValidationErrors(prev => {
+            const next = { ...prev }
+            delete next.dateOfBirth
+            return next
+        })
     }
 
     // Restoring flight data state
@@ -454,15 +546,15 @@ const ConfirmBooking = () => {
                 </div>
 
                 <div className="">
-                    <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+                        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                         {/* Header */}
-                        <div className="bg-gradient-to-red from-teal-500 to-blue-600 text-white p-6">
-                            <h1 className="text-3xl font-bold mb-2 text-black">Confirm Your Booking</h1>
-                            <p className="text-teal-700">Complete your flight booking details</p>
+                        <div className="bg-gradient-to-red from-teal-500 to-blue-600 text-white p-4 sm:p-6">
+                               <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-black">Confirm Your Booking</h1>
+                               <p className="text-teal-700 text-sm sm:text-base">Complete your flight booking details</p>
                         </div>
 
                         {/* Detailed Flight Information */}
-                        <div className="p-6 bg-gray-50 border-b border-gray-200">
+                        <div className="p-4 sm:p-6 bg-gray-50 border-b border-gray-200">
                             {/* Flight Header */}
                             <div className="flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-4">
@@ -551,7 +643,7 @@ const ConfirmBooking = () => {
                                 <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
                                     <div className="flex items-center justify-between mb-4">
                                         <h4 className="text-lg font-semibold text-blue-800 flex items-center gap-2">
-                                            <Plane className="w-5 h-5" />
+                                            <PlaneTakeoff className="w-5 h-5" />
                                             {isRoundTrip ? 'Outbound Flight' : 'Flight Details'}
                                         </h4>
                                         <div className="text-sm text-blue-600 font-medium">
@@ -564,8 +656,8 @@ const ConfirmBooking = () => {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center justify-between">
-                                        <div className="text-center flex-1">
+                                    <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0">
+                                        <div className="text-center flex-1 w-full">
                                             <div className="text-3xl font-bold text-gray-900 mb-2">
                                                 {new Date(flight.departureTime).toLocaleTimeString('en-US', {
                                                     hour: '2-digit',
@@ -588,14 +680,14 @@ const ConfirmBooking = () => {
                                             </div>
                                         </div>
 
-                                        <div className="flex-1 mx-8">
+                                        <div className="flex-1 mx-0 md:mx-8 w-full">
                                             <div className="relative">
                                                 <div className="absolute inset-0 flex items-center">
                                                     <div className="w-full border-t-2 border-blue-400"></div>
                                                 </div>
                                                 <div className="relative flex justify-center">
                                                     <div className="bg-blue-50 px-6 py-3 rounded-full border-2 border-blue-300">
-                                                        <Plane className="w-8 h-8 text-blue-600 transform rotate-90" />
+                                                        <PlaneTakeoff className="w-8 h-8 text-blue-600" />
                                                     </div>
                                                 </div>
                                             </div>
@@ -615,7 +707,7 @@ const ConfirmBooking = () => {
                                             </div>
                                         </div>
 
-                                        <div className="text-center flex-1">
+                                        <div className="text-center flex-1 w-full">
                                             <div className="text-3xl font-bold text-gray-900 mb-2">
                                                 {new Date(flight.arrivalTime).toLocaleTimeString('en-US', {
                                                     hour: '2-digit',
@@ -669,7 +761,7 @@ const ConfirmBooking = () => {
                                     <div className="bg-green-50 rounded-lg p-6 border border-green-200">
                                         <div className="flex items-center justify-between mb-4">
                                             <h4 className="text-lg font-semibold text-green-800 flex items-center gap-2">
-                                                <Plane className="w-5 h-5 transform rotate-180" />
+                                                <PlaneLanding className="w-5 h-5 [transform:rotateY(180deg)]" />
                                                 Return Flight
                                             </h4>
                                             <div className="text-sm text-green-600 font-medium">
@@ -682,8 +774,8 @@ const ConfirmBooking = () => {
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center justify-between">
-                                            <div className="text-center flex-1">
+                                        <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0">
+                                            <div className="text-center flex-1 w-full">
                                                 <div className="text-3xl font-bold text-gray-900 mb-2">
                                                     {new Date(new Date(searchParams.return_date).setHours(10, 30)).toLocaleTimeString('en-US', {
                                                         hour: '2-digit',
@@ -706,14 +798,14 @@ const ConfirmBooking = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="flex-1 mx-8">
+                                            <div className="flex-1 mx-0 md:mx-8 w-full">
                                                 <div className="relative">
                                                     <div className="absolute inset-0 flex items-center">
                                                         <div className="w-full border-t-2 border-green-400"></div>
                                                     </div>
                                                     <div className="relative flex justify-center">
                                                         <div className="bg-green-50 px-6 py-3 rounded-full border-2 border-green-300">
-                                                            <Plane className="w-8 h-8 text-green-600 transform -rotate-90" />
+                                                            <PlaneLanding className="w-8 h-8 text-green-600 [transform:rotateY(180deg)]" />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -733,7 +825,7 @@ const ConfirmBooking = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="text-center flex-1">
+                                            <div className="text-center flex-1 w-full">
                                                 <div className="text-3xl font-bold text-gray-900 mb-2">
                                                     {new Date(new Date(searchParams.return_date).setHours(18, 45)).toLocaleTimeString('en-US', {
                                                         hour: '2-digit',
@@ -1063,42 +1155,164 @@ const ConfirmBooking = () => {
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                                 Date of Birth *
                                             </label>
-                                            <input
-                                                type="date"
-                                                value={passengerData.dateOfBirth}
-                                                onChange={(e) => setPassengerData(prev => ({ ...prev, dateOfBirth: e.target.value }))}
-                                                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${validationErrors.dateOfBirth ? 'border-red-300' : 'border-gray-300'
-                                                    }`}
-                                            />
-                                            {validationErrors.dateOfBirth && (
-                                                <p className="text-red-500 text-sm mt-1">{validationErrors.dateOfBirth}</p>
+
+                                            {accountDob ? (
+                                                <>
+                                                    <div className="flex gap-2 mb-3">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDobMode(true)}
+                                                            className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${useAccountDob
+                                                                ? 'bg-teal-50 border-teal-500 text-teal-700'
+                                                                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                                }`}
+                                                        >
+                                                            Use account DOB
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDobMode(false)}
+                                                            className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${!useAccountDob
+                                                                ? 'bg-teal-50 border-teal-500 text-teal-700'
+                                                                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                                }`}
+                                                        >
+                                                            Use different
+                                                        </button>
+                                                    </div>
+
+                                                    {useAccountDob ? (
+                                                        <div className="px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 flex items-center justify-between">
+                                                            <div>
+                                                                <p className="text-sm text-gray-600">Using account date of birth</p>
+                                                                <p className="font-semibold text-gray-900 mt-1">
+                                                                    {new Date(accountDob).toLocaleDateString('en-US', {
+                                                                        year: 'numeric', month: 'long', day: 'numeric'
+                                                                    })}
+                                                                </p>
+                                                            </div>
+                                                            <span className="text-xs text-gray-500">Saved in Account</span>
+                                                        </div>
+                                                    ) : (
+                                                        <div>
+                                                            <input
+                                                                type="date"
+                                                                value={passengerData.dateOfBirth}
+                                                                onChange={(e) => setPassengerData(prev => ({ ...prev, dateOfBirth: e.target.value }))}
+                                                                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${validationErrors.dateOfBirth ? 'border-red-300' : 'border-gray-300'
+                                                                    }`}
+                                                            />
+                                                            {validationErrors.dateOfBirth && (
+                                                                <p className="text-red-500 text-sm mt-1">{validationErrors.dateOfBirth}</p>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <div>
+                                                    <input
+                                                        type="date"
+                                                        value={passengerData.dateOfBirth}
+                                                        onChange={(e) => setPassengerData(prev => ({ ...prev, dateOfBirth: e.target.value }))}
+                                                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${validationErrors.dateOfBirth ? 'border-red-300' : 'border-gray-300'
+                                                            }`}
+                                                    />
+                                                    {validationErrors.dateOfBirth && (
+                                                        <p className="text-red-500 text-sm mt-1">{validationErrors.dateOfBirth}</p>
+                                                    )}
+                                                </div>
                                             )}
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Passport Number
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-3">
+                                                <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                                                    <Shield className="w-4 h-4 text-gray-500" />
+                                                    Passport Number *
                                                 </label>
-                                                <input
-                                                    type="text"
-                                                    value={passengerData.passportNumber}
-                                                    onChange={(e) => setPassengerData(prev => ({ ...prev, passportNumber: e.target.value }))}
-                                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                                    placeholder="A12345678"
-                                                />
+
+                                                {accountPassportNumber ? (
+                                                    <>
+                                                        <div className="flex flex-col sm:flex-row gap-2 mb-3">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handlePassportMode(true)}
+                                                                className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${useAccountPassport
+                                                                    ? 'bg-teal-50 border-teal-500 text-teal-700'
+                                                                    : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                                    }`}
+                                                            >
+                                                                Use account passport
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handlePassportMode(false)}
+                                                                className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${!useAccountPassport
+                                                                    ? 'bg-teal-50 border-teal-500 text-teal-700'
+                                                                    : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                                    }`}
+                                                            >
+                                                                Use different
+                                                            </button>
+                                                        </div>
+
+                                                        {useAccountPassport ? (
+                                                            <div className="px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 flex items-center justify-between">
+                                                                <div>
+                                                                    <p className="text-sm text-gray-600">Using account passport</p>
+                                                                    <p className="font-semibold text-gray-900 flex items-center gap-2 mt-1">
+                                                                        <Shield className="w-4 h-4 text-teal-600" />
+                                                                        <span>{maskPassport(accountPassportNumber)}</span>
+                                                                    </p>
+                                                                </div>
+                                                                <span className="text-xs text-gray-500">Saved in Account</span>
+                                                            </div>
+                                                        ) : (
+                                                            <div>
+                                                                <input
+                                                                    type="text"
+                                                                    value={passengerData.passportNumber}
+                                                                    onChange={(e) => setPassengerData(prev => ({ ...prev, passportNumber: e.target.value }))}
+                                                                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${validationErrors.passportNumber ? 'border-red-300' : 'border-gray-300'
+                                                                        }`}
+                                                                    placeholder="A12345678"
+                                                                />
+                                                                {validationErrors.passportNumber && (
+                                                                    <p className="text-red-500 text-sm mt-1">{validationErrors.passportNumber}</p>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <div>
+                                                        <input
+                                                            type="text"
+                                                            value={passengerData.passportNumber}
+                                                            onChange={(e) => setPassengerData(prev => ({ ...prev, passportNumber: e.target.value }))}
+                                                            className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${validationErrors.passportNumber ? 'border-red-300' : 'border-gray-300'
+                                                                }`}
+                                                            placeholder="A12345678"
+                                                        />
+                                                        {validationErrors.passportNumber && (
+                                                            <p className="text-red-500 text-sm mt-1">{validationErrors.passportNumber}</p>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Nationality
+                                                    Nationality *
                                                 </label>
                                                 <input
                                                     type="text"
                                                     value={passengerData.nationality}
                                                     onChange={(e) => setPassengerData(prev => ({ ...prev, nationality: e.target.value }))}
-                                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                                    placeholder="United States"
+                                                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${validationErrors.nationality ? 'border-red-300' : 'border-gray-300'}`}
+                                                    placeholder="Bangladesh"
                                                 />
+                                                {validationErrors.nationality && (
+                                                    <p className="text-red-500 text-sm mt-1">{validationErrors.nationality}</p>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -1164,22 +1378,28 @@ const ConfirmBooking = () => {
                                                                             <div className={`w-8 h-6 rounded flex items-center justify-center text-xs font-bold text-white ${card.cardType === 'visa' ? 'bg-blue-600' :
                                                                                 card.cardType === 'mastercard' ? 'bg-red-600' :
                                                                                     card.cardType === 'amex' ? 'bg-green-600' :
-                                                                                        'bg-gray-600'
+                                                                                        card.cardType === 'discover' ? 'bg-orange-600' :
+                                                                                            'bg-gray-600'
                                                                                 }`}>
-                                                                                {card.cardType.toUpperCase().slice(0, 4)}
+                                                                                {(card.cardType || 'CARD').toUpperCase().slice(0, 4)}
                                                                             </div>
                                                                             <div>
                                                                                 <div className="font-medium text-gray-900">
-                                                                                    {card.nickname || `${card.cardType.toUpperCase()} Card`}
+                                                                                    {card.nickname || `${(card.cardType || 'card').toUpperCase()} Card`}
                                                                                 </div>
                                                                                 <div className="text-sm text-gray-500">
                                                                                     {card.cardNumber} • {card.cardholderName}
                                                                                 </div>
-                                                                                <div className="text-xs text-gray-400">
-                                                                                    Expires {card.expiryDate}
+                                                                                <div className="text-xs text-gray-400 flex items-center gap-2 flex-wrap">
+                                                                                    <span>Expires {card.expiryDate}</span>
                                                                                     {card.isDefault && (
-                                                                                        <span className="ml-2 bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full text-xs">
+                                                                                        <span className="bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full text-[11px]">
                                                                                             Default
+                                                                                        </span>
+                                                                                    )}
+                                                                                    {card.source === 'account' && (
+                                                                                        <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-[11px]">
+                                                                                            Account
                                                                                         </span>
                                                                                     )}
                                                                                 </div>
@@ -1187,7 +1407,7 @@ const ConfirmBooking = () => {
                                                                         </div>
                                                                         <button
                                                                             type="button"
-                                                                            onClick={(e) => handleDeleteSavedCard(card._id, e)}
+                                                                            onClick={(e) => handleDeleteSavedCard(card, e)}
                                                                             className="p-1 text-gray-400 hover:text-red-500 transition-colors"
                                                                             title="Delete card"
                                                                         >

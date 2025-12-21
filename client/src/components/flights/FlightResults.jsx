@@ -119,7 +119,7 @@ const FlightResults = () => {
       <div className="bg-gray-50 min-h-screen py-12">
         <Container>
           <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-            <Plane className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <Plane className="w-16 h-16 text-gray-300 mx-auto mb-4 [transform:rotateY(180deg)]" />
             <h2 className="text-xl font-semibold text-gray-900 mb-2">No Search Results</h2>
             <p className="text-gray-600 mb-6">Please perform a flight search to see results here.</p>
             <button
@@ -300,8 +300,8 @@ const FlightResults = () => {
                           <div className="w-full border-t-2 border-gray-300"></div>
                         </div>
                         <div className="relative flex justify-center">
-                          <div className="bg-white px-2 sm:px-3">
-                            <Plane className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-teal-500 transform rotate-90" />
+                          <div className="bg-white px-2 sm:px-3 flex items-center gap-1.5">
+                            <Plane className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-teal-500 " />
                           </div>
                         </div>
                       </div>
@@ -492,7 +492,7 @@ const FlightResults = () => {
                                   </div>
                                   <div className="relative flex justify-center">
                                     <div className="bg-white px-2 sm:px-3">
-                                      <Plane className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-teal-500 transform rotate-90" />
+                                      <Plane className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-teal-500 [transform:rotateY(360deg)]" />
                                     </div>
                                   </div>
                                 </div>
@@ -664,7 +664,7 @@ const FlightResults = () => {
                           }`} style={{ transitionDelay: expandedFlights[flight.id] ? '200ms' : '0ms' }}>
                           <h5 className="text-sm sm:text-base font-semibold text-gray-800 mb-2 sm:mb-3 flex flex-col sm:flex-row sm:items-center gap-2">
                             <div className="flex items-center gap-2">
-                              <Plane className="w-4 h-4 sm:w-5 sm:h-5 text-teal-500" />
+                              <Plane className="w-4 h-4 sm:w-5 sm:h-5 text-teal-500 " />
                               <span className="text-sm sm:text-base">
                                 {flight.itineraries[0].segments.length > 1 ? 'Flight Segments (Connecting Flights)' : 'Flight Segment Details'}
                               </span>
@@ -748,7 +748,7 @@ const FlightResults = () => {
                                         </div>
                                         <div className="relative flex justify-center">
                                           <div className="bg-white px-1 sm:px-2 lg:px-3">
-                                            <Plane className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-teal-500 transform rotate-90" />
+                                            <Plane className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-teal-500 [transform:rotateY(360deg)]" />
                                           </div>
                                         </div>
                                       </div>
@@ -1087,7 +1087,7 @@ const FlightResults = () => {
                               {/* Outbound Flight Pricing */}
                               <div>
                                 <div className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
-                                  <Plane className="w-4 h-4 text-teal-500 transform rotate-90" />
+                                  <Plane className="w-4 h-4 text-teal-500 transform" />
                                   Outbound Flight ({flight.departureAirport} → {flight.arrivalAirport})
                                 </div>
                                 <div className="space-y-2 text-sm">

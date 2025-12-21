@@ -203,6 +203,7 @@ router.get('/me', protect, async (req, res) => {
             avatar: req.user.avatar?.url || 'https://via.placeholder.com/150',
             coverImage: req.user.coverImage?.url || '',
             address: req.user.address,
+            passportNumber: req.user.passportNumber,
             dateOfBirth: req.user.dateOfBirth,
             bio: req.user.bio,
             location: req.user.location,
@@ -233,7 +234,7 @@ router.get('/me', protect, async (req, res) => {
 // @access  Private
 router.put('/profile', protect, async (req, res) => {
     try {
-        const { name, phone, address, dateOfBirth, bio, location, website } = req.body;
+        const { name, phone, address, passportNumber, dateOfBirth, bio, location, website } = req.body;
 
         // Find user and update
         const user = await User.findById(req.user._id);
@@ -248,6 +249,7 @@ router.put('/profile', protect, async (req, res) => {
         if (name !== undefined) user.name = name;
         if (phone !== undefined) user.phone = phone;
         if (address !== undefined) user.address = address;
+        if (passportNumber !== undefined) user.passportNumber = passportNumber;
         if (dateOfBirth !== undefined) user.dateOfBirth = dateOfBirth;
         if (bio !== undefined) user.bio = bio;
         if (location !== undefined) user.location = location;
@@ -266,6 +268,7 @@ router.put('/profile', protect, async (req, res) => {
             avatar: user.avatar?.url || 'https://via.placeholder.com/150',
             coverImage: user.coverImage?.url || '',
             address: user.address,
+            passportNumber: user.passportNumber,
             dateOfBirth: user.dateOfBirth,
             bio: user.bio,
             location: user.location,

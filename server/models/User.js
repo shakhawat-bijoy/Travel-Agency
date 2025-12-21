@@ -32,6 +32,10 @@ const userSchema = new Schema({
     type: String,
     default: ''
   },
+  passportNumber: {
+    type: String,
+    default: ''
+  },
   dateOfBirth: {
     type: Date,
     default: null

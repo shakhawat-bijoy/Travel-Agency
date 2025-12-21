@@ -1,9 +1,17 @@
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { User, Mail, Phone, CreditCard, Calendar, Check, AlertCircle, ArrowLeft, MapPin, Users } from 'lucide-react'
-import { savedCardsAPI, authAPI, packageAPI } from '../utils/api'
+import { savedCardsAPI, authAPI, packageAPI, paymentAPI } from '../utils/api'
 import Container from '../components/common/Container'
 import { FaStar, FaClock } from 'react-icons/fa'
+
+// Masks passport numbers, keeping last 4 visible
+const maskPassport = (passport = '') => {
+    if (!passport) return ''
+    const visible = passport.slice(-4)
+    const masked = '*'.repeat(Math.max(0, passport.length - 4))
+    return `${masked}${visible}`
+}
 
 const ConfirmPackageBooking = () => {
     const navigate = useNavigate()
@@ -47,6 +55,28 @@ const ConfirmPackageBooking = () => {
     const [cardNickname, setCardNickname] = useState('')
     const [loadingSavedCards, setLoadingSavedCards] = useState(false)
     const [userId, setUserId] = useState(null)
+    const [accountPassportNumber, setAccountPassportNumber] = useState('')
+    const [useAccountPassport, setUseAccountPassport] = useState(true)
+    const [accountDob, setAccountDob] = useState('')
+    const [useAccountDob, setUseAccountDob] = useState(true)
+
+    const normalizeAccountCards = (cards = []) => cards.map(card => ({
+        _id: card._id,
+        cardNumber: card.cardNumber,
+        expiryDate: card.expiryDate,
+        cardholderName: card.nameOnCard,
+        cardType: card.cardType || 'card',
+        nickname: card.country ? `${card.country} card` : 'Account card',
+        isDefault: card.isDefault,
+        source: 'account'
+    }))
+
+    const normalizeSavedCards = (cards = []) => cards.map(card => ({
+        ...card,
+        cardholderName: card.cardholderName || card.nameOnCard || '',
+        cardType: card.cardType || 'card',
+        source: card.source || 'saved'
+    }))
 
     // Restore package data if missing (after login redirect)
     useEffect(() => {
@@ -115,15 +145,41 @@ const ConfirmPackageBooking = () => {
         }
     }, [travelers])
 
+    // Keep lead traveler in sync with account passport/DOB when using account values
+    useEffect(() => {
+        if (useAccountPassport) {
+            setTravelersData(prev => {
+                const updated = [...prev]
+                updated[0] = { ...updated[0], passportNumber: accountPassportNumber }
+                return updated
+            })
+        }
+    }, [accountPassportNumber, useAccountPassport])
+
+    useEffect(() => {
+        if (useAccountDob) {
+            setTravelersData(prev => {
+                const updated = [...prev]
+                updated[0] = { ...updated[0], dateOfBirth: accountDob }
+                return updated
+            })
+        }
+    }, [accountDob, useAccountDob])
+
     // Load user profile and saved cards on component mount
     useEffect(() => {
         const loadUserDataAndCards = async () => {
             try {
+                setLoadingSavedCards(true)
                 // Fetch user profile to get userId
                 const profileResponse = await authAPI.getProfile()
                 if (profileResponse.success) {
                     const fetchedUserId = profileResponse.user._id || profileResponse.user.id
                     setUserId(fetchedUserId)
+
+                    const profileDob = profileResponse.user.dateOfBirth
+                        ? new Date(profileResponse.user.dateOfBirth).toISOString().split('T')[0]
+                        : ''
 
                     // Pre-populate first traveler data with user information
                     setTravelersData(prev => {
@@ -133,22 +189,43 @@ const ConfirmPackageBooking = () => {
                             firstName: profileResponse.user.firstName || profileResponse.user.name?.split(' ')[0] || '',
                             lastName: profileResponse.user.lastName || profileResponse.user.name?.split(' ').slice(1).join(' ') || '',
                             email: profileResponse.user.email || '',
-                            phone: profileResponse.user.phone || ''
+                            phone: profileResponse.user.phone || '',
+                            passportNumber: profileResponse.user.passportNumber || updated[0]?.passportNumber || '',
+                            dateOfBirth: profileDob || updated[0]?.dateOfBirth || ''
                         }
                         return updated
                     })
 
-                    // Load saved cards
-                    setLoadingSavedCards(true)
-                    const cardsResponse = await savedCardsAPI.getSavedCards(fetchedUserId)
-                    if (cardsResponse.success) {
-                        setSavedCards(cardsResponse.data)
-                        // If user has saved cards, default to using saved card
-                        if (cardsResponse.data.length > 0) {
-                            setUseNewCard(false)
-                            const defaultCard = cardsResponse.data.find(card => card.isDefault) || cardsResponse.data[0]
-                            setSelectedSavedCard(defaultCard)
-                        }
+                    const passportValue = profileResponse.user.passportNumber || ''
+                    setAccountPassportNumber(passportValue)
+                    setUseAccountPassport(!!passportValue)
+                    setAccountDob(profileDob)
+                    setUseAccountDob(!!profileDob)
+
+                    const [savedCardsResponse, paymentMethodsResponse] = await Promise.allSettled([
+                        savedCardsAPI.getSavedCards(fetchedUserId),
+                        paymentAPI.getPaymentMethods()
+                    ])
+
+                    const savedCardsFromApi = savedCardsResponse.status === 'fulfilled' && savedCardsResponse.value?.success
+                        ? savedCardsResponse.value.data
+                        : []
+
+                    const accountCards = paymentMethodsResponse.status === 'fulfilled' && paymentMethodsResponse.value?.success
+                        ? paymentMethodsResponse.value.payments || []
+                        : []
+
+                    const mergedCards = [
+                        ...normalizeAccountCards(accountCards),
+                        ...normalizeSavedCards(savedCardsFromApi)
+                    ]
+
+                    setSavedCards(mergedCards)
+                    // If user has saved cards, default to using saved card
+                    if (mergedCards.length > 0) {
+                        setUseNewCard(false)
+                        const defaultCard = mergedCards.find(card => card.isDefault) || mergedCards[0]
+                        setSelectedSavedCard(defaultCard)
                     }
                 }
             } catch (error) {
@@ -182,6 +259,7 @@ const ConfirmPackageBooking = () => {
             else if (!/\S+@\S+\.\S+/.test(traveler.email)) errors[`traveler${index}_email`] = `Traveler ${index + 1} email is invalid`
             if (!traveler.phone.trim()) errors[`traveler${index}_phone`] = `Traveler ${index + 1} phone is required`
             if (!traveler.dateOfBirth) errors[`traveler${index}_dateOfBirth`] = `Traveler ${index + 1} date of birth is required`
+            if (!traveler.nationality?.trim()) errors[`traveler${index}_nationality`] = `Traveler ${index + 1} nationality is required`
         })
 
         // Payment validation
@@ -201,6 +279,30 @@ const ConfirmPackageBooking = () => {
 
         setValidationErrors(errors)
         return Object.keys(errors).length === 0
+    }
+
+    const handlePassportMode = (useAccount) => {
+        setUseAccountPassport(useAccount)
+        setTravelersData(prev => {
+            const updated = [...prev]
+            updated[0] = {
+                ...updated[0],
+                passportNumber: useAccount ? accountPassportNumber : ''
+            }
+            return updated
+        })
+    }
+
+    const handleDobMode = (useAccount) => {
+        setUseAccountDob(useAccount)
+        setTravelersData(prev => {
+            const updated = [...prev]
+            updated[0] = {
+                ...updated[0],
+                dateOfBirth: useAccount ? accountDob : ''
+            }
+            return updated
+        })
     }
 
     const handleSubmit = async (e) => {
@@ -297,17 +399,25 @@ const ConfirmPackageBooking = () => {
         }))
     }
 
-    const handleDeleteSavedCard = async (cardId, e) => {
+    const handleDeleteSavedCard = async (card, e) => {
         e.stopPropagation()
         try {
-            await savedCardsAPI.deleteCard(cardId)
-            setSavedCards(prev => prev.filter(card => card._id !== cardId))
-            if (selectedSavedCard?._id === cardId) {
-                setSelectedSavedCard(null)
-                if (savedCards.length <= 1) {
-                    setUseNewCard(true)
-                }
+            if (card.source === 'account') {
+                await paymentAPI.deletePaymentMethod(card._id)
+            } else {
+                await savedCardsAPI.deleteCard(card._id)
             }
+
+            setSavedCards(prev => {
+                const updated = prev.filter(item => item._id !== card._id)
+                if (selectedSavedCard?._id === card._id) {
+                    setSelectedSavedCard(updated[0] || null)
+                    if (updated.length === 0) {
+                        setUseNewCard(true)
+                    }
+                }
+                return updated
+            })
         } catch (error) {
             console.error('Error deleting card:', error)
         }
@@ -529,16 +639,72 @@ const ConfirmPackageBooking = () => {
                                                         <Calendar className="inline w-4 h-4 mr-1" />
                                                         Date of Birth *
                                                     </label>
-                                                    <input
-                                                        type="date"
-                                                        value={traveler.dateOfBirth}
-                                                        onChange={(e) => handleTravelerChange(index, 'dateOfBirth', e.target.value)}
-                                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${
-                                                            validationErrors[`traveler${index}_dateOfBirth`] ? 'border-red-500' : 'border-gray-300'
-                                                        }`}
-                                                    />
-                                                    {validationErrors[`traveler${index}_dateOfBirth`] && (
-                                                        <p className="text-red-500 text-sm mt-1">{validationErrors[`traveler${index}_dateOfBirth`]}</p>
+
+                                                    {index === 0 ? (
+                                                        <>
+                                                            <div className="flex flex-col sm:flex-row gap-2 mb-3">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleDobMode(true)}
+                                                                    className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${useAccountDob
+                                                                        ? 'bg-teal-50 border-teal-500 text-teal-700'
+                                                                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                                    }`}
+                                                                >
+                                                                    Use account date
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleDobMode(false)}
+                                                                    className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${!useAccountDob
+                                                                        ? 'bg-teal-50 border-teal-500 text-teal-700'
+                                                                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                                    }`}
+                                                                >
+                                                                    Use different
+                                                                </button>
+                                                            </div>
+
+                                                            {useAccountDob ? (
+                                                                <div className="px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 flex items-center justify-between">
+                                                                    <div>
+                                                                        <p className="text-sm text-gray-600">Using account date of birth</p>
+                                                                        <p className="font-semibold text-gray-900 mt-1">
+                                                                            {accountDob || 'Not set in account'}
+                                                                        </p>
+                                                                    </div>
+                                                                    <span className="text-xs text-gray-500">Saved in Account</span>
+                                                                </div>
+                                                            ) : (
+                                                                <div>
+                                                                    <input
+                                                                        type="date"
+                                                                        value={traveler.dateOfBirth}
+                                                                        onChange={(e) => handleTravelerChange(index, 'dateOfBirth', e.target.value)}
+                                                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${
+                                                                            validationErrors[`traveler${index}_dateOfBirth`] ? 'border-red-500' : 'border-gray-300'
+                                                                        }`}
+                                                                    />
+                                                                    {validationErrors[`traveler${index}_dateOfBirth`] && (
+                                                                        <p className="text-red-500 text-sm mt-1">{validationErrors[`traveler${index}_dateOfBirth`]}</p>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        <div>
+                                                            <input
+                                                                type="date"
+                                                                value={traveler.dateOfBirth}
+                                                                onChange={(e) => handleTravelerChange(index, 'dateOfBirth', e.target.value)}
+                                                                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${
+                                                                    validationErrors[`traveler${index}_dateOfBirth`] ? 'border-red-500' : 'border-gray-300'
+                                                                }`}
+                                                            />
+                                                            {validationErrors[`traveler${index}_dateOfBirth`] && (
+                                                                <p className="text-red-500 text-sm mt-1">{validationErrors[`traveler${index}_dateOfBirth`]}</p>
+                                                            )}
+                                                        </div>
                                                     )}
                                                 </div>
 
@@ -546,24 +712,81 @@ const ConfirmPackageBooking = () => {
                                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                                         Passport Number
                                                     </label>
-                                                    <input
-                                                        type="text"
-                                                        value={traveler.passportNumber}
-                                                        onChange={(e) => handleTravelerChange(index, 'passportNumber', e.target.value)}
-                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
-                                                    />
+
+                                                    {index === 0 ? (
+                                                        <>
+                                                            <div className="flex flex-col sm:flex-row gap-2 mb-3">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handlePassportMode(true)}
+                                                                    className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${useAccountPassport
+                                                                        ? 'bg-teal-50 border-teal-500 text-teal-700'
+                                                                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                                    }`}
+                                                                >
+                                                                    Use account passport
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handlePassportMode(false)}
+                                                                    className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${!useAccountPassport
+                                                                        ? 'bg-teal-50 border-teal-500 text-teal-700'
+                                                                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                                    }`}
+                                                                >
+                                                                    Use different
+                                                                </button>
+                                                            </div>
+
+                                                            {useAccountPassport ? (
+                                                                <div className="px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 flex items-center justify-between">
+                                                                    <div>
+                                                                        <p className="text-sm text-gray-600">Using account passport</p>
+                                                                        <p className="font-semibold text-gray-900 mt-1">
+                                                                            {accountPassportNumber ? maskPassport(accountPassportNumber) : 'Not set in account'}
+                                                                        </p>
+                                                                    </div>
+                                                                    <span className="text-xs text-gray-500">Saved in Account</span>
+                                                                </div>
+                                                            ) : (
+                                                                <div>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={traveler.passportNumber}
+                                                                        onChange={(e) => handleTravelerChange(index, 'passportNumber', e.target.value)}
+                                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                                                                        placeholder="A12345678"
+                                                                    />
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        <input
+                                                            type="text"
+                                                            value={traveler.passportNumber}
+                                                            onChange={(e) => handleTravelerChange(index, 'passportNumber', e.target.value)}
+                                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                                                            placeholder="A12345678"
+                                                        />
+                                                    )}
                                                 </div>
 
                                                 <div>
                                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                        Nationality
+                                                        Nationality *
                                                     </label>
                                                     <input
                                                         type="text"
                                                         value={traveler.nationality}
                                                         onChange={(e) => handleTravelerChange(index, 'nationality', e.target.value)}
-                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${
+                                                            validationErrors[`traveler${index}_nationality`] ? 'border-red-500' : 'border-gray-300'
+                                                        }`}
+                                                        placeholder="Bangladesh"
                                                     />
+                                                    {validationErrors[`traveler${index}_nationality`] && (
+                                                        <p className="text-red-500 text-sm mt-1">{validationErrors[`traveler${index}_nationality`]}</p>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -580,7 +803,7 @@ const ConfirmPackageBooking = () => {
                                     {/* Payment Method Selection */}
                                     {savedCards.length > 0 && (
                                         <div className="mb-6">
-                                            <div className="flex gap-4 mb-4">
+                                            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
                                                 <button
                                                     type="button"
                                                     onClick={() => setUseNewCard(false)}
@@ -620,12 +843,19 @@ const ConfirmPackageBooking = () => {
                                                             <div className="flex items-center justify-between">
                                                                 <div>
                                                                     <div className="font-semibold text-gray-900">
-                                                                        •••• •••• •••• {card.cardNumber.slice(-4)}
+                                                                            •••• •••• •••• {(card.cardNumber || '').slice(-4)}
                                                                     </div>
                                                                     <div className="text-sm text-gray-600">{card.cardholderName}</div>
-                                                                    {card.nickname && (
-                                                                        <div className="text-xs text-gray-500 mt-1">{card.nickname}</div>
-                                                                    )}
+                                                                        {(card.nickname || card.source === 'account') && (
+                                                                            <div className="text-xs text-gray-500 mt-1 flex items-center gap-2 flex-wrap">
+                                                                                {card.nickname && <span>{card.nickname}</span>}
+                                                                                {card.source === 'account' && (
+                                                                                    <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-[11px]">
+                                                                                        Account
+                                                                                    </span>
+                                                                                )}
+                                                                            </div>
+                                                                        )}
                                                                 </div>
                                                                 <div className="flex items-center gap-2">
                                                                     {card.isDefault && (

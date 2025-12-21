@@ -19,6 +19,7 @@ const Account = () => {
     email: '',
     phone: '',
     address: '',
+    passportNumber: '',
     dateOfBirth: '',
     avatar: '',
     coverImage: '',
@@ -81,6 +82,7 @@ const Account = () => {
             email: response.user.email || '',
             phone: response.user.phone || '',
             address: response.user.address || '',
+            passportNumber: response.user.passportNumber || '',
             dateOfBirth: response.user.dateOfBirth || '',
             avatar: response.user.avatar || '',
             coverImage: response.user.coverImage || '',
@@ -1361,6 +1363,50 @@ const Account = () => {
             {!isEditing.address && (
               <button
                 onClick={() => handleEdit('address')}
+                className="px-4 py-2 text-sm text-teal-600 hover:text-teal-700 font-medium flex items-center gap-1 cursor-pointer"
+              >
+                <Edit3 className="w-4 h-4" />
+                Edit
+              </button>
+            )}
+          </div>
+
+          {/* Passport Number */}
+          <div className="flex items-center justify-between py-4 border-b border-gray-100">
+            <div className="flex items-center space-x-4 flex-1">
+              <Shield className="w-5 h-5 text-gray-400" />
+              <div className="flex-1">
+                <p className="text-sm text-gray-500">Passport Number</p>
+                {isEditing.passportNumber ? (
+                  <div className="flex items-center gap-2 mt-1">
+                    <input
+                      type="text"
+                      value={tempValues.passportNumber || ''}
+                      onChange={(e) => setTempValues(prev => ({ ...prev, passportNumber: e.target.value }))}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      placeholder="Enter your passport number"
+                    />
+                    <button
+                      onClick={() => handleSave('passportNumber')}
+                      className="p-2 text-green-600 hover:bg-green-50 rounded-lg cursor-pointer"
+                    >
+                      <Check className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleCancel('passportNumber')}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <p className="font-medium text-gray-900 mt-1">{userInfo.passportNumber || 'Not provided'}</p>
+                )}
+              </div>
+            </div>
+            {!isEditing.passportNumber && (
+              <button
+                onClick={() => handleEdit('passportNumber')}
                 className="px-4 py-2 text-sm text-teal-600 hover:text-teal-700 font-medium flex items-center gap-1 cursor-pointer"
               >
                 <Edit3 className="w-4 h-4" />

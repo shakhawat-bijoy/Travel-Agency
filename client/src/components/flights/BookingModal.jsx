@@ -367,14 +367,15 @@ const BookingModal = ({ flight, onClose, onBook, loading, error, success }) => {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Nationality
+                                            Nationality*
                                         </label>
                                         <input
                                             type="text"
                                             value={passengerData.nationality}
                                             onChange={(e) => setPassengerData(prev => ({ ...prev, nationality: e.target.value }))}
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                            placeholder="United States"
+                                            placeholder="Bangladesh"
+                                            required
                                         />
                                     </div>
                                 </div>
