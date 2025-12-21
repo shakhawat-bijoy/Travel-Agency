@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
+import Snowfall from 'react-snowfall'
 import Navbar from './Navbar'
 import Footer from './Footer'
 import { restoreSearchResults } from '../../store/slices/flightSlice'
@@ -17,6 +18,7 @@ const RootLayout = () => {
   const isHomePage = location.pathname === '/'
   const isAccountPage = location.pathname === '/account'
   const isOtherRoute = !isHomePage && !isAccountPage
+  const showSnow = true
 
   // Restore search results on app mount
   useEffect(() => {
@@ -25,6 +27,19 @@ const RootLayout = () => {
 
   return (
     <div>
+
+      {showSnow && (
+        <Snowfall
+          snowflakeCount={100}
+          style={{
+            position: 'fixed',
+            width: '100vw',
+            height: '100vh',
+            pointerEvents: 'none',
+            zIndex: 10,
+          }}
+        />
+      )}
 
       {!shouldHideNavbar && <Navbar />}
 

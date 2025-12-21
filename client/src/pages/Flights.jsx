@@ -9,7 +9,7 @@ const Flights = () => {
   return (
     <div>
       <Banner />
-      <FlightHotelSearch />
+      <FlightHotelSearch className={'lg:mt-10 mt-5'} />
       <AttractionsMap/>
       <Destinations/>
       <TouristDestinations/>
