@@ -11,6 +11,7 @@ import paymentRoutes from './routes/payment.js';
 import flightRoutes from './routes/flights.js';
 import savedCardsRoutes from './routes/savedCards.js';
 import packageRoutes from './routes/packages.js';
+import hotelRoutes from './routes/hotels.js';
 import User from './models/User.js';
 const app = express();
 
@@ -60,6 +61,7 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/flights', flightRoutes);
 app.use('/api/saved-cards', savedCardsRoutes);
 app.use('/api/packages', packageRoutes);
+app.use('/api/hotels', hotelRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -71,6 +73,7 @@ app.get('/', (req, res) => {
       health: '/api/health',
       auth: '/api/auth/*',
       flights: '/api/flights/*',
+      hotels: '/api/hotels/*',
       payment: '/api/payment/*',
       savedCards: '/api/saved-cards/*',
       packages: '/api/packages/*'

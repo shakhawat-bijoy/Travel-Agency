@@ -66,6 +66,319 @@ async function searchFlights(queryParams) {
   return res.data;
 }
 
+// Search cities (IATA city codes) using Amadeus reference data
+async function searchCities(keyword, limit = 10) {
+  const token = await getAccessToken();
+  const AMADEUS_BASE = process.env.AMADEUS_BASE_URL || "https://test.api.amadeus.com";
+  const url = `${AMADEUS_BASE}/v1/reference-data/locations`;
+
+  const res = await axios.get(url, {
+    params: {
+      keyword,
+      subType: 'CITY',
+      view: 'LIGHT',
+      page: { limit }
+    },
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json'
+    },
+    timeout: 10000
+  });
+
+  const locations = res.data?.data || [];
+  return locations
+    .filter(loc => loc?.iataCode)
+    .map(loc => ({
+      iataCode: loc.iataCode,
+      name: loc.name,
+      city: loc.address?.cityName || loc.name,
+      country: loc.address?.countryName || loc.address?.countryCode,
+      geoCode: loc.geoCode || null
+    }));
+}
+
+// Search hotel offers by city code (Amadeus Hotel Search)
+async function searchHotelOffers({
+  cityCode,
+  checkInDate,
+  checkOutDate,
+  adults = 2,
+  roomQuantity = 1,
+  currency = 'USD',
+  limit = 60,
+  radiusKm = 5
+}) {
+  const token = await getAccessToken();
+  const AMADEUS_BASE = process.env.AMADEUS_BASE_URL || "https://test.api.amadeus.com";
+
+  const safeLimit = Math.max(1, Math.min(Number(limit) || 60, 60));
+  const safeRadiusKm = Math.max(1, Math.min(Number(radiusKm) || 5, 10));
+
+  // Step 1: Fetch hotelIds available for the city
+  const byCityUrl = `${AMADEUS_BASE}/v1/reference-data/locations/hotels/by-city`;
+  const byCityRes = await axios.get(byCityUrl, {
+    params: {
+      cityCode,
+      radius: safeRadiusKm,
+      radiusUnit: 'KM'
+    },
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json'
+    },
+    timeout: 20000
+  });
+
+  const hotelsByCity = byCityRes.data?.data || [];
+  const hotelIdsAll = hotelsByCity
+    .map(h => h?.hotelId)
+    .filter(Boolean);
+
+  // Amadeus supports multiple hotelIds per call; keep chunk size conservative.
+  const chunkSize = 20;
+  const maxBatches = 3; // 3 * 20 = 60 (clamped by safeLimit)
+  const hotelIdsRequested = hotelIdsAll.slice(0, safeLimit);
+
+  const hotelIdChunks = [];
+  for (let i = 0; i < hotelIdsRequested.length; i += chunkSize) {
+    if (hotelIdChunks.length >= maxBatches) break;
+    hotelIdChunks.push(hotelIdsRequested.slice(i, i + chunkSize));
+  }
+
+  if (hotelIdChunks.length === 0) {
+    return {
+      data: [],
+      raw: process.env.NODE_ENV === 'development' ? byCityRes.data : undefined,
+      meta: {
+        ...(byCityRes.data?.meta || null),
+        requested: safeLimit,
+        available: hotelIdsAll.length,
+        radiusKm: safeRadiusKm
+      }
+    };
+  }
+
+  // Step 2: Fetch offers for those hotelIds
+  // Amadeus supports fetching offers by multiple hotelIds via v3.
+  const offersUrlV3 = `${AMADEUS_BASE}/v3/shopping/hotel-offers`;
+
+  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  const requestOffersV3 = async (ids) => {
+    return axios.get(offersUrlV3, {
+      params: {
+        hotelIds: ids.join(','),
+        checkInDate,
+        checkOutDate,
+        adults,
+        roomQuantity,
+        currency,
+        bestRateOnly: true
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json'
+      },
+      timeout: 20000
+    });
+  };
+
+  const requestOffersV3WithRetry = async (ids, retries = 2) => {
+    try {
+      return await requestOffersV3(ids);
+    } catch (error) {
+      const status = error.response?.status;
+      if (status === 429 && retries > 0) {
+        const attempt = 3 - retries;
+        const backoffMs = 800 * attempt;
+        await sleep(backoffMs);
+        return requestOffersV3WithRetry(ids, retries - 1);
+      }
+      throw error;
+    }
+  };
+
+  const fetchOffersForIds = async (ids) => {
+    if (!ids || ids.length === 0) return [];
+
+    try {
+      const res = await requestOffersV3WithRetry(ids);
+      return res.data?.data || [];
+    } catch (error) {
+      const status = error.response?.status;
+      const detail = error.response?.data?.errors?.[0]?.detail;
+      const code = error.response?.data?.errors?.[0]?.code;
+      const title = error.response?.data?.errors?.[0]?.title;
+
+      // If v3 is not enabled, try single-hotel endpoint as a last resort.
+      if (status === 404 || (detail && String(detail).toLowerCase().includes("targeted resource doesn't exist"))) {
+        const byHotelUrl = `${AMADEUS_BASE}/v2/shopping/hotel-offers/by-hotel`;
+        const fallbackRes = await axios.get(byHotelUrl, {
+          params: {
+            hotelId: ids[0],
+            checkInDate,
+            checkOutDate,
+            adults,
+            roomQuantity,
+            currency,
+            bestRateOnly: true
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json'
+          },
+          timeout: 20000
+        });
+
+        return fallbackRes.data?.data || [];
+      }
+
+      // Some hotelIds returned by by-city are not valid for offers; split and skip only bad ids.
+      const invalidProperty = status === 400 && (
+        String(code) === '1257' ||
+        String(title).toUpperCase().includes('INVALID PROPERTY') ||
+        String(detail).toUpperCase().includes('INVALID PROPERTY')
+      );
+
+      if (invalidProperty) {
+        if (ids.length === 1) return [];
+
+        // Bounded split: try left + right once, no deep recursion.
+        const mid = Math.floor(ids.length / 2);
+        const leftIds = ids.slice(0, mid);
+        const rightIds = ids.slice(mid);
+
+        let left = [];
+        let right = [];
+
+        try {
+          left = await requestOffersV3WithRetry(leftIds);
+          left = left.data?.data || [];
+        } catch {
+          left = [];
+        }
+
+        // small delay to avoid bursts
+        await sleep(250);
+
+        try {
+          right = await requestOffersV3WithRetry(rightIds);
+          right = right.data?.data || [];
+        } catch {
+          right = [];
+        }
+
+        return [...left, ...right];
+      }
+
+      throw error;
+    }
+  };
+
+  // Sequential fetch to avoid triggering Amadeus rate limits.
+  const offersData = [];
+  for (const chunk of hotelIdChunks) {
+    const chunkData = await fetchOffersForIds(chunk);
+    offersData.push(...chunkData);
+    // stop early if we already have enough
+    if (offersData.length >= safeLimit) break;
+    await sleep(250);
+  }
+  const simplified = offersData.map(item => {
+    const hotel = item.hotel || {};
+    const firstOffer = item.offers?.[0];
+    const price = firstOffer?.price || {};
+
+    return {
+      hotelId: hotel.hotelId,
+      name: hotel.name,
+      cityCode: hotel.cityCode,
+      rating: hotel.rating,
+      latitude: hotel.latitude,
+      longitude: hotel.longitude,
+      address: hotel.address || null,
+      amenities: hotel.amenities || [],
+      offer: firstOffer ? {
+        id: firstOffer.id,
+        checkInDate: firstOffer.checkInDate,
+        checkOutDate: firstOffer.checkOutDate,
+        roomQuantity: firstOffer.roomQuantity,
+        adults,
+        price: {
+          total: price.total,
+          currency: price.currency
+        }
+      } : null
+    };
+  });
+
+  // De-duplicate by hotelId (can happen across chunks)
+  const deduped = [];
+  const seen = new Set();
+  for (const h of simplified) {
+    const key = h.hotelId || h.name;
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(h);
+  }
+
+  return {
+    data: deduped,
+    raw: process.env.NODE_ENV === 'development' ? { byCity: byCityRes.data } : undefined,
+    meta: {
+      requested: safeLimit,
+      returned: deduped.length,
+      radiusKm: safeRadiusKm,
+      batches: hotelIdChunks.length
+    }
+  };
+}
+
+// Get full offer details by offerId (Amadeus)
+async function getHotelOfferById(offerId) {
+  const token = await getAccessToken();
+  const AMADEUS_BASE = process.env.AMADEUS_BASE_URL || "https://test.api.amadeus.com";
+  const url = `${AMADEUS_BASE}/v3/shopping/hotel-offers/${encodeURIComponent(offerId)}`;
+
+  const res = await axios.get(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json'
+    },
+    timeout: 20000
+  });
+
+  return res.data;
+}
+
+// Get hotel details (geo/address) by hotelIds
+async function getHotelsByIds(hotelIds) {
+  const token = await getAccessToken();
+  const AMADEUS_BASE = process.env.AMADEUS_BASE_URL || "https://test.api.amadeus.com";
+  const url = `${AMADEUS_BASE}/v1/reference-data/locations/hotels/by-hotels`;
+
+  const ids = Array.isArray(hotelIds) ? hotelIds : String(hotelIds || '').split(',');
+  const normalizedIds = ids.map(id => String(id).trim()).filter(Boolean).slice(0, 20);
+
+  if (normalizedIds.length === 0) {
+    return { data: [] };
+  }
+
+  const res = await axios.get(url, {
+    params: {
+      hotelIds: normalizedIds.join(',')
+    },
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json'
+    },
+    timeout: 20000
+  });
+
+  return res.data;
+}
+
 // Manual Bangladesh airports data (always available)
 const bangladeshAirportsData = [
   {
@@ -778,4 +1091,4 @@ async function getAirportDetails(iataCode) {
   }
 }
 
-export { searchFlights, searchAirports, getBangladeshAirports, searchAirportsByCountry, getAirportDetails };
+export { searchFlights, searchAirports, getBangladeshAirports, searchAirportsByCountry, getAirportDetails, searchCities, searchHotelOffers, getHotelOfferById, getHotelsByIds };

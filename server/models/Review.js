@@ -19,6 +19,11 @@ const reviewSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Hotel'
   },
+  // For external providers (e.g., Amadeus) where we only have a string id
+  externalHotelId: {
+    type: String,
+    trim: true
+  },
   rating: {
     type: Number,
     required: [true, 'Please add a rating'],
@@ -58,6 +63,7 @@ const reviewSchema = new Schema({
 // Prevent user from submitting more than one review per tour/hotel
 reviewSchema.index({ user: 1, tour: 1 }, { unique: true, sparse: true });
 reviewSchema.index({ user: 1, hotel: 1 }, { unique: true, sparse: true });
+reviewSchema.index({ user: 1, externalHotelId: 1 }, { unique: true, sparse: true });
 
 // Static method to get average rating
 reviewSchema.statics.getAverageRating = async function(modelName, modelId) {

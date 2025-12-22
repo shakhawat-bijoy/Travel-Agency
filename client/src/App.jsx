@@ -27,6 +27,7 @@ import RootLayout from './components/common/RootLayout'
 import Flights from './pages/Flights'
 import FlightResults from './components/flights/FlightResults'
 import Hotels from './pages/Hotels'
+import HotelSearchResults from './pages/HotelSearchResults'
 
 
 const App = () => {
@@ -50,6 +51,7 @@ const App = () => {
         <Route path="/test-booking" element={<BookingTest />}></Route>
         <Route path="/flights" element={<Flights />}></Route>
         <Route path='/hotels' element={<Hotels/>}></Route>
+        <Route path='/hotels/search' element={<HotelSearchResults/>}></Route>
         <Route path="/flight-results" element={<FlightResults />}></Route>
         <Route path="/book-flight" element={<FlightBooking />}></Route>
         <Route path="/confirm-booking" element={<ProtectedRoute>

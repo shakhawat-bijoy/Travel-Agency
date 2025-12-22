@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const roomSchema = new mongoose.Schema({
   roomType: {
@@ -126,4 +126,6 @@ hotelSchema.virtual('reviews', {
   foreignField: 'hotel'
 });
 
-module.exports = mongoose.model('Hotel', hotelSchema);
+const Hotel = mongoose.model('Hotel', hotelSchema);
+
+export default Hotel;

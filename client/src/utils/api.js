@@ -288,6 +288,35 @@ export const flightAPI = {
 
 };
 
+// Hotel API functions (Amadeus-backed)
+export const hotelAPI = {
+    // City autocomplete for hotel search (IATA city codes)
+    searchCities: (keyword, limit = 10) => {
+        return apiCall(`/hotels/cities/search?keyword=${encodeURIComponent(keyword)}&limit=${limit}`);
+    },
+
+    // Search hotel offers by city code
+    searchHotelOffers: (params) => {
+        const queryString = new URLSearchParams(params).toString();
+        return apiCall(`/hotels/search?${queryString}`);
+    },
+
+    // Get full offer details by offerId
+    getHotelOffer: (offerId) => {
+        return apiCall(`/hotels/offers/${encodeURIComponent(offerId)}`);
+    },
+
+    // Get Amadeus hotel details by hotelId (geo/address for map)
+    getAmadeusHotel: (hotelId) => {
+        return apiCall(`/hotels/amadeus/${encodeURIComponent(hotelId)}`);
+    },
+
+    // Get reviews for an external hotel id
+    getHotelReviews: (externalHotelId) => {
+        return apiCall(`/hotels/reviews/${encodeURIComponent(externalHotelId)}`);
+    },
+};
+
 // Saved Cards API functions
 export const savedCardsAPI = {
     // Get user's saved cards

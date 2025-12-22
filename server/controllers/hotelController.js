@@ -1,5 +1,5 @@
-import { find, countDocuments, findById, create, findByIdAndUpdate } from '../models/Hotel';
-import { uploadToCloudinary, deleteFromCloudinary } from '../utils/cloudinary';
+import Hotel from '../models/Hotel.js';
+import { uploadToCloudinary, deleteFromCloudinary } from '../utils/cloudinary.js';
 
 // @desc    Get all hotels
 // @route   GET /api/hotels
@@ -52,12 +52,12 @@ export async function getHotels(req, res) {
 
     const skip = (page - 1) * limit;
 
-    const hotels = await find(query)
+    const hotels = await Hotel.find(query)
       .sort(sortOption)
       .skip(skip)
       .limit(Number(limit));
 
-    const total = await countDocuments(query);
+    const total = await Hotel.countDocuments(query);
 
     res.status(200).json({
       success: true,
@@ -80,7 +80,7 @@ export async function getHotels(req, res) {
 // @access  Public
 export async function getHotel(req, res) {
   try {
-    const hotel = await findById(req.params.id).populate({
+    const hotel = await Hotel.findById(req.params.id).populate({
       path: 'reviews',
       populate: {
         path: 'user',
@@ -133,7 +133,7 @@ export async function createHotel(req, res) {
       }));
     }
 
-    const hotel = await create(req.body);
+    const hotel = await Hotel.create(req.body);
 
     res.status(201).json({
       success: true,
@@ -152,7 +152,7 @@ export async function createHotel(req, res) {
 // @access  Private/Admin
 export async function updateHotel(req, res) {
   try {
-    let hotel = await findById(req.params.id);
+    let hotel = await Hotel.findById(req.params.id);
 
     if (!hotel) {
       return res.status(404).json({
@@ -173,7 +173,7 @@ export async function updateHotel(req, res) {
       };
     }
 
-    hotel = await findByIdAndUpdate(req.params.id, req.body, {
+    hotel = await Hotel.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true
     });
@@ -195,7 +195,7 @@ export async function updateHotel(req, res) {
 // @access  Private/Admin
 export async function deleteHotel(req, res) {
   try {
-    const hotel = await findById(req.params.id);
+    const hotel = await Hotel.findById(req.params.id);
 
     if (!hotel) {
       return res.status(404).json({
@@ -235,7 +235,7 @@ export async function deleteHotel(req, res) {
 // @access  Public
 export async function getFeaturedHotels(req, res) {
   try {
-    const hotels = await find({ featured: true, active: true })
+    const hotels = await Hotel.find({ featured: true, active: true })
       .limit(6)
       .sort('-rating');
 

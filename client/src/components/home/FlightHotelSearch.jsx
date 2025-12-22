@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { Plane, Hotel, ArrowLeftRight, Calendar, Search, MapPin, Edit3 } from 'lucide-react'
 import { searchFlights, setSearchParams, clearSearchResults } from '../../store/slices/flightSlice'
-import { flightAPI } from '../../utils/api'
+import { flightAPI, hotelAPI } from '../../utils/api'
 import Container from '../common/Container'
 
 const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
@@ -42,14 +42,90 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
   const [destinationQuery, setDestinationQuery] = useState('')
   const [showDestinationDropdown, setShowDestinationDropdown] = useState(false)
 
-  const destinations = []
-  const hotelSearchLoading = false
-  const hotelSearchError = null
-  const hotelSearchResults = null
+  const [destinations, setDestinations] = useState([])
+  const [destinationSearching, setDestinationSearching] = useState(false)
+  const [hotelSearchError, setHotelSearchError] = useState(null)
 
   // Debounce timer refs
   const fromSearchTimer = useRef(null)
   const toSearchTimer = useRef(null)
+  const destinationSearchTimer = useRef(null)
+
+  const searchDestinations = async (keyword) => {
+    if (!keyword || keyword.trim().length < 2) {
+      setDestinations([])
+      return
+    }
+
+    try {
+      setDestinationSearching(true)
+      const response = await hotelAPI.searchCities(keyword.trim(), 10)
+
+      if (response.success) {
+        setDestinations(response.data || [])
+      } else {
+        setDestinations([])
+      }
+    } catch (error) {
+      console.error('Destination search error:', error)
+      setDestinations([])
+    } finally {
+      setDestinationSearching(false)
+    }
+  }
+
+  const handleDestinationQueryChange = (value) => {
+    setDestinationQuery(value)
+    setHotelSearchData(prev => ({ ...prev, destination: value }))
+    setShowDestinationDropdown(true)
+
+    if (destinationSearchTimer.current) clearTimeout(destinationSearchTimer.current)
+    destinationSearchTimer.current = setTimeout(() => {
+      searchDestinations(value)
+    }, 300)
+  }
+
+  const handleDestinationSelect = (destination, event) => {
+    if (event) {
+      event.preventDefault()
+      event.stopPropagation()
+    }
+
+    const code = destination.iataCode
+    const label = `${destination.city || destination.name}${destination.country ? `, ${destination.country}` : ''} (${code})`
+
+    setDestinationQuery(label)
+    setHotelSearchData(prev => ({ ...prev, destination: code }))
+    setShowDestinationDropdown(false)
+    setDestinations([])
+  }
+
+  const handleHotelSearch = async () => {
+    setHotelSearchError(null)
+
+    const cityCode = String(hotelSearchData.destination || '').trim().toUpperCase()
+    if (cityCode.length !== 3) {
+      setHotelSearchError('Please pick a destination from the list (3-letter city code).')
+      return
+    }
+    if (!hotelSearchData.check_in || !hotelSearchData.check_out) {
+      setHotelSearchError('Please select check-in and check-out dates.')
+      return
+    }
+
+    const params = new URLSearchParams({
+      cityCode,
+      checkInDate: hotelSearchData.check_in,
+      checkOutDate: hotelSearchData.check_out,
+      adults: String(hotelSearchData.adults || 2),
+      roomQuantity: String(hotelSearchData.rooms || 1),
+      currency: 'USD',
+      limit: '60',
+      radiusKm: '5'
+    })
+
+    navigate(`/hotels/search?${params.toString()}`)
+  }
 
   // Airport search using Amadeus API with debouncing
   const searchAirports = async (query, type) => {
@@ -117,6 +193,7 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
     return () => {
       if (fromSearchTimer.current) clearTimeout(fromSearchTimer.current)
       if (toSearchTimer.current) clearTimeout(toSearchTimer.current)
+      if (destinationSearchTimer.current) clearTimeout(destinationSearchTimer.current)
     }
   }, [])
 
@@ -610,10 +687,7 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
                     <input
                       type="text"
                       value={destinationQuery}
-                      onChange={(e) => {
-                        setDestinationQuery(e.target.value)
-                        setShowDestinationDropdown(true)
-                      }}
+                      onChange={(e) => handleDestinationQueryChange(e.target.value)}
                       onFocus={() => setShowDestinationDropdown(true)}
                       className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                       placeholder="Search hotels, cities, or landmarks"
@@ -631,21 +705,26 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
                         )}
 
                         {/* Search Results */}
-                        {destinations.length > 0 && (
+                        {(destinationSearching || destinations.length > 0) && (
                           <>
                             {destinationQuery && (
                               <div className="px-4 py-2 bg-gray-50 border-b border-gray-100">
                                 <div className="text-sm font-semibold text-gray-700">Search Results</div>
                               </div>
                             )}
-                            {destinations.map((destination, index) => (
+                            {destinationSearching && (
+                              <div className="px-4 py-3 text-sm text-gray-500 text-center">Searching...</div>
+                            )}
+                            {!destinationSearching && destinations.map((destination, index) => (
                               <button
-                                key={`dest-${index}`}
+                                key={`dest-${destination.iataCode || index}`}
                                 className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                                onClick={(e) => handleDestinationSelect(destination, e)}
+                                type="button"
                               >
-                                <div className="font-medium">{destination.name}</div>
+                                <div className="font-medium">{destination.city || destination.name} ({destination.iataCode})</div>
                                 <div className="text-sm text-gray-500">
-                                  {destination.city}, {destination.country}
+                                  {destination.country || ''}
                                 </div>
                               </button>
                             ))}
@@ -766,54 +845,17 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
               {/* Search Button */}
               <div className="flex justify-center pt-4 gap-4">
                 <button
-                  disabled={hotelSearchLoading || !hotelSearchData.destination || !hotelSearchData.check_in || !hotelSearchData.check_out}
-                  className={`${hotelSearchResults && hotelSearchResults.hotels && hotelSearchResults.hotels.length > 0
-                    ? 'bg-blue-500 hover:bg-blue-600'
-                    : 'bg-teal-500 hover:bg-teal-600'
-                    } disabled:bg-gray-400 disabled:cursor-not-allowed cursor-pointer text-white px-6 sm:px-8 py-2 sm:py-3 lg:py-2 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 text-base sm:text-lg shadow-lg hover:shadow-xl disabled:shadow-none touch-manipulation`}
+                  onClick={handleHotelSearch}
+                  disabled={!hotelSearchData.destination || !hotelSearchData.check_in || !hotelSearchData.check_out}
+                  className={`bg-teal-500 hover:bg-teal-600 disabled:bg-gray-400 disabled:cursor-not-allowed cursor-pointer text-white px-6 sm:px-8 py-2 sm:py-3 lg:py-2 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 text-base sm:text-lg shadow-lg hover:shadow-xl disabled:shadow-none touch-manipulation`}
                 >
-                  {hotelSearchLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white"></div>
-                      <span className="hidden sm:inline">Searching Hotels...</span>
-                      <span className="sm:hidden">Searching...</span>
-                    </>
-                  ) : (
-                    <>
-                      {hotelSearchResults && hotelSearchResults.hotels && hotelSearchResults.hotels.length > 0 ? (
-                        <Edit3 className="w-4 h-4 sm:w-5 sm:h-5" />
-                      ) : (
-                        <Search className="w-4 h-4 sm:w-5 sm:h-5" />
-                      )}
-                      <span className="hidden sm:inline">
-                        {hotelSearchResults && hotelSearchResults.hotels && hotelSearchResults.hotels.length > 0
-                          ? 'Modify Search'
-                          : 'Search Hotels'
-                        }
-                      </span>
-                      <span className="sm:hidden">
-                        {hotelSearchResults && hotelSearchResults.hotels && hotelSearchResults.hotels.length > 0
-                          ? 'Modify'
-                          : 'Search'
-                        }
-                      </span>
-                    </>
-                  )}
+                  <>
+                    <Search className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="hidden sm:inline">Search Hotels</span>
+                    <span className="sm:hidden">Search</span>
+                  </>
                 </button>
               </div>
-
-              {/* Loading Progress */}
-              {hotelSearchLoading && (
-                <div className="mt-4 text-center px-4">
-                  <div className="text-xs sm:text-sm text-gray-600 mb-2">
-                    <span className="hidden sm:inline">Searching hotels in Bangladesh and worldwide...</span>
-                    <span className="sm:hidden">Searching hotels...</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2 max-w-xs sm:max-w-md mx-auto">
-                    <div className="bg-teal-500 h-2 rounded-full animate-pulse" style={{ width: '60%' }}></div>
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </div>
