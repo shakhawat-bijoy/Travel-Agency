@@ -54,7 +54,9 @@ router.get('/search', async (req, res) => {
       roomQuantity = 1,
       currency = 'USD',
       limit = 60,
-      radiusKm = 5
+      radiusKm = 5,
+      includeOffers = '0',
+      maxOffers = 1
     } = req.query;
 
     if (!cityCode || String(cityCode).trim().length !== 3) {
@@ -79,7 +81,9 @@ router.get('/search', async (req, res) => {
       roomQuantity: Number(roomQuantity),
       currency,
       limit: Number(limit),
-      radiusKm: Number(radiusKm)
+      radiusKm: Number(radiusKm),
+      includeOffers: String(includeOffers) === '1' || String(includeOffers).toLowerCase() === 'true',
+      maxOffers: Number(maxOffers)
     });
 
     return res.json({

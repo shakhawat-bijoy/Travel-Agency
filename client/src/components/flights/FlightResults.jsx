@@ -209,9 +209,8 @@ const FlightResults = () => {
                     </div>
                     <div className="text-left sm:text-right">
                       <div className="text-xl sm:text-2xl font-bold text-teal-500 flex items-center gap-1 sm:gap-2">
-                        <span className="text-lg sm:text-2xl">৳</span>
+                        <span className="text-lg sm:text-2xl">$</span>
                         <span>{flight.price.total}</span>
-                        <span className="text-sm sm:text-base">{flight.price.currency}</span>
                       </div>
                       {flight.price.originalCurrency && flight.price.originalCurrency !== flight.price.currency && (
                         <div className="text-xs sm:text-sm text-gray-500 mt-1">
@@ -389,10 +388,10 @@ const FlightResults = () => {
                           </div>
                           <div className="text-right">
                             <div className="text-sm text-gray-500 line-through">
-                              ৳{flight.price.discount.originalPrice}
+                              ${flight.price.discount.originalPrice}
                             </div>
                             <div className="text-lg font-bold text-green-600">
-                              Save ৳{flight.price.discount.savings}
+                              Save ${flight.price.discount.savings}
                             </div>
                           </div>
                         </div>
@@ -407,19 +406,19 @@ const FlightResults = () => {
                       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
                         <div className="bg-gray-50 p-2 sm:p-3 rounded-lg">
                           <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wide mb-1">Base Price</div>
-                          <div className="font-semibold text-gray-900 text-xs sm:text-sm">৳{flight.price.breakdown.basePrice}</div>
+                          <div className="font-semibold text-gray-900 text-xs sm:text-sm">${flight.price.breakdown.basePrice}</div>
                         </div>
                         <div className="bg-gray-50 p-2 sm:p-3 rounded-lg">
                           <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wide mb-1">Taxes</div>
-                          <div className="font-semibold text-gray-900 text-xs sm:text-sm">৳{flight.price.breakdown.taxes}</div>
+                          <div className="font-semibold text-gray-900 text-xs sm:text-sm">${flight.price.breakdown.taxes}</div>
                         </div>
                         <div className="bg-gray-50 p-2 sm:p-3 rounded-lg">
                           <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wide mb-1">Fees</div>
-                          <div className="font-semibold text-gray-900 text-xs sm:text-sm">৳{flight.price.breakdown.supplierFees}</div>
+                          <div className="font-semibold text-gray-900 text-xs sm:text-sm">${flight.price.breakdown.supplierFees}</div>
                         </div>
                         <div className="bg-teal-50 p-2 sm:p-3 rounded-lg border border-teal-200">
                           <div className="text-[10px] sm:text-xs text-teal-600 uppercase tracking-wide mb-1">Total</div>
-                          <div className="font-bold text-teal-700 text-xs sm:text-sm">৳{flight.price.total}</div>
+                          <div className="font-bold text-teal-700 text-xs sm:text-sm">${flight.price.total}</div>
                         </div>
                       </div>
                     </div>
@@ -933,7 +932,7 @@ const FlightResults = () => {
                                     <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                                     <div className="text-[10px] sm:text-xs text-gray-600 uppercase tracking-wide font-semibold">Base Fare</div>
                                   </div>
-                                  <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">৳{flight.price.breakdown.basePrice}</div>
+                                  <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">${flight.price.breakdown.basePrice}</div>
                                   <div className="text-[10px] sm:text-xs text-gray-500 mt-1">Flight ticket cost</div>
                                 </div>
 
@@ -942,7 +941,7 @@ const FlightResults = () => {
                                     <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                                     <div className="text-xs text-gray-600 uppercase tracking-wide font-semibold">Taxes & VAT</div>
                                   </div>
-                                  <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">৳{flight.price.breakdown.taxes}</div>
+                                  <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">${flight.price.breakdown.taxes}</div>
                                   <div className="text-[10px] sm:text-xs text-gray-500 mt-1">Government charges</div>
                                 </div>
 
@@ -951,7 +950,7 @@ const FlightResults = () => {
                                     <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-purple-500 rounded-full flex-shrink-0"></div>
                                     <div className="text-[10px] sm:text-xs text-gray-600 uppercase tracking-wide font-semibold">Service Fees</div>
                                   </div>
-                                  <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">৳{flight.price.breakdown.supplierFees}</div>
+                                  <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">${flight.price.breakdown.supplierFees}</div>
                                   <div className="text-[10px] sm:text-xs text-gray-500 mt-1">Booking & processing</div>
                                 </div>
 
@@ -960,7 +959,7 @@ const FlightResults = () => {
                                     <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-teal-600 rounded-full animate-pulse flex-shrink-0"></div>
                                     <div className="text-[10px] sm:text-xs text-teal-700 uppercase tracking-wide font-bold">Total Amount</div>
                                   </div>
-                                  <div className="text-xl sm:text-2xl lg:text-3xl font-black text-teal-700 truncate">৳{flight.price.total}</div>
+                                  <div className="text-xl sm:text-2xl lg:text-3xl font-black text-teal-700 truncate">${flight.price.total}</div>
                                   <div className="text-[10px] sm:text-xs text-teal-600 mt-1 font-medium">All inclusive</div>
                                 </div>
                               </div>
@@ -978,7 +977,7 @@ const FlightResults = () => {
                                       Airport Tax
                                     </span>
                                     <span className="font-semibold text-gray-900">
-                                      ৳{Math.round(flight.price.breakdown.taxes * 0.4)}
+                                      ${Math.round(flight.price.breakdown.taxes * 0.4)}
                                     </span>
                                   </div>
                                   <div className="flex justify-between items-center py-2 border-b border-gray-100">
@@ -987,7 +986,7 @@ const FlightResults = () => {
                                       VAT (15%)
                                     </span>
                                     <span className="font-semibold text-gray-900">
-                                      ৳{Math.round(flight.price.breakdown.taxes * 0.35)}
+                                      ${Math.round(flight.price.breakdown.taxes * 0.35)}
                                     </span>
                                   </div>
                                   <div className="flex justify-between items-center py-2 border-b border-gray-100">
@@ -996,7 +995,7 @@ const FlightResults = () => {
                                       Fuel Surcharge
                                     </span>
                                     <span className="font-semibold text-gray-900">
-                                      ৳{Math.round(flight.price.breakdown.taxes * 0.15)}
+                                      ${Math.round(flight.price.breakdown.taxes * 0.15)}
                                     </span>
                                   </div>
                                   <div className="flex justify-between items-center py-2">
@@ -1005,7 +1004,7 @@ const FlightResults = () => {
                                       Other Charges
                                     </span>
                                     <span className="font-semibold text-gray-900">
-                                      ৳{Math.round(flight.price.breakdown.taxes * 0.1)}
+                                      ${Math.round(flight.price.breakdown.taxes * 0.1)}
                                     </span>
                                   </div>
                                 </div>
@@ -1017,16 +1016,16 @@ const FlightResults = () => {
                                   <div className="flex justify-between items-center text-xs sm:text-sm gap-2">
                                     <span className="text-gray-600">Subtotal (Base + Fees)</span>
                                     <span className="font-medium text-gray-900 truncate">
-                                      ৳{Number(flight.price.breakdown.basePrice) + Number(flight.price.breakdown.supplierFees)}
+                                      ${Number(flight.price.breakdown.basePrice) + Number(flight.price.breakdown.supplierFees)}
                                     </span>
                                   </div>
                                   <div className="flex justify-between items-center text-xs sm:text-sm gap-2">
                                     <span className="text-gray-600">Total Taxes & VAT</span>
-                                    <span className="font-medium text-gray-900 truncate">৳{flight.price.breakdown.taxes}</span>
+                                    <span className="font-medium text-gray-900 truncate">${flight.price.breakdown.taxes}</span>
                                   </div>
                                   <div className="flex justify-between items-center pt-2 sm:pt-3 border-t-2 border-gray-300 gap-2">
                                     <span className="text-sm sm:text-base font-bold text-gray-900">Grand Total</span>
-                                    <span className="text-lg sm:text-xl lg:text-2xl font-black text-teal-600 truncate">৳{flight.price.total}</span>
+                                    <span className="text-lg sm:text-xl lg:text-2xl font-black text-teal-600 truncate">${flight.price.total}</span>
                                   </div>
                                 </div>
                               </div>
@@ -1058,10 +1057,10 @@ const FlightResults = () => {
                                 </div>
                                 <div className="text-right">
                                   <div className="text-sm text-gray-600 line-through">
-                                    Original: ৳{flight.price.discount.originalPrice}
+                                    Original: ${flight.price.discount.originalPrice}
                                   </div>
                                   <div className="text-xl font-black text-green-600">
-                                    Save ৳{flight.price.discount.savings}
+                                    Save ${flight.price.discount.savings}
                                   </div>
                                 </div>
                               </div>
@@ -1093,19 +1092,19 @@ const FlightResults = () => {
                                 <div className="space-y-2 text-sm">
                                   <div className="flex justify-between">
                                     <span className="text-gray-600">Base Price:</span>
-                                    <span className="font-medium">৳{Math.round(flight.price.breakdown.basePrice / 2)}</span>
+                                    <span className="font-medium">${Math.round(flight.price.breakdown.basePrice / 2)}</span>
                                   </div>
                                   <div className="flex justify-between">
                                     <span className="text-gray-600">Taxes:</span>
-                                    <span className="font-medium">৳{Math.round(flight.price.breakdown.taxes / 2)}</span>
+                                    <span className="font-medium">${Math.round(flight.price.breakdown.taxes / 2)}</span>
                                   </div>
                                   <div className="flex justify-between">
                                     <span className="text-gray-600">Fees:</span>
-                                    <span className="font-medium">৳{Math.round(flight.price.breakdown.supplierFees / 2)}</span>
+                                    <span className="font-medium">${Math.round(flight.price.breakdown.supplierFees / 2)}</span>
                                   </div>
                                   <div className="flex justify-between font-semibold border-t pt-2">
                                     <span className="text-teal-600">Subtotal:</span>
-                                    <span className="text-teal-600">৳{Math.round(flight.price.total / 2)}</span>
+                                    <span className="text-teal-600">${Math.round(flight.price.total / 2)}</span>
                                   </div>
                                 </div>
                               </div>
@@ -1119,19 +1118,19 @@ const FlightResults = () => {
                                 <div className="space-y-2 text-sm">
                                   <div className="flex justify-between">
                                     <span className="text-gray-600">Base Price:</span>
-                                    <span className="font-medium">৳{Math.round(flight.price.breakdown.basePrice / 2)}</span>
+                                    <span className="font-medium">${Math.round(flight.price.breakdown.basePrice / 2)}</span>
                                   </div>
                                   <div className="flex justify-between">
                                     <span className="text-gray-600">Taxes:</span>
-                                    <span className="font-medium">৳{Math.round(flight.price.breakdown.taxes / 2)}</span>
+                                    <span className="font-medium">${Math.round(flight.price.breakdown.taxes / 2)}</span>
                                   </div>
                                   <div className="flex justify-between">
                                     <span className="text-gray-600">Fees:</span>
-                                    <span className="font-medium">৳{Math.round(flight.price.breakdown.supplierFees / 2)}</span>
+                                    <span className="font-medium">${Math.round(flight.price.breakdown.supplierFees / 2)}</span>
                                   </div>
                                   <div className="flex justify-between font-semibold border-t pt-2">
                                     <span className="text-blue-600">Subtotal:</span>
-                                    <span className="text-blue-600">৳{Math.round(flight.price.total / 2)}</span>
+                                    <span className="text-blue-600">${Math.round(flight.price.total / 2)}</span>
                                   </div>
                                 </div>
                               </div>
@@ -1146,8 +1145,7 @@ const FlightResults = () => {
                                     <div className="text-sm text-gray-600">Includes both outbound and return flights</div>
                                   </div>
                                   <div className="text-right">
-                                    <div className="text-2xl font-bold text-purple-600">৳{flight.price.total}</div>
-                                    <div className="text-sm text-gray-500">{flight.price.currency}</div>
+                                    <div className="text-2xl font-bold text-purple-600">${flight.price.total}</div>
                                   </div>
                                 </div>
                               </div>
@@ -1449,7 +1447,7 @@ const FlightResults = () => {
                           className="bg-teal-500 hover:bg-teal-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold transition-colors shadow-md hover:shadow-lg flex items-center justify-center gap-2 mx-auto cursor-pointer touch-manipulation text-sm sm:text-base w-full sm:w-auto"
                         >
                           <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                          <span className="truncate">Book This Flight - ৳{flight.price.total}</span>
+                          <span className="truncate">Book This Flight - ${flight.price.total}</span>
                         </button>
                       </div>
                     </div>

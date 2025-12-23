@@ -107,7 +107,9 @@ async function searchHotelOffers({
   roomQuantity = 1,
   currency = 'USD',
   limit = 60,
-  radiusKm = 5
+  radiusKm = 5,
+  includeOffers = false,
+  maxOffers = 1
 }) {
   const token = await getAccessToken();
   const AMADEUS_BASE = process.env.AMADEUS_BASE_URL || "https://test.api.amadeus.com";
@@ -285,12 +287,15 @@ async function searchHotelOffers({
     if (offersData.length >= safeLimit) break;
     await sleep(250);
   }
+  const safeMaxOffers = Math.max(1, Math.min(Number(maxOffers) || 1, 20));
+
   const simplified = offersData.map(item => {
     const hotel = item.hotel || {};
-    const firstOffer = item.offers?.[0];
+    const allOffers = Array.isArray(item.offers) ? item.offers : [];
+    const firstOffer = allOffers[0];
     const price = firstOffer?.price || {};
 
-    return {
+    const base = {
       hotelId: hotel.hotelId,
       name: hotel.name,
       cityCode: hotel.cityCode,
@@ -311,6 +316,14 @@ async function searchHotelOffers({
         }
       } : null
     };
+
+    if (!includeOffers) return base;
+
+    return {
+      ...base,
+      hotel,
+      offers: allOffers.slice(0, safeMaxOffers)
+    };
   });
 
   // De-duplicate by hotelId (can happen across chunks)
@@ -330,7 +343,9 @@ async function searchHotelOffers({
       requested: safeLimit,
       returned: deduped.length,
       radiusKm: safeRadiusKm,
-      batches: hotelIdChunks.length
+      batches: hotelIdChunks.length,
+      includeOffers: !!includeOffers,
+      maxOffers: includeOffers ? safeMaxOffers : 0
     }
   };
 }

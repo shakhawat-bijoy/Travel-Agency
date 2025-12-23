@@ -5,6 +5,7 @@ import { ArrowLeft, Plane, Clock, MapPin, CreditCard, Check, AlertCircle } from 
 import { bookFlight, clearBookingState } from '../../store/slices/flightSlice'
 import Container from '../common/Container'
 import BookingModal from './BookingModal'
+import { formatUSD } from '../../utils/currency'
 
 const FlightBooking = () => {
     const dispatch = useDispatch()
@@ -114,7 +115,7 @@ const FlightBooking = () => {
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-600">Total Amount:</span>
-                                    <span className="font-bold text-teal-600 text-lg">৳{selectedFlight.price.total}</span>
+                                    <span className="font-bold text-teal-600 text-lg">{formatUSD(selectedFlight.price.total)}</span>
                                 </div>
                             </div>
                         </div>
@@ -164,8 +165,7 @@ const FlightBooking = () => {
                                 <p className="text-teal-100">Complete your booking in just a few steps</p>
                             </div>
                             <div className="text-right">
-                                <div className="text-3xl font-bold">৳{selectedFlight.price.total}</div>
-                                <div className="text-teal-100">{selectedFlight.price.currency}</div>
+                                <div className="text-3xl font-bold">{formatUSD(selectedFlight.price.total)}</div>
                             </div>
                         </div>
                     </div>
@@ -275,19 +275,19 @@ const FlightBooking = () => {
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                                     <div className="text-center">
                                         <div className="text-sm text-gray-500 mb-1">Base Price</div>
-                                        <div className="text-lg font-semibold text-gray-900">৳{selectedFlight.price.breakdown.basePrice}</div>
+                                        <div className="text-lg font-semibold text-gray-900">{formatUSD(selectedFlight.price.breakdown.basePrice)}</div>
                                     </div>
                                     <div className="text-center">
                                         <div className="text-sm text-gray-500 mb-1">Taxes</div>
-                                        <div className="text-lg font-semibold text-gray-900">৳{selectedFlight.price.breakdown.taxes}</div>
+                                        <div className="text-lg font-semibold text-gray-900">{formatUSD(selectedFlight.price.breakdown.taxes)}</div>
                                     </div>
                                     <div className="text-center">
                                         <div className="text-sm text-gray-500 mb-1">Fees</div>
-                                        <div className="text-lg font-semibold text-gray-900">৳{selectedFlight.price.breakdown.supplierFees}</div>
+                                        <div className="text-lg font-semibold text-gray-900">{formatUSD(selectedFlight.price.breakdown.supplierFees)}</div>
                                     </div>
                                     <div className="text-center">
                                         <div className="text-sm text-teal-600 mb-1">Total</div>
-                                        <div className="text-xl font-bold text-teal-600">৳{selectedFlight.price.total}</div>
+                                        <div className="text-xl font-bold text-teal-600">{formatUSD(selectedFlight.price.total)}</div>
                                     </div>
                                 </div>
 
@@ -302,10 +302,10 @@ const FlightBooking = () => {
                                             </div>
                                             <div className="text-right">
                                                 <div className="text-sm text-gray-500 line-through">
-                                                    ৳{selectedFlight.price.discount.originalPrice}
+                                                    {formatUSD(selectedFlight.price.discount.originalPrice)}
                                                 </div>
                                                 <div className="text-lg font-bold text-green-600">
-                                                    Save ৳{selectedFlight.price.discount.savings}
+                                                    Save {formatUSD(selectedFlight.price.discount.savings)}
                                                 </div>
                                             </div>
                                         </div>
@@ -344,7 +344,7 @@ const FlightBooking = () => {
                                 ) : (
                                     <>
                                         <CreditCard className="w-5 h-5" />
-                                        Book Flight - ৳{selectedFlight.price.total}
+                                        Book Flight - {formatUSD(selectedFlight.price.total)}
                                     </>
                                 )}
                             </button>

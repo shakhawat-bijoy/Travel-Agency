@@ -577,7 +577,7 @@ const ConfirmBooking = () => {
                                 </div>
                                 <div className="text-right">
                                     <div className="text-2xl font-bold text-teal-600 flex items-center gap-1">
-                                        <span className="text-2xl">৳</span>
+                                        <span className="text-2xl">$</span>
                                         {flight.price.total}
                                         <span className="text-lg">{flight.price.currency}</span>
                                     </div>
@@ -912,19 +912,19 @@ const ConfirmBooking = () => {
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                                             <div className="text-center">
                                                 <div className="text-sm text-gray-500 mb-1">Base Price</div>
-                                                <div className="text-lg font-semibold text-gray-900">৳{flight.price.breakdown.basePrice}</div>
+                                                <div className="text-lg font-semibold text-gray-900">${flight.price.breakdown.basePrice}</div>
                                             </div>
                                             <div className="text-center">
                                                 <div className="text-sm text-gray-500 mb-1">Taxes</div>
-                                                <div className="text-lg font-semibold text-gray-900">৳{flight.price.breakdown.taxes}</div>
+                                                <div className="text-lg font-semibold text-gray-900">${flight.price.breakdown.taxes}</div>
                                             </div>
                                             <div className="text-center">
                                                 <div className="text-sm text-gray-500 mb-1">Fees</div>
-                                                <div className="text-lg font-semibold text-gray-900">৳{flight.price.breakdown.supplierFees}</div>
+                                                <div className="text-lg font-semibold text-gray-900">${flight.price.breakdown.supplierFees}</div>
                                             </div>
                                             <div className="text-center">
                                                 <div className="text-sm text-teal-600 mb-1">Total</div>
-                                                <div className="text-xl font-bold text-teal-600">৳{flight.price.total}</div>
+                                                <div className="text-xl font-bold text-teal-600">${flight.price.total}</div>
                                             </div>
                                         </div>
 
@@ -939,10 +939,10 @@ const ConfirmBooking = () => {
                                                     </div>
                                                     <div className="text-right">
                                                         <div className="text-xs text-gray-500 line-through">
-                                                            ৳{flight.price.discount.originalPrice}
+                                                            ${flight.price.discount.originalPrice}
                                                         </div>
                                                         <div className="text-sm font-bold text-green-600">
-                                                            Save ৳{flight.price.discount.savings}
+                                                            Save ${flight.price.discount.savings}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -988,12 +988,12 @@ const ConfirmBooking = () => {
                                 <div className="bg-white p-4 rounded-lg shadow-sm">
                                     <h4 className="font-semibold text-gray-900 mb-2">Price Details</h4>
                                     <div className="space-y-1 text-sm">
-                                        <div><span className="text-gray-600">Total:</span> ৳{flight.price?.total} {flight.price?.currency}</div>
+                                        <div><span className="text-gray-600">Total:</span> ${flight.price?.total}</div>
                                         {flight.price?.originalCurrency && (
                                             <div><span className="text-gray-600">Original:</span> ${flight.price?.originalTotal} {flight.price?.originalCurrency}</div>
                                         )}
                                         {flight.price?.discount?.hasDiscount && (
-                                            <div><span className="text-gray-600">Discount:</span> {flight.price.discount.percentage}% (৳{flight.price.discount.savings})</div>
+                                            <div><span className="text-gray-600">Discount:</span> {flight.price.discount.percentage}% (${flight.price.discount.savings})</div>
                                         )}
                                     </div>
                                 </div>
@@ -1555,15 +1555,15 @@ const ConfirmBooking = () => {
                                             <div className="space-y-2">
                                                 <div className="flex justify-between">
                                                     <span className="text-gray-600">Flight Price</span>
-                                                    <span className="font-medium">৳{flight.price.total}</span>
+                                                    <span className="font-medium">${flight.price.total}</span>
                                                 </div>
                                                 <div className="flex justify-between">
                                                     <span className="text-gray-600">Taxes & Fees</span>
-                                                    <span className="font-medium">৳45.00</span>
+                                                    <span className="font-medium">$45.00</span>
                                                 </div>
                                                 <div className="border-t pt-2 flex justify-between font-bold text-lg">
                                                     <span>Total</span>
-                                                    <span className="text-teal-600">৳{(parseFloat(flight.price.total) + 45).toFixed(2)}</span>
+                                                    <span className="text-teal-600">${(parseFloat(flight.price.total) + 45).toFixed(2)}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1593,7 +1593,7 @@ const ConfirmBooking = () => {
                                     ) : (
                                         <>
                                             <CreditCard className="w-5 h-5" />
-                                            Confirm Booking - ৳{(parseFloat(flight.price.total) + 45).toFixed(2)}
+                                            Confirm Booking - ${(parseFloat(flight.price.total) + 45).toFixed(2)}
                                         </>
                                     )}
                                 </button>

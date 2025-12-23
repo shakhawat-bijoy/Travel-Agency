@@ -1,52 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { flightAPI } from '../../utils/api'
 
-// Currency conversion rate (USD to BDT)
-const USD_TO_BDT_RATE = 110 // You can make this dynamic by fetching from a currency API
-
-// Convert USD price to BDT
-const convertToBDT = (usdPrice) => {
-    const price = parseFloat(usdPrice)
-    return (price * USD_TO_BDT_RATE).toFixed(2)
-}
-
-// Convert price object to BDT
-const convertPriceToBDT = (priceObj) => {
+// This app displays prices in USD. Keep API values as-is, but ensure a currency exists.
+const normalizePrice = (priceObj) => {
     if (!priceObj) return priceObj
-
-    return {
-        ...priceObj,
-        total: convertToBDT(priceObj.total),
-        base: priceObj.base ? convertToBDT(priceObj.base) : null,
-        grandTotal: priceObj.grandTotal ? convertToBDT(priceObj.grandTotal) : priceObj.grandTotal,
-        currency: 'BDT',
-        originalCurrency: priceObj.currency,
-        originalTotal: priceObj.total,
-        conversionRate: USD_TO_BDT_RATE,
-        breakdown: priceObj.breakdown ? {
-            ...priceObj.breakdown,
-            basePrice: convertToBDT(priceObj.breakdown.basePrice),
-            taxes: convertToBDT(priceObj.breakdown.taxes),
-            supplierFees: convertToBDT(priceObj.breakdown.supplierFees),
-            otherFees: convertToBDT(priceObj.breakdown.otherFees),
-            totalFees: convertToBDT(priceObj.breakdown.totalFees)
-        } : null,
-        discount: priceObj.discount ? {
-            ...priceObj.discount,
-            amount: convertToBDT(priceObj.discount.amount),
-            savings: convertToBDT(priceObj.discount.savings),
-            originalPrice: priceObj.discount.originalPrice ? convertToBDT(priceObj.discount.originalPrice) : null
-        } : null,
-        perTraveler: priceObj.perTraveler ? priceObj.perTraveler.map(pt => ({
-            ...pt,
-            price: {
-                ...pt.price,
-                total: convertToBDT(pt.price.total),
-                base: pt.price.base ? convertToBDT(pt.price.base) : null,
-                currency: 'BDT'
-            }
-        })) : []
-    }
+    const currency = String(priceObj.currency || 'USD').toUpperCase()
+    return { ...priceObj, currency }
 }
 
 // Async thunk for searching flights
@@ -57,15 +16,14 @@ export const searchFlights = createAsyncThunk(
             const response = await flightAPI.searchFlightsDirect(searchParams)
 
             if (response.success && response.data.flights) {
-                // Convert all flight prices to BDT
-                const flightsWithBDT = response.data.flights.map(flight => ({
+                const flightsNormalized = response.data.flights.map(flight => ({
                     ...flight,
-                    price: convertPriceToBDT(flight.price)
+                    price: normalizePrice(flight.price)
                 }))
 
                 return {
                     ...response.data,
-                    flights: flightsWithBDT
+                    flights: flightsNormalized
                 }
             } else {
                 return rejectWithValue(response.message || 'No flights found')
@@ -114,8 +72,7 @@ const flightSlice = createSlice({
         showBookingModal: false,
 
         // Currency
-        currency: 'BDT',
-        conversionRate: USD_TO_BDT_RATE
+        currency: 'USD'
     },
     reducers: {
         // Search actions
@@ -150,14 +107,6 @@ const flightSlice = createSlice({
             state.bookingError = null
             state.bookingSuccess = false
             state.bookingData = null
-        },
-
-        // Currency actions
-        setCurrency: (state, action) => {
-            state.currency = action.payload
-        },
-        setConversionRate: (state, action) => {
-            state.conversionRate = action.payload
         },
 
         // Persistence actions
@@ -251,8 +200,6 @@ export const {
     showBookingModal,
     hideBookingModal,
     clearBookingState,
-    setCurrency,
-    setConversionRate,
     persistSearchResults,
     restoreSearchResults,
     clearPersistedResults

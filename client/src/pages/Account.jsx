@@ -388,7 +388,7 @@ const Account = () => {
     doc.setFontSize(8)
     doc.setFont('helvetica', 'normal')
     doc.text(`Booked: ${new Date(booking.bookingDate).toLocaleDateString()}`, 115, yPos + 20)
-    doc.text(`Total: ৳${booking.totalAmount} ${booking.currency}`, 115, yPos + 25)
+    doc.text(`Total: $${booking.totalAmount}`, 115, yPos + 25)
     
     // Flight details header
     yPos += 38
@@ -1642,7 +1642,7 @@ const Account = () => {
                   </div>
                   <div className="text-left sm:text-right">
                     <div className="text-lg sm:text-xl font-bold text-teal-600">
-                      ৳{booking.totalAmount} {booking.currency}
+                      ${booking.totalAmount}
                     </div>
                     <div className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium mt-1 ${booking.status === 'confirmed'
                       ? 'bg-green-100 text-green-800'
@@ -2722,7 +2722,7 @@ const Account = () => {
                     <div>
                       <div className="text-xs sm:text-sm text-gray-500">Total Amount</div>
                       <div className="font-medium text-sm sm:text-base text-teal-600">
-                        ৳{selectedBooking.totalAmount} {selectedBooking.currency}
+                        ${selectedBooking.totalAmount}
                       </div>
                     </div>
                   </div>
