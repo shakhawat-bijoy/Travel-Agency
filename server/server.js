@@ -51,9 +51,36 @@ app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Connect to MongoDB with error handling
-connectDB().catch(err => {
-  console.error('Failed to connect to MongoDB:', err);
-});
+// In serverless (Vercel), we'll connect on-demand per request
+// For traditional servers, connect at startup
+if (process.env.VERCEL) {
+  console.log('🔧 Running in Vercel serverless mode - DB will connect on-demand');
+} else {
+  connectDB().catch(err => {
+    console.error('Failed to connect to MongoDB:', err);
+  });
+}
+
+// Middleware to ensure DB connection on each request (for serverless)
+// Only runs in Vercel serverless environment
+if (process.env.VERCEL) {
+  app.use(async (req, res, next) => {
+    // Only check connection for API routes that likely need DB
+    if (req.path.startsWith('/api') && !req.path.startsWith('/api/health')) {
+      const mongoose = await import('mongoose');
+      // If not connected and we have a URI, try to connect
+      if (mongoose.default.connection.readyState === 0 && (process.env.MONGO_URI || process.env.MONGODB_URI)) {
+        try {
+          await connectDB();
+        } catch (err) {
+          console.error('On-demand DB connection failed:', err.message);
+          // Continue anyway - some routes might not need DB
+        }
+      }
+    }
+    next();
+  });
+}
 
 // Routes
 app.use('/api/auth', authRoutes);

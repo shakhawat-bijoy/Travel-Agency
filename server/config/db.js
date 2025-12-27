@@ -1,6 +1,9 @@
 import mongoose from 'mongoose';
 
-const connectDB = async () => {
+// Cache the connection promise to reuse in serverless environments
+let cachedConnection = null;
+
+const connectDB = async (retries = 3) => {
     try {
         // Support both MONGO_URI and MONGODB_URI for flexibility in hosting envs
         const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
@@ -10,6 +13,18 @@ const connectDB = async () => {
             return null;
         }
 
+        // Check if already connected (for serverless function reuse)
+        if (mongoose.connection.readyState === 1) {
+            console.log('✅ Using existing MongoDB connection');
+            return mongoose.connection;
+        }
+
+        // If connection is in progress, wait for it (for concurrent requests in serverless)
+        if (cachedConnection) {
+            console.log('🔄 Waiting for existing connection attempt...');
+            return await cachedConnection;
+        }
+
         // Set mongoose options for better error handling
         mongoose.set('strictQuery', false);
         mongoose.set('bufferCommands', false); // Disable buffering
@@ -17,22 +32,45 @@ const connectDB = async () => {
         console.log('🔄 Attempting MongoDB connection...');
         console.log('🔗 Connection string:', mongoUri.replace(/:[^:@]+@/, ':****@'));
         
-        const conn = await mongoose.connect(mongoUri, {
+        // Create connection promise and cache it
+        cachedConnection = mongoose.connect(mongoUri, {
             serverSelectionTimeoutMS: 30000, // Increase to 30s
             socketTimeoutMS: 45000,
             connectTimeoutMS: 30000,
             maxPoolSize: 10,
-            minPoolSize: 2,
-            maxIdleTimeMS: 60000, // Close idle connections after 60s
+            minPoolSize: 1, // Reduced for serverless
+            maxIdleTimeMS: 30000, // Reduced for serverless (30s)
             retryWrites: true,
             retryReads: true,
             heartbeatFrequencyMS: 10000, // Check connection health every 10s
+        }).then((conn) => {
+            console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+            console.log(`✅ Database: ${conn.connection.name}`);
+            cachedConnection = null; // Clear cache on success
+            return conn;
+        }).catch((error) => {
+            cachedConnection = null; // Clear cache on error so we can retry
+            throw error;
         });
 
-        console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-        console.log(`✅ Database: ${conn.connection.name}`);
+        const conn = await cachedConnection;
         return conn;
     } catch (error) {
+        cachedConnection = null; // Clear cache on error
+        
+        // Retry logic for transient errors
+        if (retries > 0 && (
+            error.name === 'MongoServerSelectionError' ||
+            error.name === 'MongoNetworkError' ||
+            error.message.includes('timeout') ||
+            error.message.includes('ECONNREFUSED')
+        )) {
+            const remainingRetries = retries - 1;
+            console.warn(`⚠️ Connection failed, retrying... (${remainingRetries} attempts left)`);
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds before retry
+            return connectDB(remainingRetries);
+        }
+        
         console.error("❌ MongoDB Connection Error:", error.message);
         console.error("❌ Error name:", error.name);
         console.error("❌ Full error:", error);
@@ -68,8 +106,10 @@ mongoose.connection.on('connected', () => {
     console.log('✅ MongoDB connection established');
 });
 
-// Keep-alive ping to prevent connection timeout
-if (process.env.NODE_ENV === 'production') {
+// Keep-alive ping to prevent connection timeout (disabled for serverless)
+// Serverless functions don't need keep-alive as they're short-lived
+// Only enable for long-running processes
+if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
     setInterval(async () => {
         if (mongoose.connection.readyState === 1) {
             try {
