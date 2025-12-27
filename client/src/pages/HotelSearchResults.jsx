@@ -353,10 +353,10 @@ const HotelSearchResults = () => {
 
     return (
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200">
-        <div className="p-6">
-          <div className="flex gap-4">
+        <div className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row gap-4">
             {/* Hotel Image Placeholder */}
-            <div className="w-48 h-32 bg-gray-100 rounded-lg flex-shrink-0 flex items-center justify-center">
+            <div className="w-full sm:w-48 h-48 sm:h-32 bg-gray-100 rounded-lg flex-shrink-0 flex items-center justify-center">
               {hotelReview?.reviews?.[0]?.images?.[0]?.url ? (
                 <img
                   src={hotelReview.reviews[0].images[0].url}
@@ -375,9 +375,9 @@ const HotelSearchResults = () => {
 
             {/* Hotel Info */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-semibold text-gray-900 truncate">{hotel.name}</h3>
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">{hotel.name}</h3>
                   
                   {/* Rating */}
                   {rating > 0 && (
@@ -413,9 +413,9 @@ const HotelSearchResults = () => {
                     </p>
                   )}
 
-                  {/* Location Map Preview */}
-                  {(hotel.latitude && hotel.longitude) || hotelDetail?.geoCode && (
-                    <div className="mt-2">
+                  {/* Location Map Preview - Hidden on mobile for space */}
+                  {((hotel.latitude && hotel.longitude) || hotelDetail?.geoCode) && (
+                    <div className="mt-2 hidden sm:block">
                       <GoogleMap
                         center={{
                           lat: hotel.latitude || hotelDetail.geoCode.latitude,
@@ -455,28 +455,28 @@ const HotelSearchResults = () => {
                 </div>
 
                 {/* Price Section */}
-                <div className="text-right flex-shrink-0">
+                <div className="text-left sm:text-right flex-shrink-0 w-full sm:w-auto">
                   {price && (
-                    <>
-                      <div className="text-sm text-gray-500">
+                    <div className="mb-3 sm:mb-0">
+                      <div className="text-xs sm:text-sm text-gray-500">
                         {nights > 1 ? `${nights} nights, ${query.adults} adults` : `${query.adults} adults`}
                       </div>
                       {nights > 1 && (
-                        <div className="text-sm text-gray-600">
+                        <div className="text-xs sm:text-sm text-gray-600">
                           {formatUSD(pricePerNight)} per night
                         </div>
                       )}
-                      <div className="text-2xl font-bold text-gray-900 mt-1">
+                      <div className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
                         {formattedPrice}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-xs sm:text-sm text-gray-500">
                         Total price
                       </div>
-                    </>
+                    </div>
                   )}
 
                   {/* Action Buttons */}
-                  <div className="mt-3 space-y-2">
+                  <div className="mt-3 sm:mt-3 flex flex-col sm:flex-col gap-2">
                     {hotel.offer?.id && (
                       <Link
                         to={buildDetailsLink(hotel.offer.id)}
@@ -499,10 +499,10 @@ const HotelSearchResults = () => {
               {/* Offers Section */}
               {hotel.offers && hotel.offers.length > 1 && (
                 <div className="mt-4 pt-4 border-t border-gray-100">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">
+                  <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-2">
                     {hotel.offers.length} room options available
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {hotel.offers.slice(0, 4).map((offer, idx) => {
                       const offerRoom = offer.roomInformation || offer.room
                       const offerCategory = offerRoom?.typeEstimated?.category || 'Room'
@@ -589,16 +589,16 @@ const HotelSearchResults = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 my-10" style={{ minHeight: '100vh' }}>
+    <div className="min-h-screen bg-gray-50 py-4 md:py-10" style={{ minHeight: '100vh' }}>
       <Container>
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 -mx-4 px-4 py-4 mb-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+        <div className="bg-white border-b border-gray-200 px-4 md:px-0 py-4 mb-4 md:mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
                 {query.cityCode}: {filteredAndSortedResults.length} properties found
               </h1>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-xs sm:text-sm text-gray-600 mt-1 break-words">
                 {query.checkInDate && query.checkOutDate ? (
                   <>
                     {new Date(query.checkInDate).toLocaleDateString()} - {new Date(query.checkOutDate).toLocaleDateString()}
@@ -613,7 +613,7 @@ const HotelSearchResults = () => {
             </div>
             <Link
               to="/hotels"
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm sm:text-base whitespace-nowrap self-start sm:self-auto"
             >
               New search
             </Link>
@@ -623,7 +623,7 @@ const HotelSearchResults = () => {
         {/* Hotel Details Modal/Page */}
         {offerId && (
           <div className="mb-6">
-            <div className="flex items-center justify-between gap-3 mb-3">
+            <div className="flex items-center justify-between gap-3 mb-3 px-4 md:px-0">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Hotel details</h2>
                 <p className="text-sm text-gray-600 truncate">
@@ -633,7 +633,7 @@ const HotelSearchResults = () => {
               <button
                 type="button"
                 onClick={clearOfferId}
-                className="text-blue-600 hover:text-blue-700 font-semibold"
+                className="text-blue-600 hover:text-blue-700 font-semibold "
               >
                 ← Back to results
               </button>
@@ -943,49 +943,49 @@ const HotelSearchResults = () => {
             {!loading && !error && (
               <>
                 {/* Filters and Sorting */}
-                <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-                  <div className="flex flex-wrap items-center gap-4 mb-4">
+                <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
+                  <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
                     {/* View Mode Toggle */}
-                    <div className="flex items-center gap-2 border border-gray-300 rounded-lg p-1">
+                    <div className="flex items-center gap-2 border border-gray-300 rounded-lg p-1 w-full sm:w-auto">
                       <button
                         onClick={() => setViewMode('list')}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                           viewMode === 'list'
                             ? 'bg-blue-600 text-white'
                             : 'text-gray-700 hover:bg-gray-100'
                         }`}
                       >
-                        <span className="flex items-center gap-2">
+                        <span className="flex items-center justify-center gap-2">
                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
                           </svg>
-                          List
+                          <span className="hidden sm:inline">List</span>
                         </span>
                       </button>
                       <button
                         onClick={() => setViewMode('map')}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                           viewMode === 'map'
                             ? 'bg-blue-600 text-white'
                             : 'text-gray-700 hover:bg-gray-100'
                         }`}
                       >
-                        <span className="flex items-center gap-2">
+                        <span className="flex items-center justify-center gap-2">
                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M12 1.586l-4 4v12.828l4-4V1.586zM3.707 3.293A1 1 0 002 4v10a1 1 0 00.293.707L6 18.414V5.586L3.707 3.293zM17.707 5.293L14 1.586v12.828l2.293 2.293A1 1 0 0018 16V6a1 1 0 00-.293-.707z" clipRule="evenodd" />
                           </svg>
-                          Map
+                          <span className="hidden sm:inline">Map</span>
                         </span>
                       </button>
                     </div>
 
                     {/* Sort By */}
-                    <div className="flex items-center gap-2">
-                      <label className="text-sm font-medium text-gray-700">Sort by:</label>
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                      <label className="text-xs sm:text-sm font-medium text-gray-700 sm:whitespace-nowrap">Sort by:</label>
                       <select
                         value={sortBy}
                         onChange={(e) => setSortBy(e.target.value)}
-                        className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto"
                       >
                         <option value="price">Price (low to high)</option>
                         <option value="rating">Rating (high to low)</option>
@@ -994,32 +994,34 @@ const HotelSearchResults = () => {
                     </div>
 
                     {/* Price Filter */}
-                    <div className="flex items-center gap-2">
-                      <label className="text-sm font-medium text-gray-700">Price range (USD):</label>
-                      <input
-                        type="number"
-                        placeholder={`Min (${formatUSD(priceRange.min)})`}
-                        value={filterBy.minPrice}
-                        onChange={(e) => setFilterBy(prev => ({ ...prev, minPrice: e.target.value }))}
-                        className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-32 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                      <span className="text-gray-500">-</span>
-                      <input
-                        type="number"
-                        placeholder={`Max (${formatUSD(priceRange.max)})`}
-                        value={filterBy.maxPrice}
-                        onChange={(e) => setFilterBy(prev => ({ ...prev, maxPrice: e.target.value }))}
-                        className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-32 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                      <label className="text-xs sm:text-sm font-medium text-gray-700 sm:whitespace-nowrap">Price (USD):</label>
+                      <div className="flex items-center gap-2 flex-1 sm:flex-none">
+                        <input
+                          type="number"
+                          placeholder={`Min`}
+                          value={filterBy.minPrice}
+                          onChange={(e) => setFilterBy(prev => ({ ...prev, minPrice: e.target.value }))}
+                          className="border border-gray-300 rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex-1 sm:w-24"
+                        />
+                        <span className="text-gray-500">-</span>
+                        <input
+                          type="number"
+                          placeholder={`Max`}
+                          value={filterBy.maxPrice}
+                          onChange={(e) => setFilterBy(prev => ({ ...prev, maxPrice: e.target.value }))}
+                          className="border border-gray-300 rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex-1 sm:w-24"
+                        />
+                      </div>
                     </div>
 
                     {/* Rating Filter */}
-                    <div className="flex items-center gap-2">
-                      <label className="text-sm font-medium text-gray-700">Min rating:</label>
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                      <label className="text-xs sm:text-sm font-medium text-gray-700 sm:whitespace-nowrap">Min rating:</label>
                       <select
                         value={filterBy.minRating}
                         onChange={(e) => setFilterBy(prev => ({ ...prev, minRating: e.target.value }))}
-                        className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto"
                       >
                         <option value="">Any rating</option>
                         <option value="6">6+ Good</option>
@@ -1032,7 +1034,7 @@ const HotelSearchResults = () => {
                     {/* Clear Filters */}
                     <button
                       onClick={() => setFilterBy({ minPrice: '', maxPrice: '', minRating: '', amenities: [] })}
-                      className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                      className="text-blue-600 hover:text-blue-700 text-xs sm:text-sm font-medium w-full sm:w-auto text-left sm:text-center px-2 sm:px-0 py-2 sm:py-0"
                     >
                       Clear filters
                     </button>
@@ -1040,12 +1042,12 @@ const HotelSearchResults = () => {
                 </div>
 
                 {/* Results Count */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-sm text-gray-600">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 px-4 md:px-0">
+                  <div className="text-xs sm:text-sm text-gray-600">
                     Showing <span className="font-semibold">{filteredAndSortedResults.length}</span> of <span className="font-semibold">{results.length}</span> properties
                   </div>
                   {priceRange.min > 0 && (
-                    <div className="text-sm text-gray-600">
+                    <div className="text-xs sm:text-sm text-gray-600">
                       Price range: {formatUSD(priceRange.min)} - {formatUSD(priceRange.max)}
                     </div>
                   )}
@@ -1069,9 +1071,9 @@ const HotelSearchResults = () => {
                   </div>
                 ) : viewMode === 'map' ? (
                   /* Map View */
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                     {/* Map */}
-                    <div className="lg:col-span-1 sticky top-4 h-[calc(100vh-200px)]">
+                    <div className="lg:col-span-1 sticky top-4 h-[400px] sm:h-[500px] lg:h-[calc(100vh-200px)]">
                       <GoogleMap
                         center={
                           filteredAndSortedResults[0]?.latitude && filteredAndSortedResults[0]?.longitude
@@ -1122,7 +1124,7 @@ const HotelSearchResults = () => {
                     </div>
 
                     {/* Hotel List */}
-                    <div className="lg:col-span-1 space-y-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+                    <div className="lg:col-span-1 space-y-4 overflow-y-auto max-h-[400px] lg:max-h-[calc(100vh-200px)]">
                       {filteredAndSortedResults.map((hotel, index) => (
                         <HotelCard key={hotel.hotelId || hotel.name || index} hotel={hotel} />
                       ))}
