@@ -291,7 +291,7 @@ bookingSchema.virtual('searchParamsObject').get(function () {
 
 // Index for efficient queries
 bookingSchema.index({ userId: 1, bookingDate: -1 });
-bookingSchema.index({ bookingReference: 1 });
+// Note: bookingReference already has an index from unique: true
 bookingSchema.index({ status: 1 });
 
 export default mongoose.model('Booking', bookingSchema);

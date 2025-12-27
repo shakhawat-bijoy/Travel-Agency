@@ -90,6 +90,6 @@ customPackageRequestSchema.pre('save', function (next) {
 })
 
 customPackageRequestSchema.index({ userId: 1, createdAt: -1 })
-customPackageRequestSchema.index({ reference: 1 })
+// Note: reference already has an index from unique: true
 
 export default mongoose.model('CustomPackageRequest', customPackageRequestSchema)
