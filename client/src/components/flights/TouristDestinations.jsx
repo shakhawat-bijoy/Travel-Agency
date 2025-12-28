@@ -62,12 +62,12 @@ const TouristDestinations = () => {
                             Going somewhere to celebrate this season? Whether you're going home or somewhere to roam, we've got the travel tools to get you to your destination.
                         </p>
                     </div>
-                    <div className='flex-shrink-0'>
+                    {/* <div className='flex-shrink-0'>
                         <Button
                             text='See All'
                             className='px-4 py-2 text-black rounded-md border border-[#8DD3BB] text-sm font-medium whitespace-nowrap'
                         />
-                    </div>
+                    </div> */}
                 </div>
 
                 <div className="flex flex-col lg:flex-row gap-6">

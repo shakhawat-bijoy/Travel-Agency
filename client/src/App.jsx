@@ -15,6 +15,8 @@ import PackageDetail from './pages/PackageDetail'
 import ConfirmPackageBooking from './pages/ConfirmPackageBooking'
 import Packages from './pages/Packages'
 import Places from './pages/Places'
+import TravelBlogs from './pages/TravelBlogs'
+import BlogDetail from './pages/BlogDetail'
 
 import {
   createRoutesFromElements,
@@ -50,20 +52,22 @@ const App = () => {
         }></Route>
         <Route path="/test-booking" element={<BookingTest />}></Route>
         <Route path="/flights" element={<Flights />}></Route>
-        <Route path='/hotels' element={<Hotels/>}></Route>
-        <Route path='/hotels/search' element={<HotelSearchResults/>}></Route>
+        <Route path='/hotels' element={<Hotels />}></Route>
+        <Route path='/hotels/search' element={<HotelSearchResults />}></Route>
         <Route path="/flight-results" element={<FlightResults />}></Route>
         <Route path="/book-flight" element={<FlightBooking />}></Route>
         <Route path="/confirm-booking" element={<ProtectedRoute>
-            <ConfirmBooking />
-          </ProtectedRoute>}></Route>
+          <ConfirmBooking />
+        </ProtectedRoute>}></Route>
         <Route path="/booking-success" element={<BookingSuccess />}></Route>
         <Route path="/places" element={<Places />}></Route>
         <Route path="/packages" element={<Packages />}></Route>
         <Route path="/packages/:id" element={<PackageDetail />}></Route>
         <Route path="/confirm-package-booking" element={<ProtectedRoute>
-            <ConfirmPackageBooking />
-          </ProtectedRoute>}></Route>
+          <ConfirmPackageBooking />
+        </ProtectedRoute>}></Route>
+        <Route path="/blogs" element={<TravelBlogs />}></Route>
+        <Route path="/blog/:id" element={<BlogDetail />}></Route>
 
         {/* Catch-all route - must be last */}
         <Route path="*" element={<Home />}></Route>

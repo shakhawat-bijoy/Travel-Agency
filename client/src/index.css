@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 /* React Slick CSS */
 @import "slick-carousel/slick/slick.css";

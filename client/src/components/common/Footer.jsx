@@ -21,7 +21,7 @@ const Footer = () => {
             "Bali Travel Guide",
             "Sri Lanka Travel Guide",
             "Peru Travel Guide",
-            "Bali Travel Guide"
+            "Greece Travel Guide"
         ],
         aboutUs: [
             "Our Story",
@@ -108,12 +108,14 @@ const Footer = () => {
 
                     {/* Travel Blogs */}
                     <div className="md:col-span-1">
-                        <h3 className="text-lg font-semibold mb-4">Travel Blogs</h3>
+                        <Link to="/blogs">
+                            <h3 className="text-lg font-semibold mb-4">Travel Blogs</h3>
+                        </Link>
                         <ul className="space-y-2">
                             {footerData.travelBlogs.map((blog, index) => (
                                 <li key={index}>
                                     <Link
-                                        to={`/blog/${blog.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+                                        to={`/blog/${blog.toLowerCase().replace(' ', '-').replace(' ', '-')}`}
                                         className="text-sm hover:text-teal-100 transition-colors duration-200"
                                     >
                                         {blog}
@@ -175,7 +177,7 @@ const Footer = () => {
                         </div>
                     </div>
 
-                    
+
                 </div>
             </div>
         </footer>
