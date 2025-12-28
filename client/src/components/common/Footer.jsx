@@ -115,7 +115,7 @@ const Footer = () => {
                             {footerData.travelBlogs.map((blog, index) => (
                                 <li key={index}>
                                     <Link
-                                        to={`/blog/${blog.toLowerCase().replace(' ', '-').replace(' ', '-')}`}
+                                        to={`/blog/${blog.toLowerCase().replace(/\s+/g, '-')}`}
                                         className="text-sm hover:text-teal-100 transition-colors duration-200"
                                     >
                                         {blog}

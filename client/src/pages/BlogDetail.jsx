@@ -7,7 +7,7 @@ import { Calendar, User, ArrowLeft, Clock } from 'lucide-react';
 
 const BlogDetail = () => {
     const { id } = useParams();
-    const blog = travelBlogs.find(b => b.id === id);
+    const blog = travelBlogs.find(b => b.id === id || b.id === id.toLowerCase().replace(/\s+/g, '-'));
 
     useEffect(() => {
         window.scrollTo(0, 0);
