@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { Plane, Hotel, ArrowLeftRight, Calendar, Search, MapPin, Edit3 } from 'lucide-react'
 import { searchFlights, setSearchParams, clearSearchResults } from '../../store/slices/flightSlice'
 import { flightAPI, hotelAPI } from '../../utils/api'
@@ -9,6 +9,7 @@ import Container from '../common/Container'
 const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const location = useLocation()
   const { searchLoading, searchError, searchResults } = useSelector(state => state.flights)
 
   const [activeTab, setActiveTab] = useState(initialTab)
@@ -46,10 +47,62 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
   const [destinationSearching, setDestinationSearching] = useState(false)
   const [hotelSearchError, setHotelSearchError] = useState(null)
 
+  // Handle pre-filled search data from navigation state
+  useEffect(() => {
+    if (location.state) {
+      console.log('Applying pre-filled search data:', location.state)
+      const { departure_id, arrival_id, from_query, to_query } = location.state
+
+      if (departure_id || arrival_id) {
+        setSearchData(prev => ({
+          ...prev,
+          departure_id: departure_id || prev.departure_id,
+          arrival_id: arrival_id || prev.arrival_id
+        }))
+      }
+
+      if (from_query) setFromQuery(from_query)
+      if (to_query) setToQuery(to_query)
+
+      // Clear the state so it doesn't persist if they navigate away and back without intent
+      // specialized handling might be needed but for now this is good to trigger once
+      window.history.replaceState({}, document.title)
+    }
+  }, [location.state])
+
   // Debounce timer refs
   const fromSearchTimer = useRef(null)
   const toSearchTimer = useRef(null)
   const destinationSearchTimer = useRef(null)
+  const containerRef = useRef(null)
+
+  // Handle pre-filled search data from navigation state
+  useEffect(() => {
+    if (location.state) {
+      console.log('Applying pre-filled search data:', location.state)
+      const { departure_id, arrival_id, from_query, to_query } = location.state
+
+      if (departure_id || arrival_id) {
+        setSearchData(prev => ({
+          ...prev,
+          departure_id: departure_id || prev.departure_id,
+          arrival_id: arrival_id || prev.arrival_id
+        }))
+      }
+
+      if (from_query) setFromQuery(from_query)
+      if (to_query) setToQuery(to_query)
+
+      // Scroll into view
+      if (containerRef.current) {
+        containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+
+      // Clear the state so it doesn't persist if they navigate away and back without intent
+      // specialized handling might be needed but for now this is good to trigger once
+      window.history.replaceState({}, document.title)
+    }
+  }, [location.state])
 
   const searchDestinations = async (keyword) => {
     if (!keyword || keyword.trim().length < 2) {
@@ -282,7 +335,7 @@ const FlightHotelSearch = ({ className, initialTab = 'flights' }) => {
   }
 
   return (
-    <div className={`${className}`}>
+    <div ref={containerRef} className={`${className}`}>
       <Container className={`lg:w-[1280px] max-w-7xl mx-auto px-4 sm:px-6 lg:px-0`}>
         {/* Search Form */}
         <div className="bg-white rounded-2xl shadow-xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-4 mb-8">

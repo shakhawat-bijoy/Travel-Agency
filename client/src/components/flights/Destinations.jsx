@@ -1,46 +1,62 @@
 
+import { useNavigate } from 'react-router-dom'
 import Button from '../common/Buttton'
 import Container from '../common/Container'
 import Image from '../common/Image'
 
 // JSON data extracted from the image
 const destinationsData = [
-  {
-    id: 1,
-    city: "Melbourne",
-    description: "An amazing journey",
-    price: 700,
-    image: "https://images.unsplash.com/photo-1514395462725-fb4566210144?w=800&q=80",
-    buttonColor: "#8DD3BB"
-  },
-  {
-    id: 2,
-    city: "Paris",
-    description: "A Paris Adventure",
-    price: 600,
-    image: "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?w=800&q=80",
-    buttonColor: "#8DD3BB"
-  },
-  {
-    id: 3,
-    city: "London",
-    description: "London eye adventure",
-    price: 350,
-    image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800&q=80",
-    buttonColor: "#8DD3BB"
-  },
-  {
-    id: 4,
-    city: "Columbia",
-    description: "Amazing streets",
-    price: 700,
-    image: "https://images.unsplash.com/photo-1568632234157-ce7aecd03d0d?w=800&q=80",
-    buttonColor: "#8DD3BB"
-  }
+    {
+        id: 1,
+        city: "Melbourne",
+        iata: "MEL",
+        description: "An amazing journey",
+        price: 700,
+        image: "https://images.unsplash.com/photo-1514395462725-fb4566210144?w=800&q=80",
+        buttonColor: "#8DD3BB"
+    },
+    {
+        id: 2,
+        city: "Paris",
+        iata: "CDG",
+        description: "A Paris Adventure",
+        price: 600,
+        image: "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?w=800&q=80",
+        buttonColor: "#8DD3BB"
+    },
+    {
+        id: 3,
+        city: "London",
+        iata: "LHR",
+        description: "London eye adventure",
+        price: 350,
+        image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800&q=80",
+        buttonColor: "#8DD3BB"
+    },
+    {
+        id: 4,
+        city: "Columbia",
+        iata: "BOG",
+        description: "Amazing streets",
+        price: 700,
+        image: "https://images.unsplash.com/photo-1568632234157-ce7aecd03d0d?w=800&q=80",
+        buttonColor: "#8DD3BB"
+    }
 ]
 
 const Destinations = () => {
-    
+    const navigate = useNavigate()
+
+    const handleBookFlight = (destination) => {
+        navigate('/flights', {
+            state: {
+                departure_id: 'DAC',
+                arrival_id: destination.iata,
+                from_query: 'Dhaka (DAC)',
+                to_query: `${destination.city} (${destination.iata})`
+            }
+        })
+    }
 
     return (
         <>
@@ -63,7 +79,7 @@ const Destinations = () => {
                     </div>
                 </div>
 
-                  <div className="flex flex-wrap justify-center lg:justify-between items-center gap-4 md:gap-6">
+                <div className="flex flex-wrap justify-center lg:justify-between items-center gap-4 md:gap-6">
                     {destinationsData.map((destination) => (
                         <div key={destination.id} className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] min-w-[280px] max-w-[396px] h-[420px] relative">
                             <Image
@@ -87,9 +103,11 @@ const Destinations = () => {
                                     </p>
                                 </div>
 
-                                <Button 
-                                    text='Book Flight' 
-                                    className='w-full h-[48px] text-black rounded-md bg-[#8DD3BB] text-sm font-medium whitespace-nowrap' 
+                                <Button
+                                    text='Book Flight'
+                                    className='w-full h-[48px] text-black rounded-md bg-[#8DD3BB] text-sm font-medium whitespace-nowrap'
+                                    onClick={() => handleBookFlight(destination)}
+                                    to='/flights'
                                 />
                             </div>
                         </div>

@@ -3,9 +3,12 @@ import Button from '../common/Buttton'
 import Container from '../common/Container'
 import Image from '../common/Image'
 
+import { useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+
 // JSON data for tourist destinations
 const touristDestinationsData = {
-    
+
     images: [
         {
             id: 1,
@@ -31,6 +34,21 @@ const touristDestinationsData = {
 }
 
 const TouristDestinations = () => {
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
+
+    const handleBookFlight = () => {
+        // Navigate to the flights page with pre-filled parameters in state
+        navigate('/flights', {
+            state: {
+                departure_id: 'DAC',
+                arrival_id: 'CMB',
+                from_query: 'Dhaka (DAC)',
+                to_query: 'Colombo (CMB)'
+            }
+        })
+    }
+
     return (
         <>
             <Container className='max-w-[1230px] mx-auto md:my-20 my-8 px-4 flex flex-col md:gap-10 gap-5'>
@@ -76,7 +94,8 @@ const TouristDestinations = () => {
                         <Button
                             text='Book Flight'
                             className='w-full h-[48px] text-black bg-white rounded-lg font-medium hover:bg-gray-50 transition-colors mt-4'
-                            to='#'
+                            to='/flight-results'
+                            onClick={handleBookFlight}
                         />
                     </div>
 

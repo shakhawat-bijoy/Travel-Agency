@@ -18,32 +18,54 @@ const BookingTest = () => {
             const testFlight = {
                 id: 'test-flight-1',
                 flightNumber: 'TP1351',
-                airline: 'TAP Portugal',
-                aircraftModel: '32Q',
+                airline: 'TP',
+                airlineName: 'TAP Portugal',
+                aircraftModel: 'Airbus A321neo',
+                aircraftCode: '32Q',
                 departureAirport: 'LHR',
                 arrivalAirport: 'JFK',
                 departureTime: new Date('2024-12-01T10:00:00Z'),
                 arrivalTime: new Date('2024-12-01T18:00:00Z'),
                 duration: 'PT8H0M',
                 stops: 0,
+                oneWay: true,
                 price: {
                     total: '402.83',
-                    currency: 'USD'
+                    currency: 'USD',
+                    base: '350.00',
+                    grandTotal: '402.83'
+                },
+                departureLocation: {
+                    iataCode: 'LHR',
+                    name: 'Heathrow Airport',
+                    city: 'London',
+                    country: 'United Kingdom'
+                },
+                arrivalLocation: {
+                    iataCode: 'JFK',
+                    name: 'John F. Kennedy International Airport',
+                    city: 'New York',
+                    country: 'United States'
                 },
                 itineraries: [{
+                    duration: 'PT8H0M',
                     segments: [{
                         carrierCode: 'TP',
+                        carrierName: 'TAP Portugal',
                         number: '1351',
-                        aircraft: { code: '32Q' },
+                        aircraft: { code: '32Q', name: 'Airbus A321neo' },
                         departure: {
                             iataCode: 'LHR',
-                            at: '2024-12-01T10:00:00Z'
+                            at: '2024-12-01T10:00:00Z',
+                            terminal: '2'
                         },
                         arrival: {
                             iataCode: 'JFK',
-                            at: '2024-12-01T18:00:00Z'
+                            at: '2024-12-01T18:00:00Z',
+                            terminal: '5'
                         },
-                        duration: 'PT8H0M'
+                        duration: 'PT8H0M',
+                        numberOfStops: 0
                     }]
                 }]
             }
