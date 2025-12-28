@@ -325,17 +325,13 @@ router.post('/upload-image', protect, upload.single('image'), async (req, res) =
             });
         }
 
-        // Read file and convert to Base64
-        const fs = await import('fs');
-        const fileBuffer = fs.readFileSync(req.file.path);
-        const base64Image = fileBuffer.toString('base64');
-        const mimeType = req.file.mimetype;
-
         // Create data URL for direct embedding
+        const base64Image = req.file.buffer.toString('base64');
+        const mimeType = req.file.mimetype;
         const imageDataUrl = `data:${mimeType};base64,${base64Image}`;
 
         console.log('Converting image to Base64 for MongoDB storage');
-        console.log('File size:', fileBuffer.length, 'bytes');
+        console.log('File size:', req.file.size, 'bytes');
         console.log('MIME type:', mimeType);
 
         // Update user with new image (stored as Base64 in MongoDB)
@@ -344,25 +340,18 @@ router.post('/upload-image', protect, upload.single('image'), async (req, res) =
                 url: imageDataUrl,
                 publicId: null, // Not needed for Base64 storage
                 mimeType: mimeType,
-                size: fileBuffer.length
+                size: req.file.size
             };
         } else {
             user.coverImage = {
                 url: imageDataUrl,
                 publicId: null, // Not needed for Base64 storage
                 mimeType: mimeType,
-                size: fileBuffer.length
+                size: req.file.size
             };
         }
 
         await user.save();
-
-        // Clean up temporary file
-        try {
-            fs.unlinkSync(req.file.path);
-        } catch (cleanupError) {
-            console.log('Failed to cleanup temp file:', cleanupError.message);
-        }
 
         console.log('Image stored in MongoDB successfully');
         console.log('User avatar after save:', user.avatar ? 'Base64 data stored' : 'No avatar');
@@ -377,20 +366,10 @@ router.post('/upload-image', protect, upload.single('image'), async (req, res) =
     } catch (error) {
         console.error('Image upload error:', error);
 
-        // Clean up temporary file on error
-        if (req.file && req.file.path) {
-            try {
-                const fs = await import('fs');
-                fs.unlinkSync(req.file.path);
-            } catch (cleanupError) {
-                console.log('Failed to cleanup temp file on error:', cleanupError.message);
-            }
-        }
-
         res.status(500).json({
-            success: false,
-            message: `Failed to upload image: ${error.message}`
-        });
+             success: false,
+             message: `Failed to upload image: ${error.message}`
+         });
     }
 });
 

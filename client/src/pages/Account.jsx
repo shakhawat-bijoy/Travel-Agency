@@ -1171,7 +1171,7 @@ const Account = () => {
 
             <div className="absolute -bottom-20 lg:left-8 left-2">
               <div className="relative">
-                <div className="lg:w-40 lg:h-40 w-32 h-32 rounded-full bg-white lg:p-1.5 p-0.5 shadow-2xl ring-1 ring-white">
+                <div className="lg:w-48 lg:h-48 w-32 h-32 rounded-full bg-white shadow-2xl ring-4 ring-white">
                   {userInfo.avatar &&
                     userInfo.avatar !== 'https://via.placeholder.com/150' &&
                     userInfo.avatar !== '' &&
@@ -1196,14 +1196,14 @@ const Account = () => {
                 </div>
                 <button
                   onClick={() => profileImageRef.current?.click()}
-                  className="absolute lg:bottom-2 lg:right-2 bottom-1 -right-2 w-12 h-12 bg-teal-500 hover:bg-teal-600 rounded-full flex items-center justify-center text-white transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 cursor-pointer"
+                  className="absolute lg:bottom-3 lg:right-1 bottom-1 -right-2 w-12 h-12 bg-teal-500 hover:bg-teal-600 rounded-full flex items-center justify-center text-white transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 cursor-pointer"
                 >
                   <Camera className="w-6 h-6" />
                 </button>
               </div>
             </div>
 
-            <div className="z-10 absolute lg:left-52 left-[150px] lg:top-100 top-52">
+            <div className="z-10 absolute lg:left-60 left-[150px] lg:top-98 top-52">
               <h1 className="lg:text-4xl text-lg lg:font-bold font-semibold text-black drop-shadow-lg">{userInfo.name || 'Welcome!'}</h1>
             </div>
 
