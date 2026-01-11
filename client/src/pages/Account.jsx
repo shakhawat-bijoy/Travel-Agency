@@ -116,7 +116,7 @@ const Account = () => {
       loadPackageBookings()
       loadCustomRequests()
     }
-     
+
   }, [activeTab, userId, userInfo.email])
 
   // Reload payment methods when user returns to the page (e.g., after adding a card)
@@ -155,17 +155,17 @@ const Account = () => {
       setLoadingBookings(true)
       setBookingError('')
 
-      console.log('Loading all bookings from database...')
+      if (userId) {
+        console.log('Loading user bookings from database...')
+        // Fetch user specific bookings
+        const response = await flightAPI.getUserBookings(userId, 1, 100)
 
-      // Fetch all bookings from the database dynamically
-      const response = await flightAPI.getAllBookings(1, 100)
-
-      if (response.success) {
-        console.log('Bookings loaded:', response.data?.length || 0, 'bookings')
-        console.log('Booking details:', response.data)
-        setBookings(response.data || [])
-      } else {
-        setBookingError(response.message || 'Failed to load booking history')
+        if (response.success) {
+          console.log('Bookings loaded:', response.data?.length || 0, 'bookings')
+          setBookings(response.data || [])
+        } else {
+          setBookingError(response.message || 'Failed to load booking history')
+        }
       }
     } catch (error) {
       console.error('Error loading bookings:', error)
@@ -283,7 +283,7 @@ const Account = () => {
   // ---------------------- Download Handlers ----------------------
   const handleDownloadTicket = (booking) => {
     const doc = new jsPDF()
-    
+
     // Helper functions
     const formatDate = (dateStr) => {
       if (!dateStr) return 'N/A'
@@ -309,7 +309,7 @@ const Account = () => {
     const passenger = booking.passenger || {}
     const departureDate = flight.departureTime || booking.departureTime
     const arrivalDate = flight.arrivalTime || booking.arrivalTime
-    
+
     // Colors
     const teal = [20, 184, 166]
     const darkBlue = [30, 58, 138]
@@ -319,175 +319,175 @@ const Account = () => {
     const lightGray = [243, 244, 246]
     const white = [255, 255, 255]
     const orange = [249, 115, 22]
-    
+
     // Header gradient background
     doc.setFillColor(...teal)
     doc.rect(0, 0, 210, 35, 'F')
-    
+
     // Company name and logo
     doc.setTextColor(...white)
     doc.setFontSize(22)
     doc.setFont('helvetica', 'bold')
     doc.text('DREAM HOLIDAYS', 105, 15, { align: 'center' })
-    
+
     doc.setFontSize(10)
     doc.setFont('helvetica', 'normal')
     doc.text('Your Journey, Our Priority', 105, 22, { align: 'center' })
-    
+
     // E-Ticket label
     doc.setFontSize(11)
     doc.setFont('helvetica', 'bold')
     doc.text('E-TICKET', 105, 30, { align: 'center' })
-    
+
     // Booking reference box
     let yPos = 45
     doc.setFillColor(...darkBlue)
     doc.roundedRect(15, yPos, 180, 15, 2, 2, 'F')
-    
+
     doc.setTextColor(...white)
     doc.setFontSize(9)
     doc.setFont('helvetica', 'normal')
     doc.text('BOOKING REFERENCE', 20, yPos + 6)
-    
+
     doc.setFontSize(14)
     doc.setFont('helvetica', 'bold')
     doc.text(booking.bookingReference, 190, yPos + 10, { align: 'right' })
-    
+
     // Passenger information section
     yPos += 25
     doc.setFillColor(...lightGray)
     doc.roundedRect(15, yPos, 85, 28, 2, 2, 'F')
-    
+
     doc.setTextColor(...darkGray)
     doc.setFontSize(8)
     doc.setFont('helvetica', 'bold')
     doc.text('PASSENGER', 20, yPos + 6)
-    
+
     doc.setFontSize(11)
     doc.text(`${passenger.firstName?.toUpperCase() || ''} ${passenger.lastName?.toUpperCase() || ''}`, 20, yPos + 13)
-    
+
     doc.setFontSize(8)
     doc.setFont('helvetica', 'normal')
     doc.text(`Email: ${passenger.email || 'N/A'}`, 20, yPos + 19)
     doc.text(`Phone: ${passenger.phone || 'N/A'}`, 20, yPos + 24)
-    
+
     // Booking status box
     doc.setFillColor(...lightBlue)
     doc.roundedRect(110, yPos, 85, 28, 2, 2, 'F')
-    
+
     doc.setTextColor(...darkGray)
     doc.setFontSize(8)
     doc.setFont('helvetica', 'bold')
     doc.text('BOOKING STATUS', 115, yPos + 6)
-    
+
     doc.setFontSize(12)
     doc.setTextColor(...teal)
     doc.text(booking.status.toUpperCase(), 115, yPos + 14)
-    
+
     doc.setTextColor(...darkGray)
     doc.setFontSize(8)
     doc.setFont('helvetica', 'normal')
     doc.text(`Booked: ${new Date(booking.bookingDate).toLocaleDateString()}`, 115, yPos + 20)
     doc.text(`Total: $${booking.totalAmount}`, 115, yPos + 25)
-    
+
     // Flight details header
     yPos += 38
     doc.setFillColor(...darkBlue)
     doc.rect(15, yPos, 180, 8, 'F')
-    
+
     doc.setTextColor(...white)
     doc.setFontSize(10)
     doc.setFont('helvetica', 'bold')
     doc.text('FLIGHT DETAILS', 20, yPos + 6)
-    
+
     // Main flight information box
     yPos += 10
     doc.setDrawColor(...mediumGray)
     doc.setLineWidth(0.5)
     doc.setFillColor(...white)
     doc.roundedRect(15, yPos, 180, 65, 2, 2, 'FD')
-    
+
     // Airline and flight number
     yPos += 8
     doc.setTextColor(...darkGray)
     doc.setFontSize(9)
     doc.setFont('helvetica', 'bold')
     doc.text('AIRLINE', 20, yPos)
-    
+
     doc.setFontSize(12)
     doc.setTextColor(...teal)
     doc.text(flight.airlineName || flight.airline || 'N/A', 20, yPos + 6)
-    
+
     doc.setFontSize(10)
     doc.setTextColor(...darkGray)
     doc.text(`Flight ${flight.flightNumber || 'N/A'}`, 20, yPos + 12)
-    
+
     // Aircraft info
     doc.setFontSize(8)
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(...mediumGray)
     doc.text(`Aircraft: ${flight.aircraftModel || 'N/A'}`, 20, yPos + 17)
-    
+
     // Departure section
     yPos += 25
     doc.setFillColor(...lightGray)
     doc.roundedRect(20, yPos, 55, 25, 2, 2, 'F')
-    
+
     doc.setTextColor(...mediumGray)
     doc.setFontSize(7)
     doc.setFont('helvetica', 'bold')
     doc.text('DEPARTURE', 25, yPos + 5)
-    
+
     doc.setTextColor(...darkGray)
     doc.setFontSize(14)
     doc.setFont('helvetica', 'bold')
     doc.text(flight.departureAirport || 'N/A', 25, yPos + 12)
-    
+
     doc.setFontSize(16)
     doc.setTextColor(...teal)
     doc.text(formatTime(departureDate), 25, yPos + 20)
-    
+
     // Arrow
     doc.setFontSize(18)
     doc.setTextColor(...orange)
     doc.text('→', 82, yPos + 15)
-    
+
     // Arrival section
     doc.setFillColor(...lightGray)
     doc.roundedRect(95, yPos, 55, 25, 2, 2, 'F')
-    
+
     doc.setTextColor(...mediumGray)
     doc.setFontSize(7)
     doc.setFont('helvetica', 'bold')
     doc.text('ARRIVAL', 100, yPos + 5)
-    
+
     doc.setTextColor(...darkGray)
     doc.setFontSize(14)
     doc.setFont('helvetica', 'bold')
     doc.text(flight.arrivalAirport || 'N/A', 100, yPos + 12)
-    
+
     doc.setFontSize(16)
     doc.setTextColor(...teal)
     doc.text(formatTime(arrivalDate), 100, yPos + 20)
-    
+
     // Duration and stops
     doc.setFillColor(...lightBlue)
     doc.roundedRect(160, yPos, 30, 25, 2, 2, 'F')
-    
+
     doc.setTextColor(...mediumGray)
     doc.setFontSize(7)
     doc.setFont('helvetica', 'bold')
     doc.text('DURATION', 165, yPos + 5)
-    
+
     doc.setTextColor(...darkGray)
     doc.setFontSize(9)
     doc.setFont('helvetica', 'bold')
     doc.text(formatDuration(flight.duration), 165, yPos + 12)
-    
+
     doc.setFontSize(7)
     doc.setFont('helvetica', 'normal')
     doc.text(flight.stops === 0 ? 'Direct' : `${flight.stops} Stop(s)`, 165, yPos + 18)
-    
+
     // Travel dates
     yPos += 30
     doc.setTextColor(...mediumGray)
@@ -495,48 +495,48 @@ const Account = () => {
     doc.setFont('helvetica', 'normal')
     doc.text(`Departure: ${formatDate(departureDate)}`, 20, yPos)
     doc.text(`Arrival: ${formatDate(arrivalDate)}`, 110, yPos)
-    
+
     // Additional information section
     yPos += 10
     doc.setFillColor(...lightGray)
     doc.rect(15, yPos, 180, 20, 'F')
-    
+
     yPos += 6
     doc.setTextColor(...darkGray)
     doc.setFontSize(8)
     doc.setFont('helvetica', 'bold')
     doc.text('ADDITIONAL INFORMATION', 20, yPos)
-    
+
     yPos += 6
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(7)
     doc.text(`Cabin Class: Economy`, 20, yPos)
     doc.text(`Baggage: Check airline policy`, 75, yPos)
     doc.text(`Check-in: 2 hours before departure`, 135, yPos)
-    
+
     yPos += 5
     doc.text(`Passport: Required for international flights`, 20, yPos)
     doc.text(`Confirmation: ${booking.bookingReference}`, 135, yPos)
-    
+
     // Footer
     yPos += 15
     doc.setDrawColor(...teal)
     doc.setLineWidth(1)
     doc.line(15, yPos, 195, yPos)
-    
+
     yPos += 6
     doc.setTextColor(...mediumGray)
     doc.setFontSize(7)
     doc.setFont('helvetica', 'italic')
     doc.text('Thank you for choosing Dream Holidays! Have a pleasant journey.', 105, yPos, { align: 'center' })
-    
+
     yPos += 4
     doc.text('Please present this e-ticket at check-in counter. Keep a copy for your records.', 105, yPos, { align: 'center' })
-    
+
     yPos += 4
     doc.setFont('helvetica', 'bold')
     doc.text('24/7 Customer Support: +880-1234-567890 | support@dreamholidays.com', 105, yPos, { align: 'center' })
-    
+
     // Save PDF
     doc.save(`DreamHolidays-Ticket-${booking.bookingReference}.pdf`)
   }
@@ -783,7 +783,7 @@ const Account = () => {
     try {
       setLoading(true)
       console.log('Deleting booking:', bookingToDelete._id)
-      
+
       // Delete the booking permanently
       const response = await flightAPI.deleteBooking(bookingToDelete._id)
       console.log('Delete response:', response)
@@ -1154,7 +1154,7 @@ const Account = () => {
           ) : (
             <div className="w-full h-full"></div>
           )}
-          
+
 
           {/* Cover Upload Button */}
           <button
@@ -1665,16 +1665,16 @@ const Account = () => {
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wide mb-1">Departure</div>
                     <div className="font-semibold text-gray-900 text-sm sm:text-base">
-                      {booking.departureTime || booking.flight?.departureTime 
-                        ? new Date(booking.departureTime || booking.flight.departureTime).toLocaleDateString() 
+                      {booking.departureTime || booking.flight?.departureTime
+                        ? new Date(booking.departureTime || booking.flight.departureTime).toLocaleDateString()
                         : 'N/A'}
                     </div>
                     <div className="text-xs sm:text-sm text-gray-600">
-                      {booking.departureTime || booking.flight?.departureTime 
+                      {booking.departureTime || booking.flight?.departureTime
                         ? new Date(booking.departureTime || booking.flight.departureTime).toLocaleTimeString('en-US', {
                           hour: '2-digit',
                           minute: '2-digit'
-                        }) 
+                        })
                         : 'N/A'}
                     </div>
                   </div>
@@ -1807,12 +1807,11 @@ const Account = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`px-3 py-1 text-xs sm:text-sm font-medium rounded-full ${
-                      booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                      booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                      booking.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>
+                    <span className={`px-3 py-1 text-xs sm:text-sm font-medium rounded-full ${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                        booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                          booking.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                            'bg-gray-100 text-gray-700'
+                      }`}>
                       {booking.status?.charAt(0).toUpperCase() + booking.status?.slice(1)}
                     </span>
                   </div>
@@ -1994,15 +1993,14 @@ const Account = () => {
                       </p>
                     </div>
                   </div>
-                  <span className={`px-3 py-1 text-xs sm:text-sm font-medium rounded-full ${
-                    request.status === 'submitted' ? 'bg-blue-100 text-blue-700' :
-                    request.status === 'in_review' ? 'bg-yellow-100 text-yellow-700' :
-                    request.status === 'quoted' ? 'bg-purple-100 text-purple-700' :
-                    request.status === 'scheduled' ? 'bg-green-100 text-green-700' :
-                    request.status === 'completed' ? 'bg-green-100 text-green-700' :
-                    request.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                    'bg-gray-100 text-gray-700'
-                  }`}>
+                  <span className={`px-3 py-1 text-xs sm:text-sm font-medium rounded-full ${request.status === 'submitted' ? 'bg-blue-100 text-blue-700' :
+                      request.status === 'in_review' ? 'bg-yellow-100 text-yellow-700' :
+                        request.status === 'quoted' ? 'bg-purple-100 text-purple-700' :
+                          request.status === 'scheduled' ? 'bg-green-100 text-green-700' :
+                            request.status === 'completed' ? 'bg-green-100 text-green-700' :
+                              request.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                'bg-gray-100 text-gray-700'
+                    }`}>
                     {request.status?.replace('_', ' ')?.replace(/\b\w/g, (c) => c.toUpperCase())}
                   </span>
                 </div>
@@ -2375,7 +2373,7 @@ const Account = () => {
                 <p className="text-sm text-gray-500">Change your account password</p>
               </div>
             </div>
-            <button 
+            <button
               onClick={() => setShowChangePassword(true)}
               className="px-4 py-2 text-sm text-teal-600 hover:text-teal-700 font-medium cursor-pointer"
             >
@@ -2594,17 +2592,17 @@ const Account = () => {
                 <div className="flex flex-col sm:flex-row items-center justify-between mb-6 sm:mb-8 gap-4">
                   <div className="text-center flex-1">
                     <div className="text-2xl sm:text-3xl font-bold mb-2">
-                      {selectedBooking.departureTime || selectedBooking.flight?.departureTime 
+                      {selectedBooking.departureTime || selectedBooking.flight?.departureTime
                         ? new Date(selectedBooking.departureTime || selectedBooking.flight.departureTime).toLocaleTimeString('en-US', {
                           hour: '2-digit',
                           minute: '2-digit'
-                        }) 
+                        })
                         : 'N/A'}
                     </div>
                     <div className="text-base sm:text-lg lg:text-xl font-semibold mb-1">{selectedBooking.departureAirport || selectedBooking.flight?.departureAirport || 'N/A'}</div>
                     <div className="text-xs sm:text-sm text-teal-100">
-                      {selectedBooking.departureTime || selectedBooking.flight?.departureTime 
-                        ? new Date(selectedBooking.departureTime || selectedBooking.flight.departureTime).toLocaleDateString() 
+                      {selectedBooking.departureTime || selectedBooking.flight?.departureTime
+                        ? new Date(selectedBooking.departureTime || selectedBooking.flight.departureTime).toLocaleDateString()
                         : 'N/A'}
                     </div>
                   </div>
@@ -2629,17 +2627,17 @@ const Account = () => {
 
                   <div className="text-center flex-1">
                     <div className="text-2xl sm:text-3xl font-bold mb-2">
-                      {selectedBooking.arrivalTime || selectedBooking.flight?.arrivalTime 
+                      {selectedBooking.arrivalTime || selectedBooking.flight?.arrivalTime
                         ? new Date(selectedBooking.arrivalTime || selectedBooking.flight.arrivalTime).toLocaleTimeString('en-US', {
                           hour: '2-digit',
                           minute: '2-digit'
-                        }) 
+                        })
                         : 'N/A'}
                     </div>
                     <div className="text-base sm:text-lg lg:text-xl font-semibold mb-1">{selectedBooking.arrivalAirport || selectedBooking.flight?.arrivalAirport || 'N/A'}</div>
                     <div className="text-xs sm:text-sm text-teal-100">
-                      {selectedBooking.arrivalTime || selectedBooking.flight?.arrivalTime 
-                        ? new Date(selectedBooking.arrivalTime || selectedBooking.flight.arrivalTime).toLocaleDateString() 
+                      {selectedBooking.arrivalTime || selectedBooking.flight?.arrivalTime
+                        ? new Date(selectedBooking.arrivalTime || selectedBooking.flight.arrivalTime).toLocaleDateString()
                         : 'N/A'}
                     </div>
                   </div>
@@ -2714,8 +2712,8 @@ const Account = () => {
                     <div>
                       <div className="text-xs sm:text-sm text-gray-500">Stops</div>
                       <div className="font-medium text-sm sm:text-base">
-                        {(selectedBooking.stops !== undefined ? selectedBooking.stops : selectedBooking.flight?.stops) === 0 
-                          ? 'Direct Flight' 
+                        {(selectedBooking.stops !== undefined ? selectedBooking.stops : selectedBooking.flight?.stops) === 0
+                          ? 'Direct Flight'
                           : `${selectedBooking.stops !== undefined ? selectedBooking.stops : selectedBooking.flight?.stops || 0} stop(s)`}
                       </div>
                     </div>
@@ -2817,12 +2815,11 @@ const Account = () => {
                       {selectedPackageBooking.packageData?.location || 'N/A'}
                     </p>
                   </div>
-                  <div className={`px-4 py-2 rounded-full text-white font-semibold backdrop-blur-sm ${
-                    selectedPackageBooking.status === 'confirmed' ? 'bg-emerald-500/80' :
-                    selectedPackageBooking.status === 'pending' ? 'bg-amber-500/80' :
-                    selectedPackageBooking.status === 'cancelled' ? 'bg-rose-500/80' :
-                    'bg-gray-500/80'
-                  }`}>
+                  <div className={`px-4 py-2 rounded-full text-white font-semibold backdrop-blur-sm ${selectedPackageBooking.status === 'confirmed' ? 'bg-emerald-500/80' :
+                      selectedPackageBooking.status === 'pending' ? 'bg-amber-500/80' :
+                        selectedPackageBooking.status === 'cancelled' ? 'bg-rose-500/80' :
+                          'bg-gray-500/80'
+                    }`}>
                     {selectedPackageBooking.status?.charAt(0).toUpperCase() + selectedPackageBooking.status?.slice(1)}
                   </div>
                 </div>
@@ -3059,7 +3056,7 @@ const Account = () => {
               {/* Warning */}
               <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
                 <p className="text-sm text-red-700">
-                  <strong>Warning:</strong> Deleting this booking will permanently remove it from your history. 
+                  <strong>Warning:</strong> Deleting this booking will permanently remove it from your history.
                   This action cannot be undone.
                 </p>
               </div>
