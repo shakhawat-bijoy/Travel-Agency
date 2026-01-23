@@ -235,6 +235,24 @@ const AllReviews = () => {
         }
     };
 
+    const filteredAndSortedReviews = useMemo(() => {
+        let result = allReviews.filter(review =>
+            review.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            review.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            review.comment.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+
+        if (sortBy === 'newest') {
+            result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        } else if (sortBy === 'highest') {
+            result.sort((a, b) => b.rating - a.rating);
+        } else if (sortBy === 'lowest') {
+            result.sort((a, b) => a.rating - b.rating);
+        }
+
+        return result;
+    }, [allReviews, searchQuery, sortBy]);
+
     useEffect(() => {
         fetchReviews();
     }, []);
@@ -286,24 +304,6 @@ const AllReviews = () => {
             setDeleteConfirmText('');
         }
     };
-
-    const filteredAndSortedReviews = useMemo(() => {
-        let result = allReviews.filter(review =>
-            review.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            review.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            review.comment.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-
-        if (sortBy === 'newest') {
-            result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        } else if (sortBy === 'highest') {
-            result.sort((a, b) => b.rating - a.rating);
-        } else if (sortBy === 'lowest') {
-            result.sort((a, b) => a.rating - b.rating);
-        }
-
-        return result;
-    }, [allReviews, searchQuery, sortBy]);
 
     // Pagination Logic
     const totalPages = Math.ceil(filteredAndSortedReviews.length / reviewsPerPage);
