@@ -22,7 +22,7 @@ const Login = () => {
     password: '',
   })
   const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
+  const [rememberMe, setRememberMe] = useState(true)
 
   const loginSliderData = [
     {

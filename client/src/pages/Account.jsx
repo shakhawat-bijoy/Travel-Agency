@@ -5,7 +5,7 @@ import {
   Edit3, Bell, Shield, Globe, LogOut, Trash2, AlertTriangle, Plus, Star, Trash,
   Plane, Download, Eye, RefreshCw, Lock, MapPin as LocationIcon, Backpack
 } from 'lucide-react'
-import { auth, authAPI, userAPI, paymentAPI, flightAPI, packageAPI } from '../utils/api'
+import { auth, authAPI, userAPI, paymentAPI, flightAPI, packageAPI, reviewAPI } from '../utils/api'
 import { Link } from 'react-router-dom'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
@@ -62,6 +62,12 @@ const Account = () => {
   const [showDeletePackagePopup, setShowDeletePackagePopup] = useState(false)
   const [packageBookingToDelete, setPackageBookingToDelete] = useState(null)
   const [deletePackageConfirmationText, setDeletePackageConfirmationText] = useState('')
+  const [reviews, setReviews] = useState([])
+  const [loadingReviews, setLoadingReviews] = useState(false)
+  const [reviewsError, setReviewsError] = useState('')
+  const [isDeleteReviewModalOpen, setIsDeleteReviewModalOpen] = useState(false)
+  const [reviewToDelete, setReviewToDelete] = useState(null)
+  const [reviewDeleteConfirmText, setReviewDeleteConfirmText] = useState('')
 
   const profileImageRef = useRef(null)
   const coverImageRef = useRef(null)
@@ -115,6 +121,9 @@ const Account = () => {
       loadBookings()
       loadPackageBookings()
       loadCustomRequests()
+    }
+    if (activeTab === 'reviews') {
+      loadUserReviews()
     }
 
   }, [activeTab, userId, userInfo.email])
@@ -217,6 +226,47 @@ const Account = () => {
       setCustomRequestError(error.message || 'Error loading custom package requests. Please try again.')
     } finally {
       setLoadingCustomRequests(false)
+    }
+  }
+
+  const loadUserReviews = async () => {
+    try {
+      setLoadingReviews(true)
+      setReviewsError('')
+      const response = await reviewAPI.getMyReviews()
+      if (response.success) {
+        setReviews(response.data || [])
+      }
+    } catch (error) {
+      console.error('Error loading reviews:', error)
+      setReviewsError('Failed to load your reviews')
+    } finally {
+      setLoadingReviews(false)
+    }
+  }
+
+  const handleDeleteReviewClick = (reviewId) => {
+    setReviewToDelete(reviewId)
+    setIsDeleteReviewModalOpen(true)
+    setReviewDeleteConfirmText('')
+  }
+
+  const confirmDeleteReview = async () => {
+    if (reviewDeleteConfirmText !== 'DELETE') return
+    try {
+      const response = await reviewAPI.deleteReview(reviewToDelete)
+      if (response.success) {
+        setIsDeleteReviewModalOpen(false)
+        setSaveMessage('Review deleted successfully!')
+        setTimeout(() => setSaveMessage(''), 3000)
+        loadUserReviews()
+      }
+    } catch (error) {
+      setSaveMessage('Error deleting review')
+      setTimeout(() => setSaveMessage(''), 3000)
+    } finally {
+      setReviewToDelete(null)
+      setReviewDeleteConfirmText('')
     }
   }
 
@@ -1112,6 +1162,16 @@ const Account = () => {
               History
             </button>
             <button
+              onClick={() => setActiveTab('reviews')}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer ${activeTab === 'reviews'
+                ? 'bg-teal-100 text-teal-700'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+            >
+              <Star className="w-4 h-4" />
+              Reviews
+            </button>
+            <button
               onClick={() => setActiveTab('payment')}
               className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer ${activeTab === 'payment'
                 ? 'bg-teal-100 text-teal-700'
@@ -1517,6 +1577,16 @@ const Account = () => {
               History
             </button>
             <button
+              onClick={() => setActiveTab('reviews')}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer ${activeTab === 'reviews'
+                ? 'bg-teal-100 text-teal-700'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+            >
+              <Star className="w-4 h-4" />
+              Reviews
+            </button>
+            <button
               onClick={() => setActiveTab('payment')}
               className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer ${activeTab === 'payment'
                 ? 'bg-teal-100 text-teal-700'
@@ -1808,9 +1878,9 @@ const Account = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className={`px-3 py-1 text-xs sm:text-sm font-medium rounded-full ${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                        booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                          booking.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                            'bg-gray-100 text-gray-700'
+                      booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                        booking.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                          'bg-gray-100 text-gray-700'
                       }`}>
                       {booking.status?.charAt(0).toUpperCase() + booking.status?.slice(1)}
                     </span>
@@ -1994,12 +2064,12 @@ const Account = () => {
                     </div>
                   </div>
                   <span className={`px-3 py-1 text-xs sm:text-sm font-medium rounded-full ${request.status === 'submitted' ? 'bg-blue-100 text-blue-700' :
-                      request.status === 'in_review' ? 'bg-yellow-100 text-yellow-700' :
-                        request.status === 'quoted' ? 'bg-purple-100 text-purple-700' :
-                          request.status === 'scheduled' ? 'bg-green-100 text-green-700' :
-                            request.status === 'completed' ? 'bg-green-100 text-green-700' :
-                              request.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                                'bg-gray-100 text-gray-700'
+                    request.status === 'in_review' ? 'bg-yellow-100 text-yellow-700' :
+                      request.status === 'quoted' ? 'bg-purple-100 text-purple-700' :
+                        request.status === 'scheduled' ? 'bg-green-100 text-green-700' :
+                          request.status === 'completed' ? 'bg-green-100 text-green-700' :
+                            request.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                              'bg-gray-100 text-gray-700'
                     }`}>
                     {request.status?.replace('_', ' ')?.replace(/\b\w/g, (c) => c.toUpperCase())}
                   </span>
@@ -2087,6 +2157,124 @@ const Account = () => {
     </div>
   )
 
+  const renderReviewsContent = () => (
+    <div className="space-y-8">
+      {/* Account Navigation */}
+      <div className="bg-white shadow-sm border border-gray-200 rounded-2xl">
+        <div className="px-6 py-4">
+          <nav className="flex space-x-8 overflow-x-auto">
+            <button
+              onClick={() => setActiveTab('profile')}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer ${activeTab === 'profile'
+                ? 'bg-teal-100 text-teal-700'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+            >
+              <User className="w-4 h-4" />
+              Profile
+            </button>
+            <button
+              onClick={() => setActiveTab('history')}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer ${activeTab === 'history'
+                ? 'bg-teal-100 text-teal-700'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+            >
+              <History className="w-4 h-4" />
+              History
+            </button>
+            <button
+              onClick={() => setActiveTab('reviews')}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer ${activeTab === 'reviews'
+                ? 'bg-teal-100 text-teal-700'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+            >
+              <Star className="w-4 h-4" />
+              Reviews
+            </button>
+            <button
+              onClick={() => setActiveTab('payment')}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer ${activeTab === 'payment'
+                ? 'bg-teal-100 text-teal-700'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+            >
+              <CreditCard className="w-4 h-4" />
+              Payment
+            </button>
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer ${activeTab === 'settings'
+                ? 'bg-teal-100 text-teal-700'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+            >
+              <Settings className="w-4 h-4" />
+              Settings
+            </button>
+          </nav>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl border border-gray-100 p-4 sm:p-6 lg:p-8">
+        <div className="mb-8">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">My Reviews</h2>
+          <p className="text-sm sm:text-base text-gray-500 mt-1">Manage the reviews you've shared with the community</p>
+        </div>
+
+        {loadingReviews ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your reviews...</p>
+          </div>
+        ) : reviewsError ? (
+          <div className="text-center py-12">
+            <p className="text-red-500 font-medium">{reviewsError}</p>
+            <button onClick={loadUserReviews} className="mt-4 px-4 py-2 bg-teal-500 text-white rounded-lg">Try Again</button>
+          </div>
+        ) : reviews.length === 0 ? (
+          <div className="text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+            <Star className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500 font-medium">You haven't written any reviews yet</p>
+            <Link to="/reviews" className="inline-block mt-4 text-teal-600 font-bold">Browse Destinations</Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {reviews.map((review) => (
+              <div key={review._id} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow relative group">
+                <button
+                  onClick={() => handleDeleteReviewClick(review._id)}
+                  className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors opacity-0 group-hover:opacity-100"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+
+                <div className="flex gap-1 mb-3">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`} />
+                  ))}
+                </div>
+
+                <h3 className="font-bold text-gray-900 mb-2">{review.title}</h3>
+                <p className="text-gray-600 text-sm line-clamp-3 mb-4">"{review.comment}"</p>
+
+                <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+                  <span className="text-xs text-gray-400">
+                    {new Date(review.createdAt).toLocaleDateString()}
+                  </span>
+                  <span className="text-xs font-bold text-teal-600 uppercase tracking-widest">
+                    {review.reviewType === 'site' ? 'Dream Holidays' : (review.packageId?.title || 'Tour Review')}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+
   const getCardGradient = (cardType) => {
     switch (cardType) {
       case 'visa':
@@ -2159,6 +2347,16 @@ const Account = () => {
             >
               <History className="w-4 h-4" />
               History
+            </button>
+            <button
+              onClick={() => setActiveTab('reviews')}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer ${activeTab === 'reviews'
+                ? 'bg-teal-100 text-teal-700'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+            >
+              <Star className="w-4 h-4" />
+              Reviews
             </button>
             <button
               onClick={() => setActiveTab('payment')}
@@ -2294,7 +2492,7 @@ const Account = () => {
                     onClick={() => handleDeletePayment(payment._id)}
                     className={`flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-xs sm:text-sm font-medium touch-manipulation ${!payment.isDefault ? '' : 'flex-1'}`}
                   >
-                    <Trash className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                     Delete
                   </button>
                 </div>
@@ -2337,6 +2535,16 @@ const Account = () => {
             >
               <History className="w-4 h-4" />
               History
+            </button>
+            <button
+              onClick={() => setActiveTab('reviews')}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer ${activeTab === 'reviews'
+                ? 'bg-teal-100 text-teal-700'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+            >
+              <Star className="w-4 h-4" />
+              Reviews
             </button>
             <button
               onClick={() => setActiveTab('payment')}
@@ -2816,9 +3024,9 @@ const Account = () => {
                     </p>
                   </div>
                   <div className={`px-4 py-2 rounded-full text-white font-semibold backdrop-blur-sm ${selectedPackageBooking.status === 'confirmed' ? 'bg-emerald-500/80' :
-                      selectedPackageBooking.status === 'pending' ? 'bg-amber-500/80' :
-                        selectedPackageBooking.status === 'cancelled' ? 'bg-rose-500/80' :
-                          'bg-gray-500/80'
+                    selectedPackageBooking.status === 'pending' ? 'bg-amber-500/80' :
+                      selectedPackageBooking.status === 'cancelled' ? 'bg-rose-500/80' :
+                        'bg-gray-500/80'
                     }`}>
                     {selectedPackageBooking.status?.charAt(0).toUpperCase() + selectedPackageBooking.status?.slice(1)}
                   </div>
@@ -3283,8 +3491,61 @@ const Account = () => {
         {/* Tab Content */}
         {activeTab === 'profile' && renderProfileContent()}
         {activeTab === 'history' && renderHistoryContent()}
+        {activeTab === 'reviews' && renderReviewsContent()}
         {activeTab === 'payment' && renderPaymentContent()}
         {activeTab === 'settings' && renderSettingsContent()}
+
+        {/* Inline Delete Review Confirmation Pop-up */}
+        {isDeleteReviewModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center px-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsDeleteReviewModalOpen(false)}></div>
+            <div className="relative bg-white rounded-[32px] w-full max-w-md p-8 shadow-2xl animate-in fade-in zoom-in duration-300">
+              <button
+                onClick={() => setIsDeleteReviewModalOpen(false)}
+                className="absolute right-6 top-6 p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+
+              <div className="flex flex-col items-center text-center">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
+                  <Trash2 className="w-8 h-8 text-red-600" />
+                </div>
+
+                <h2 className="text-2xl font-black text-gray-900 font-montserrat mb-2">Delete Review?</h2>
+                <p className="text-gray-500 mb-8 font-montserrat text-sm">
+                  This action is permanent and cannot be undone. To confirm, please type <span className="font-bold text-red-600">DELETE</span> below.
+                </p>
+
+                <div className="w-full space-y-4">
+                  <input
+                    type="text"
+                    value={reviewDeleteConfirmText}
+                    onChange={(e) => setReviewDeleteConfirmText(e.target.value)}
+                    placeholder="Type DELETE to confirm"
+                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all font-montserrat text-center font-bold"
+                  />
+
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => setIsDeleteReviewModalOpen(false)}
+                      className="flex-1 py-4 bg-gray-100 text-gray-700 rounded-2xl font-bold transition-all hover:bg-gray-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={confirmDeleteReview}
+                      disabled={reviewDeleteConfirmText !== 'DELETE'}
+                      className="flex-1 py-4 bg-red-600 text-white rounded-2xl font-bold shadow-xl shadow-red-100 hover:bg-red-700 transition-all disabled:opacity-50 disabled:grayscale"
+                    >
+                      Delete Now
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

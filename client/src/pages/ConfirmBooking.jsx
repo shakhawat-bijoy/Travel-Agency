@@ -5,6 +5,7 @@ import { User, Mail, Phone, CreditCard, Calendar, Plane, PlaneTakeoff, PlaneLand
 import { bookFlight, clearBookingState } from '../store/slices/flightSlice'
 import { savedCardsAPI, authAPI, paymentAPI } from '../utils/api'
 import Container from '../components/common/Container'
+import { countries } from '../data/countries'
 
 const ConfirmBooking = () => {
     const navigate = useNavigate()
@@ -546,11 +547,11 @@ const ConfirmBooking = () => {
                 </div>
 
                 <div className="">
-                        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+                    <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                         {/* Header */}
                         <div className="bg-gradient-to-red from-teal-500 to-blue-600 text-white p-4 sm:p-6">
-                               <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-black">Confirm Your Booking</h1>
-                               <p className="text-teal-700 text-sm sm:text-base">Complete your flight booking details</p>
+                            <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-black">Confirm Your Booking</h1>
+                            <p className="text-teal-700 text-sm sm:text-base">Complete your flight booking details</p>
                         </div>
 
                         {/* Detailed Flight Information */}
@@ -1303,13 +1304,18 @@ const ConfirmBooking = () => {
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                                     Nationality *
                                                 </label>
-                                                <input
-                                                    type="text"
+                                                <select
                                                     value={passengerData.nationality}
                                                     onChange={(e) => setPassengerData(prev => ({ ...prev, nationality: e.target.value }))}
-                                                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${validationErrors.nationality ? 'border-red-300' : 'border-gray-300'}`}
-                                                    placeholder="Bangladesh"
-                                                />
+                                                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${validationErrors.nationality ? 'border-red-300' : 'border-gray-300'}`}
+                                                >
+                                                    <option value="">Select Nationality</option>
+                                                    {countries.sort((a, b) => a.name.localeCompare(b.name)).map((country) => (
+                                                        <option key={country.code} value={country.name}>
+                                                            {country.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
                                                 {validationErrors.nationality && (
                                                     <p className="text-red-500 text-sm mt-1">{validationErrors.nationality}</p>
                                                 )}

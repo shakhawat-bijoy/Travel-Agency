@@ -403,6 +403,34 @@ export const packageAPI = {
     },
 };
 
+// Review API functions
+export const reviewAPI = {
+    // Get all reviews
+    getReviews: () => {
+        return apiCall('/reviews');
+    },
+
+    // Get user's reviews
+    getMyReviews: () => {
+        return apiCall('/reviews/my');
+    },
+
+    // Create a review
+    createReview: (reviewData) => {
+        return apiCall('/reviews', {
+            method: 'POST',
+            body: JSON.stringify(reviewData),
+        });
+    },
+
+    // Delete a review
+    deleteReview: (reviewId) => {
+        return apiCall(`/reviews/${reviewId}`, {
+            method: 'DELETE',
+        });
+    },
+};
+
 // Payment API functions
 export const paymentAPI = {
     // Add payment method

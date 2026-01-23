@@ -12,6 +12,7 @@ import flightRoutes from './routes/flights.js';
 import savedCardsRoutes from './routes/savedCards.js';
 import packageRoutes from './routes/packages.js';
 import hotelRoutes from './routes/hotels.js';
+import reviewRoutes from './routes/reviews.js';
 import User from './models/User.js';
 const app = express();
 
@@ -21,7 +22,6 @@ const __dirname = path.dirname(__filename);
 
 // Middleware - CORS configuration
 const allowedOrigins = [
-  'http://localhost:3000',
   'http://localhost:5173',
   'http://localhost:5174',
   process.env.CLIENT_URL, // Primary frontend URL from env
@@ -89,6 +89,7 @@ app.use('/api/flights', flightRoutes);
 app.use('/api/saved-cards', savedCardsRoutes);
 app.use('/api/packages', packageRoutes);
 app.use('/api/hotels', hotelRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {

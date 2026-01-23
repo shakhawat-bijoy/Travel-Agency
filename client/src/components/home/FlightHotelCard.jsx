@@ -28,7 +28,7 @@ const FlightHotelCard = () => {
   ]
 
   return (
-    <div className="py-8 sm:py-12 lg:py-16 bg-white px-4 sm:px-6 lg:px-8">
+    <div className="py-8 lg:py-12 bg-white px-4 sm:px-6 lg:px-8">
       <Container className={'max-w-[1380px] mx-auto'}>
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
           {cards.map((card) => (

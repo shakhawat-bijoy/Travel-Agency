@@ -450,11 +450,19 @@ const Register = () => {
                                         />
                                         <label htmlFor="agreeToTerms" className="ml-2 block text-sm text-gray-900">
                                             I agree to all the{' '}
-                                            <Link to="/terms" className="text-teal-600 hover:text-teal-500">
+                                            <Link
+                                                to="/terms-and-conditions"
+                                                state={{ tab: 'terms' }}
+                                                className="text-teal-600 hover:text-teal-500 font-medium"
+                                            >
                                                 Terms
                                             </Link>{' '}
                                             and{' '}
-                                            <Link to="/privacy" className="text-teal-600 hover:text-teal-500">
+                                            <Link
+                                                to="/terms-and-conditions"
+                                                state={{ tab: 'privacy' }}
+                                                className="text-teal-600 hover:text-teal-500 font-medium"
+                                            >
                                                 Privacy Policies
                                             </Link>
                                         </label>

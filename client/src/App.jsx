@@ -30,6 +30,8 @@ import Flights from './pages/Flights'
 import FlightResults from './components/flights/FlightResults'
 import Hotels from './pages/Hotels'
 import HotelSearchResults from './pages/HotelSearchResults'
+import TermsAndConditions from './pages/TermsAndConditions'
+import AllReviews from './pages/AllReviews'
 
 
 const App = () => {
@@ -68,6 +70,8 @@ const App = () => {
         </ProtectedRoute>}></Route>
         <Route path="/blogs" element={<TravelBlogs />}></Route>
         <Route path="/blog/:id" element={<BlogDetail />}></Route>
+        <Route path="/terms-and-conditions" element={<TermsAndConditions />}></Route>
+        <Route path="/reviews" element={<AllReviews />}></Route>
 
         {/* Catch-all route - must be last */}
         <Route path="*" element={<Home />}></Route>

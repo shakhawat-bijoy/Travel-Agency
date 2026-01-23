@@ -8,7 +8,7 @@ const reviewSchema = new Schema({
   },
   reviewType: {
     type: String,
-    enum: ['tour', 'hotel'],
+    enum: ['tour', 'hotel', 'site'],
     required: true
   },
   tour: {

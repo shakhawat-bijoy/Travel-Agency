@@ -14,7 +14,7 @@ const Home = () => {
         <TripPlan className={'md:mt-[380px]'}/>
         <Packeges/>
         <FlightHotelCard/>
-        <Reviews className={`hidden md:block`}/>
+        <Reviews />
     </div>
   )
 }

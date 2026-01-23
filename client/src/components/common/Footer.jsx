@@ -168,11 +168,11 @@ const Footer = () => {
                         </div>
 
                         <div className="flex space-x-6 text-sm">
-                            <Link to="/privacy" className="hover:text-teal-100 transition-colors duration-200">
-                                Privacy Policy
+                            <Link to="/terms-and-conditions" state={{ tab: 'terms' }} className="hover:text-teal-100 transition-colors duration-200">
+                                Terms & Conditions
                             </Link>
-                            <Link to="/terms" className="hover:text-teal-100 transition-colors duration-200">
-                                Terms of Service
+                            <Link to="/terms-and-conditions" state={{ tab: 'privacy' }} className="hover:text-teal-100 transition-colors duration-200">
+                                Privacy & Security
                             </Link>
                         </div>
                     </div>
