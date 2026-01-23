@@ -32,7 +32,7 @@ const ExploreListing = ({ type }) => {
     }, [type]);
 
     return (
-        <div className="min-h-screen bg-gray-50 py-16 md:py-24">
+        <div className="min-h-screen bg-gray-50 py-16 md:py-24 px-2 lg:px-0">
             <Container>
                 {/* Header Section */}
                 <div className="mb-16 text-center lg:text-left">

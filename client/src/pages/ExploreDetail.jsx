@@ -153,9 +153,10 @@ const ExploreDetail = () => {
     const [selectedDate, setSelectedDate] = useState('');
     const [travelers, setTravelers] = useState(1);
 
+    const resolvedType = type || (typeof window !== 'undefined' && window.location.pathname.includes('destinations') ? 'destinations' : 'activities');
+
     useEffect(() => {
         // Determine type from path if needed, or use the type param
-        const resolvedType = type || (window.location.pathname.includes('destinations') ? 'destinations' : 'activities');
         const item = exploreData[resolvedType]?.[slug];
 
         if (item) {
@@ -165,7 +166,7 @@ const ExploreDetail = () => {
             console.log('Item not found:', type, slug);
         }
         window.scrollTo(0, 0);
-    }, [type, slug]);
+    }, [type, slug, resolvedType]);
 
     const handleBooking = () => {
         if (!selectedDate) {
@@ -218,11 +219,11 @@ const ExploreDetail = () => {
 
                 <Container className="absolute inset-0 flex flex-col justify-end pb-12 px-4 md:px-0">
                     <button
-                        onClick={() => navigate('/destinations')}
+                        onClick={() => navigate(`/${resolvedType}`)}
                         className="absolute top-8 left-4 lg:left-0 flex items-center gap-2 text-white/90 hover:text-white transition-colors bg-black/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20 group"
                     >
                         <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                        <span>Back</span>
+                        <span>Back to {resolvedType === 'activities' ? 'Activities' : 'Destinations'}</span>
                     </button>
 
                     <div className="max-w-3xl px-4 lg:px-0">
@@ -241,7 +242,7 @@ const ExploreDetail = () => {
             </div>
 
             {/* Content Section */}
-            <Container className="py-16 md:py-24">
+            <Container className="py-16 md:py-24 px-2 lg:px-0">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
                     {/* Main Info */}
                     <div className="lg:col-span-2 space-y-12">
