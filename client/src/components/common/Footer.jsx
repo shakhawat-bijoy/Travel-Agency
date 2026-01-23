@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Facebook, Twitter, Youtube, Instagram } from 'lucide-react'
+import { Facebook, Twitter, Youtube, Instagram, Github, Linkedin, Heart, Globe } from 'lucide-react'
 import Image from './Image'
 import logoImage from '../../assets/images/logo.png'
 
@@ -28,8 +28,10 @@ const Footer = () => {
             "Work with us"
         ],
         contactUs: [
-            "Our Story",
-            "Work with us"
+            "Dream Holiday",
+            "support@dreamholiday.com",
+            "+1 (555) 123-4567",
+            "123 Travel Street, Adventure City, AC 12345"
         ]
     }
 
@@ -74,7 +76,9 @@ const Footer = () => {
 
                     {/* Our Destinations */}
                     <div className="md:col-span-1">
-                        <h3 className="text-lg font-semibold mb-4">Our Destinations</h3>
+                        <Link to="/destinations">
+                            <h3 className="text-lg font-semibold mb-4">Our Destinations</h3>
+                        </Link>
                         <ul className="space-y-2">
                             {footerData.destinations.map((destination, index) => (
                                 <li key={index}>
@@ -91,7 +95,9 @@ const Footer = () => {
 
                     {/* Our Activities */}
                     <div className="md:col-span-1">
-                        <h3 className="text-lg font-semibold mb-4">Our Activities</h3>
+                        <Link to="/activities">
+                            <h3 className="text-lg font-semibold mb-4">Our Activities</h3>
+                        </Link>
                         <ul className="space-y-2">
                             {footerData.activities.map((activity, index) => (
                                 <li key={index}>
@@ -163,8 +169,46 @@ const Footer = () => {
                 {/* Bottom Section */}
                 <div className="mt-12 pt-8 border-t border-white/20">
                     <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-                        <div className="text-sm opacity-80">
-                            © {new Date().getFullYear()} Dream Holidays. All rights reserved.
+                        <div className="text-sm opacity-80 flex items-center gap-2">
+                            <span>© {new Date().getFullYear()} Dream Holidays. All rights reserved.</span>
+                        </div>
+
+                        {/* Author Section */}
+                        <div className="flex items-center gap-3">
+                            <span className="text-xs opacity-60 font-medium">Developed by</span>
+                            <div className="flex items-center gap-2">
+                                <a
+                                    href="https://github.com/shakhawat-bijoy"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 px-4 py-1.5 rounded-full transition-all duration-300 group"
+                                >
+                                    <div className="relative">
+                                        <Github className="w-4 h-4 transition-transform duration-500 group-hover:rotate-[360deg]" />
+                                    </div>
+                                    <span className="text-sm font-bold tracking-tight">Shakhawat Bijoy</span>
+                                    <Heart className="w-3.5 h-3.5 text-red-400 fill-red-400 animate-pulse" />
+                                </a>
+                                <a
+                                    href="https://www.linkedin.com/in/shakhawat-bijoy/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-8 h-8 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+                                    aria-label="LinkedIn"
+                                >
+                                    <Linkedin className="w-4 h-4" />
+                                </a>
+                                <a
+                                    href="https://shakhawat-bijoy.vercel.app"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-8 h-8 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+                                    aria-label="Portfolio"
+                                    title="View Portfolio"
+                                >
+                                    <Globe className="w-4 h-4" />
+                                </a>
+                            </div>
                         </div>
 
                         <div className="flex space-x-6 text-sm">

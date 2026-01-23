@@ -278,7 +278,7 @@ const Reviews = ({ className }) => {
   };
 
   return (
-    <section className={`py-12 lg:py-24 bg-white overflow-hidden ${className}`}>
+    <section className={`py-8 lg:py-12 bg-white overflow-hidden ${className}`}>
       <Container>
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 lg:mb-16 gap-6 lg:gap-8 px-4 lg:px-0">

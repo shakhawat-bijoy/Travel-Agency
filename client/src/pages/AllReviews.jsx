@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Container from '../components/common/Container';
 import Image from '../components/common/Image';
 import { Star, ChevronDown, Filter, Search, ChevronLeft, ChevronRight, X, Trash2 } from 'lucide-react';
@@ -16,6 +17,7 @@ const AllReviews = () => {
     const reviewsPerPage = 6;
 
     const currentUser = auth.getUserData()?.user;
+    const location = useLocation();
 
     const fetchReviews = async () => {
         const staticReviews = [
@@ -237,6 +239,32 @@ const AllReviews = () => {
         fetchReviews();
     }, []);
 
+    // Handle initial scrolling/page selection for linked review
+    useEffect(() => {
+        if (location.hash && filteredAndSortedReviews.length > 0) {
+            const reviewId = location.hash.replace('#review-', '');
+            const index = filteredAndSortedReviews.findIndex(r => r._id === reviewId);
+            if (index !== -1) {
+                const page = Math.floor(index / reviewsPerPage) + 1;
+                if (page !== currentPage) {
+                    setCurrentPage(page);
+                }
+
+                // Scroll to the element after a brief delay to ensure it's rendered
+                setTimeout(() => {
+                    const element = document.getElementById(`review-${reviewId}`);
+                    if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        element.classList.add('ring-4', 'ring-teal-500', 'ring-opacity-50');
+                        setTimeout(() => {
+                            element.classList.remove('ring-4', 'ring-teal-500', 'ring-opacity-50');
+                        }, 3000);
+                    }
+                }, 500);
+            }
+        }
+    }, [location.hash, filteredAndSortedReviews]);
+
     const handleDeleteClick = (id) => {
         setReviewToDelete(id);
         setIsDeleteModalOpen(true);
@@ -348,7 +376,7 @@ const AllReviews = () => {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {currentReviews.map((review) => (
-                            <div key={review._id} className="group flex flex-col h-full">
+                            <div key={review._id} id={`review-${review._id}`} className="group flex flex-col h-full">
                                 <div className="relative flex-1">
                                     <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 h-full flex flex-col transition-all duration-300 group-hover:shadow-md">
                                         <div className="flex justify-between items-start mb-4">

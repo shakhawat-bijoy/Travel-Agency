@@ -245,7 +245,9 @@ const Account = () => {
     }
   }
 
-  const handleDeleteReviewClick = (reviewId) => {
+  const handleDeleteReviewClick = (e, reviewId) => {
+    e.preventDefault()
+    e.stopPropagation()
     setReviewToDelete(reviewId)
     setIsDeleteReviewModalOpen(true)
     setReviewDeleteConfirmText('')
@@ -2242,32 +2244,34 @@ const Account = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {reviews.map((review) => (
-              <div key={review._id} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow relative group">
-                <button
-                  onClick={() => handleDeleteReviewClick(review._id)}
-                  className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors opacity-0 group-hover:opacity-100"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
+              <Link key={review._id} to={`/reviews#review-${review._id}`}>
+                <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow relative group">
+                  <button
+                    onClick={(e) => handleDeleteReviewClick(e, review._id)}
+                    className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors opacity-0 group-hover:opacity-100 z-10"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
 
-                <div className="flex gap-1 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`} />
-                  ))}
+                  <div className="flex gap-1 mb-3">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`} />
+                    ))}
+                  </div>
+
+                  <h3 className="font-bold text-gray-900 mb-2">{review.title}</h3>
+                  <p className="text-gray-600 text-sm line-clamp-3 mb-4">"{review.comment}"</p>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+                    <span className="text-xs text-gray-400">
+                      {new Date(review.createdAt).toLocaleDateString()}
+                    </span>
+                    <span className="text-xs font-bold text-teal-600 uppercase tracking-widest">
+                      {review.reviewType === 'site' ? 'Dream Holidays' : (review.tour?.title || 'Tour Review')}
+                    </span>
+                  </div>
                 </div>
-
-                <h3 className="font-bold text-gray-900 mb-2">{review.title}</h3>
-                <p className="text-gray-600 text-sm line-clamp-3 mb-4">"{review.comment}"</p>
-
-                <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-                  <span className="text-xs text-gray-400">
-                    {new Date(review.createdAt).toLocaleDateString()}
-                  </span>
-                  <span className="text-xs font-bold text-teal-600 uppercase tracking-widest">
-                    {review.reviewType === 'site' ? 'Dream Holidays' : (review.packageId?.title || 'Tour Review')}
-                  </span>
-                </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

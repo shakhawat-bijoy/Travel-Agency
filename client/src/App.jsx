@@ -32,6 +32,8 @@ import Hotels from './pages/Hotels'
 import HotelSearchResults from './pages/HotelSearchResults'
 import TermsAndConditions from './pages/TermsAndConditions'
 import AllReviews from './pages/AllReviews'
+import ExploreDetail from './pages/ExploreDetail'
+import ExploreListing from './pages/ExploreListing'
 
 
 const App = () => {
@@ -72,6 +74,10 @@ const App = () => {
         <Route path="/blog/:id" element={<BlogDetail />}></Route>
         <Route path="/terms-and-conditions" element={<TermsAndConditions />}></Route>
         <Route path="/reviews" element={<AllReviews />}></Route>
+        <Route path="/destinations" element={<ExploreListing type="destinations" />}></Route>
+        <Route path="/activities" element={<ExploreListing type="activities" />}></Route>
+        <Route path="/destinations/:slug" element={<ExploreDetail type="destinations" />}></Route>
+        <Route path="/activities/:slug" element={<ExploreDetail type="activities" />}></Route>
 
         {/* Catch-all route - must be last */}
         <Route path="*" element={<Home />}></Route>
