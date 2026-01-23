@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import Container from '../components/common/Container';
 import Image from '../components/common/Image';
+import Button from '../components/common/Buttton';
 
 const ExploreDetail = () => {
     const { type, slug } = useParams();
@@ -17,6 +18,7 @@ const ExploreDetail = () => {
     const exploreData = {
         destinations: {
             'canada': {
+                id: 'dest-canada',
                 title: "Canada: The Great North",
                 subtitle: "Experience wilderness, vibrant cities, and majestic mountains.",
                 image: "https://images.unsplash.com/photo-1503614472-8c93d56e92ce?q=80&w=1200",
@@ -28,9 +30,11 @@ const ExploreDetail = () => {
                     "Discovery the vibrant culture of Vancouver"
                 ],
                 stats: { duration: "10-14 Days", rating: "4.9", visitors: "15k+" },
-                features: ["Wilderness Tours", "City Breaks", "Winter Sports", "Scenic Rail Journeys"]
+                features: ["Wilderness Tours", "City Breaks", "Winter Sports", "Scenic Rail Journeys"],
+                price: 1899
             },
             'alaska': {
+                id: 'dest-alaska',
                 title: "Alaska: The Last Frontier",
                 subtitle: "Untamed wilderness and breathtaking glacial landscapes.",
                 image: "https://images.unsplash.com/photo-1534067783941-51c9c23ecefd?q=80&w=1200",
@@ -42,9 +46,11 @@ const ExploreDetail = () => {
                     "Kayaking in Kenai Fjords"
                 ],
                 stats: { duration: "7-12 Days", rating: "4.8", visitors: "8k+" },
-                features: ["Glacier Hikes", "Wildlife Safaris", "Cruise Expeditions", "Dog Sledding"]
+                features: ["Glacier Hikes", "Wildlife Safaris", "Cruise Expeditions", "Dog Sledding"],
+                price: 2499
             },
             'france': {
+                id: 'dest-france',
                 title: "France: Art & Elegance",
                 subtitle: "A journey through history, gastronomy, and romance.",
                 image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=1200",
@@ -56,9 +62,11 @@ const ExploreDetail = () => {
                     "Visit the historic Mont Saint-Michel"
                 ],
                 stats: { duration: "8-15 Days", rating: "4.7", visitors: "25k+" },
-                features: ["Art Galleries", "Gourmet Dining", "Historical Landmarks", "Fashion Hubs"]
+                features: ["Art Galleries", "Gourmet Dining", "Historical Landmarks", "Fashion Hubs"],
+                price: 1599
             },
             'iceland': {
+                id: 'dest-iceland',
                 title: "Iceland: Fire and Ice",
                 subtitle: "A surreal landscape of volcanoes, hot springs, and auroras.",
                 image: "https://images.unsplash.com/photo-1476610182048-b716b8518aae?q=80&w=1200",
@@ -70,11 +78,13 @@ const ExploreDetail = () => {
                     "Chase the Northern Lights"
                 ],
                 stats: { duration: "5-10 Days", rating: "4.9", visitors: "12k+" },
-                features: ["Geothermal Spas", "Volcano Tours", "Waterfall Hikes", "Aurora Chasing"]
+                features: ["Geothermal Spas", "Volcano Tours", "Waterfall Hikes", "Aurora Chasing"],
+                price: 2199
             }
         },
         activities: {
             'northern-lights': {
+                id: 'act-northern-lights',
                 title: "Celestial Magic: Northern Lights",
                 subtitle: "Witness the dance of spirits in the polar sky.",
                 image: "https://images.unsplash.com/photo-1579033461380-adb47c3eb938?q=80&w=1200",
@@ -86,9 +96,11 @@ const ExploreDetail = () => {
                     "Overnight in a Glass Igloo"
                 ],
                 stats: { recommended: "Winter", rating: "5.0", effort: "Low-Medium" },
-                features: ["Night Photography", "Thermal Gear Provided", "Expert Aurora Hunters", "Hot Drinks & Snacks"]
+                features: ["Night Photography", "Thermal Gear Provided", "Expert Aurora Hunters", "Hot Drinks & Snacks"],
+                price: 499
             },
             'cruising-sailing': {
+                id: 'act-cruising',
                 title: "Oceans & Horizons: Cruising",
                 subtitle: "Set sail on a journey of luxury and discovery.",
                 image: "https://images.unsplash.com/photo-1544085311-11a028465b03?q=80&w=1200",
@@ -100,9 +112,11 @@ const ExploreDetail = () => {
                     "International gourmet cuisine"
                 ],
                 stats: { recommended: "All Year", rating: "4.8", effort: "Low" },
-                features: ["Private Cabins", "Shore Excursions", "Onboard Entertainment", "Inclusive Packages"]
+                features: ["Private Cabins", "Shore Excursions", "Onboard Entertainment", "Inclusive Packages"],
+                price: 1299
             },
             'multi-activities': {
+                id: 'act-multi',
                 title: "Ultimate Adventure Blend",
                 subtitle: "Why choose one when you can do it all?",
                 image: "https://images.unsplash.com/photo-1530541930197-ff16ac917b0e?q=80&w=1200",
@@ -114,9 +128,11 @@ const ExploreDetail = () => {
                     "Equipments provided"
                 ],
                 stats: { recommended: "Spring/Summer", rating: "4.9", effort: "Medium-High" },
-                features: ["Guided Hiking", "City Cycling", "Local Life Experience", "Group Activities"]
+                features: ["Guided Hiking", "City Cycling", "Local Life Experience", "Group Activities"],
+                price: 899
             },
             'kayaking': {
+                id: 'act-kayaking',
                 title: "Paddle & Peace: Kayaking",
                 subtitle: "Get close to nature on the water's surface.",
                 image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=1200",
@@ -128,10 +144,14 @@ const ExploreDetail = () => {
                     "Night kayaking experience"
                 ],
                 stats: { recommended: "Summer", rating: "4.6", effort: "High" },
-                features: ["Quality Gear", "Safety Instructors", "Photo Packages", "Eco-friendly Travel"]
+                features: ["Quality Gear", "Safety Instructors", "Photo Packages", "Eco-friendly Travel"],
+                price: 299
             }
         }
     };
+
+    const [selectedDate, setSelectedDate] = useState('');
+    const [travelers, setTravelers] = useState(1);
 
     useEffect(() => {
         // Determine type from path if needed, or use the type param
@@ -146,6 +166,33 @@ const ExploreDetail = () => {
         }
         window.scrollTo(0, 0);
     }, [type, slug]);
+
+    const handleBooking = () => {
+        if (!selectedDate) {
+            alert('Please select a travel date');
+            return;
+        }
+
+        const bookingData = {
+            package: {
+                ...data,
+                duration: data.stats.duration || data.stats.recommended || 'N/A',
+                images: [data.image], // ConfirmPackageBooking expects images array
+                location: type === 'destinations' ? data.title.split(':')[0] : 'Various Locations',
+            },
+            date: selectedDate,
+            travelers: travelers,
+            totalPrice: data.price * travelers,
+            timestamp: Date.now()
+        };
+
+        // Store in localStorage for restoration after login if needed
+        localStorage.setItem('selectedPackageForBooking', JSON.stringify(bookingData));
+
+        navigate('/confirm-package-booking', {
+            state: bookingData
+        });
+    };
 
     if (!data) {
         return (
@@ -169,9 +216,9 @@ const ExploreDetail = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/70"></div>
 
-                <Container className="absolute inset-0 flex flex-col justify-end pb-12">
+                <Container className="absolute inset-0 flex flex-col justify-end pb-12 px-4 md:px-0">
                     <button
-                        onClick={() => navigate(-1)}
+                        onClick={() => navigate('/destinations')}
                         className="absolute top-8 left-4 lg:left-0 flex items-center gap-2 text-white/90 hover:text-white transition-colors bg-black/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20 group"
                     >
                         <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
@@ -239,7 +286,7 @@ const ExploreDetail = () => {
 
                     {/* Sidebar / Quick Info */}
                     <div className="space-y-8">
-                        <div className="bg-white border-2 border-teal-500 rounded-[32px] p-8 shadow-2xl shadow-teal-100 sticky top-24">
+                        <div className="bg-white border-2 border-teal-500 rounded-[32px] p-8 shadow-2xl shadow-teal-100">
                             <h3 className="text-xl font-black text-gray-900 mb-6 font-montserrat">Quick Information</h3>
 
                             <div className="space-y-6">
@@ -249,15 +296,55 @@ const ExploreDetail = () => {
                                         <span className="text-lg font-black text-teal-600">{value}</span>
                                     </div>
                                 ))}
+                                <div className="flex items-center justify-between py-4 border-b border-gray-100">
+                                    <span className="text-sm font-bold text-gray-400 uppercase tracking-widest">Base Price</span>
+                                    <span className="text-lg font-black text-teal-600">${data.price}</span>
+                                </div>
                             </div>
 
-                            <div className="mt-10 space-y-4">
-                                <button className="w-full py-5 bg-gray-900 text-white rounded-2xl font-black text-lg hover:bg-black transition-all shadow-xl shadow-gray-200">
+                            <div className="mt-8 space-y-4">
+                                <div>
+                                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Select Date</label>
+                                    <input
+                                        type="date"
+                                        value={selectedDate}
+                                        onChange={(e) => setSelectedDate(e.target.value)}
+                                        min={new Date().toISOString().split('T')[0]}
+                                        className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Number of Travelers</label>
+                                    <input
+                                        type="number"
+                                        value={travelers}
+                                        onChange={(e) => setTravelers(Math.max(1, parseInt(e.target.value) || 1))}
+                                        min="1"
+                                        className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="mt-8 p-6 bg-teal-50 rounded-2xl flex items-center justify-between">
+                                <span className="font-bold text-gray-600">Total Price</span>
+                                <span className="text-2xl font-black text-teal-600">${data.price * travelers}</span>
+                            </div>
+
+                            <div className="mt-8 space-y-4">
+                                <button
+                                    onClick={handleBooking}
+                                    className="w-full py-5 bg-gray-900 text-white rounded-2xl font-black text-lg hover:bg-black transition-all shadow-xl shadow-gray-200"
+                                >
                                     Book This Experience
                                 </button>
-                                <button className="w-full py-5 bg-white text-teal-600 border-2 border-teal-600 rounded-2xl font-black text-lg hover:bg-teal-50 transition-all">
-                                    Inquiry Now
-                                </button>
+                                
+                                <Button
+                                text="Inquiry Now"
+                                className="w-full py-5 bg-white text-teal-600 border-2 border-teal-600 rounded-2xl font-black text-lg hover:bg-teal-50 transition-all" 
+                                to="tel:+8801704446708"
+                                />
+                                    
+                                
                             </div>
 
                             <div className="mt-8 flex items-center justify-center gap-6 opacity-40">
@@ -276,14 +363,24 @@ const ExploreDetail = () => {
                             </div>
                         </div>
 
-                        <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-[32px] p-8 text-white relative overflow-hidden">
-                            <Sparkles className="absolute top-4 right-4 w-20 h-20 opacity-20 rotate-12" />
-                            <h4 className="text-2xl font-black mb-4 relative z-10">Special Offer!</h4>
-                            <p className="text-white/80 mb-6 relative z-10">Book within the next 48 hours and get a 15% discount on your first tour.</p>
-                            <div className="text-4xl font-black mb-6 relative z-10">USE: DREAM15</div>
-                            <Link to="/packages" className="inline-block px-8 py-3 bg-white text-teal-600 rounded-xl font-bold hover:scale-105 transition-transform">
-                                Explore Packages
-                            </Link>
+                        <div className="bg-gradient-to-br from-teal-600 to-blue-700 rounded-[32px] p-8 text-white relative overflow-hidden shadow-2xl shadow-blue-200 group hover:scale-[1.02] transition-transform duration-500">
+                            <Sparkles className="absolute top-4 right-4 w-24 h-24 opacity-20 rotate-12 group-hover:rotate-45 transition-transform duration-700" />
+                            <div className="relative z-10">
+                                <span className="bg-white/20 backdrop-blur-md px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 inline-block">Limited Time Offer</span>
+                                <h4 className="text-3xl font-black mb-2 font-montserrat">Special Offer!</h4>
+                                <p className="text-white/80 mb-8 text-sm leading-relaxed">Book within the next 48 hours and get a 15% discount on your first tour.</p>
+
+                                <div className="mb-8">
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/60 mb-2">Use Coupon Code</p>
+                                    <div className="bg-black/20 backdrop-blur-sm border-2 border-dashed border-white/40 px-6 py-3 rounded-2xl inline-block">
+                                        <span className="text-2xl font-black tracking-tighter">DREAM15</span>
+                                    </div>
+                                </div>
+
+                                <Link to="/packages" className="block w-full text-center px-8 py-4 bg-white text-teal-700 rounded-2xl font-black text-sm hover:bg-teal-50 transition-colors shadow-lg shadow-black/10">
+                                    Explore Packages
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </div>

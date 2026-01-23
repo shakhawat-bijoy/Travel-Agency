@@ -4,6 +4,8 @@ import { User, Mail, Phone, CreditCard, Calendar, Check, AlertCircle, ArrowLeft,
 import { savedCardsAPI, authAPI, packageAPI, paymentAPI } from '../utils/api'
 import Container from '../components/common/Container'
 import { FaStar, FaClock } from 'react-icons/fa'
+import CountrySelector from '../components/common/CountrySelector'
+import countries from '../data/countries'
 
 // Masks passport numbers, keeping last 4 visible
 const maskPassport = (passport = '') => {
@@ -307,7 +309,7 @@ const ConfirmPackageBooking = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        
+
         if (!validateForm()) {
             return
         }
@@ -572,9 +574,8 @@ const ConfirmPackageBooking = () => {
                                                         type="text"
                                                         value={traveler.firstName}
                                                         onChange={(e) => handleTravelerChange(index, 'firstName', e.target.value)}
-                                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${
-                                                            validationErrors[`traveler${index}_firstName`] ? 'border-red-500' : 'border-gray-300'
-                                                        }`}
+                                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${validationErrors[`traveler${index}_firstName`] ? 'border-red-500' : 'border-gray-300'
+                                                            }`}
                                                     />
                                                     {validationErrors[`traveler${index}_firstName`] && (
                                                         <p className="text-red-500 text-sm mt-1">{validationErrors[`traveler${index}_firstName`]}</p>
@@ -589,9 +590,8 @@ const ConfirmPackageBooking = () => {
                                                         type="text"
                                                         value={traveler.lastName}
                                                         onChange={(e) => handleTravelerChange(index, 'lastName', e.target.value)}
-                                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${
-                                                            validationErrors[`traveler${index}_lastName`] ? 'border-red-500' : 'border-gray-300'
-                                                        }`}
+                                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${validationErrors[`traveler${index}_lastName`] ? 'border-red-500' : 'border-gray-300'
+                                                            }`}
                                                     />
                                                     {validationErrors[`traveler${index}_lastName`] && (
                                                         <p className="text-red-500 text-sm mt-1">{validationErrors[`traveler${index}_lastName`]}</p>
@@ -607,9 +607,8 @@ const ConfirmPackageBooking = () => {
                                                         type="email"
                                                         value={traveler.email}
                                                         onChange={(e) => handleTravelerChange(index, 'email', e.target.value)}
-                                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${
-                                                            validationErrors[`traveler${index}_email`] ? 'border-red-500' : 'border-gray-300'
-                                                        }`}
+                                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${validationErrors[`traveler${index}_email`] ? 'border-red-500' : 'border-gray-300'
+                                                            }`}
                                                     />
                                                     {validationErrors[`traveler${index}_email`] && (
                                                         <p className="text-red-500 text-sm mt-1">{validationErrors[`traveler${index}_email`]}</p>
@@ -625,9 +624,8 @@ const ConfirmPackageBooking = () => {
                                                         type="tel"
                                                         value={traveler.phone}
                                                         onChange={(e) => handleTravelerChange(index, 'phone', e.target.value)}
-                                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${
-                                                            validationErrors[`traveler${index}_phone`] ? 'border-red-500' : 'border-gray-300'
-                                                        }`}
+                                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${validationErrors[`traveler${index}_phone`] ? 'border-red-500' : 'border-gray-300'
+                                                            }`}
                                                     />
                                                     {validationErrors[`traveler${index}_phone`] && (
                                                         <p className="text-red-500 text-sm mt-1">{validationErrors[`traveler${index}_phone`]}</p>
@@ -649,7 +647,7 @@ const ConfirmPackageBooking = () => {
                                                                     className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${useAccountDob
                                                                         ? 'bg-teal-50 border-teal-500 text-teal-700'
                                                                         : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                                                                    }`}
+                                                                        }`}
                                                                 >
                                                                     Use account date
                                                                 </button>
@@ -659,7 +657,7 @@ const ConfirmPackageBooking = () => {
                                                                     className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${!useAccountDob
                                                                         ? 'bg-teal-50 border-teal-500 text-teal-700'
                                                                         : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                                                                    }`}
+                                                                        }`}
                                                                 >
                                                                     Use different
                                                                 </button>
@@ -681,9 +679,8 @@ const ConfirmPackageBooking = () => {
                                                                         type="date"
                                                                         value={traveler.dateOfBirth}
                                                                         onChange={(e) => handleTravelerChange(index, 'dateOfBirth', e.target.value)}
-                                                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${
-                                                                            validationErrors[`traveler${index}_dateOfBirth`] ? 'border-red-500' : 'border-gray-300'
-                                                                        }`}
+                                                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${validationErrors[`traveler${index}_dateOfBirth`] ? 'border-red-500' : 'border-gray-300'
+                                                                            }`}
                                                                     />
                                                                     {validationErrors[`traveler${index}_dateOfBirth`] && (
                                                                         <p className="text-red-500 text-sm mt-1">{validationErrors[`traveler${index}_dateOfBirth`]}</p>
@@ -697,9 +694,8 @@ const ConfirmPackageBooking = () => {
                                                                 type="date"
                                                                 value={traveler.dateOfBirth}
                                                                 onChange={(e) => handleTravelerChange(index, 'dateOfBirth', e.target.value)}
-                                                                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${
-                                                                    validationErrors[`traveler${index}_dateOfBirth`] ? 'border-red-500' : 'border-gray-300'
-                                                                }`}
+                                                                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${validationErrors[`traveler${index}_dateOfBirth`] ? 'border-red-500' : 'border-gray-300'
+                                                                    }`}
                                                             />
                                                             {validationErrors[`traveler${index}_dateOfBirth`] && (
                                                                 <p className="text-red-500 text-sm mt-1">{validationErrors[`traveler${index}_dateOfBirth`]}</p>
@@ -722,7 +718,7 @@ const ConfirmPackageBooking = () => {
                                                                     className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${useAccountPassport
                                                                         ? 'bg-teal-50 border-teal-500 text-teal-700'
                                                                         : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                                                                    }`}
+                                                                        }`}
                                                                 >
                                                                     Use account passport
                                                                 </button>
@@ -732,7 +728,7 @@ const ConfirmPackageBooking = () => {
                                                                     className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${!useAccountPassport
                                                                         ? 'bg-teal-50 border-teal-500 text-teal-700'
                                                                         : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                                                                    }`}
+                                                                        }`}
                                                                 >
                                                                     Use different
                                                                 </button>
@@ -775,14 +771,11 @@ const ConfirmPackageBooking = () => {
                                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                                         Nationality *
                                                     </label>
-                                                    <input
-                                                        type="text"
+                                                    <CountrySelector
                                                         value={traveler.nationality}
-                                                        onChange={(e) => handleTravelerChange(index, 'nationality', e.target.value)}
-                                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${
-                                                            validationErrors[`traveler${index}_nationality`] ? 'border-red-500' : 'border-gray-300'
-                                                        }`}
-                                                        placeholder="Bangladesh"
+                                                        onChange={(value) => handleTravelerChange(index, 'nationality', value)}
+                                                        className={validationErrors[`traveler${index}_nationality`] ? 'border-red-500 rounded-lg' : ''}
+                                                        placeholder="Select Nationality"
                                                     />
                                                     {validationErrors[`traveler${index}_nationality`] && (
                                                         <p className="text-red-500 text-sm mt-1">{validationErrors[`traveler${index}_nationality`]}</p>
@@ -807,22 +800,20 @@ const ConfirmPackageBooking = () => {
                                                 <button
                                                     type="button"
                                                     onClick={() => setUseNewCard(false)}
-                                                    className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
-                                                        !useNewCard
-                                                            ? 'bg-teal-600 text-white'
-                                                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                                                    }`}
+                                                    className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${!useNewCard
+                                                        ? 'bg-teal-600 text-white'
+                                                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                                        }`}
                                                 >
                                                     Use Saved Card
                                                 </button>
                                                 <button
                                                     type="button"
                                                     onClick={() => setUseNewCard(true)}
-                                                    className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
-                                                        useNewCard
-                                                            ? 'bg-teal-600 text-white'
-                                                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                                                    }`}
+                                                    className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${useNewCard
+                                                        ? 'bg-teal-600 text-white'
+                                                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                                        }`}
                                                 >
                                                     Use New Card
                                                 </button>
@@ -834,28 +825,27 @@ const ConfirmPackageBooking = () => {
                                                         <div
                                                             key={card._id}
                                                             onClick={() => handleSavedCardSelect(card)}
-                                                            className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                                                                selectedSavedCard?._id === card._id
-                                                                    ? 'border-teal-600 bg-teal-50'
-                                                                    : 'border-gray-200 hover:border-teal-300'
-                                                            }`}
+                                                            className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${selectedSavedCard?._id === card._id
+                                                                ? 'border-teal-600 bg-teal-50'
+                                                                : 'border-gray-200 hover:border-teal-300'
+                                                                }`}
                                                         >
                                                             <div className="flex items-center justify-between">
                                                                 <div>
                                                                     <div className="font-semibold text-gray-900">
-                                                                            •••• •••• •••• {(card.cardNumber || '').slice(-4)}
+                                                                        •••• •••• •••• {(card.cardNumber || '').slice(-4)}
                                                                     </div>
                                                                     <div className="text-sm text-gray-600">{card.cardholderName}</div>
-                                                                        {(card.nickname || card.source === 'account') && (
-                                                                            <div className="text-xs text-gray-500 mt-1 flex items-center gap-2 flex-wrap">
-                                                                                {card.nickname && <span>{card.nickname}</span>}
-                                                                                {card.source === 'account' && (
-                                                                                    <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-[11px]">
-                                                                                        Account
-                                                                                    </span>
-                                                                                )}
-                                                                            </div>
-                                                                        )}
+                                                                    {(card.nickname || card.source === 'account') && (
+                                                                        <div className="text-xs text-gray-500 mt-1 flex items-center gap-2 flex-wrap">
+                                                                            {card.nickname && <span>{card.nickname}</span>}
+                                                                            {card.source === 'account' && (
+                                                                                <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-[11px]">
+                                                                                    Account
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                                 <div className="flex items-center gap-2">
                                                                     {card.isDefault && (
@@ -889,9 +879,8 @@ const ConfirmPackageBooking = () => {
                                                     }
                                                     placeholder="1234 5678 9012 3456"
                                                     maxLength="19"
-                                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${
-                                                        validationErrors.cardNumber ? 'border-red-500' : 'border-gray-300'
-                                                    }`}
+                                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${validationErrors.cardNumber ? 'border-red-500' : 'border-gray-300'
+                                                        }`}
                                                 />
                                                 {validationErrors.cardNumber && (
                                                     <p className="text-red-500 text-sm mt-1">{validationErrors.cardNumber}</p>
@@ -915,9 +904,8 @@ const ConfirmPackageBooking = () => {
                                                         }}
                                                         placeholder="MM/YY"
                                                         maxLength="5"
-                                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${
-                                                            validationErrors.expiryDate ? 'border-red-500' : 'border-gray-300'
-                                                        }`}
+                                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${validationErrors.expiryDate ? 'border-red-500' : 'border-gray-300'
+                                                            }`}
                                                     />
                                                     {validationErrors.expiryDate && (
                                                         <p className="text-red-500 text-sm mt-1">{validationErrors.expiryDate}</p>
@@ -934,9 +922,8 @@ const ConfirmPackageBooking = () => {
                                                         }
                                                         placeholder="123"
                                                         maxLength="4"
-                                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${
-                                                            validationErrors.cvv ? 'border-red-500' : 'border-gray-300'
-                                                        }`}
+                                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${validationErrors.cvv ? 'border-red-500' : 'border-gray-300'
+                                                            }`}
                                                     />
                                                     {validationErrors.cvv && (
                                                         <p className="text-red-500 text-sm mt-1">{validationErrors.cvv}</p>
@@ -954,9 +941,8 @@ const ConfirmPackageBooking = () => {
                                                     onChange={(e) =>
                                                         setPaymentData({ ...paymentData, cardholderName: e.target.value })
                                                     }
-                                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${
-                                                        validationErrors.cardholderName ? 'border-red-500' : 'border-gray-300'
-                                                    }`}
+                                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${validationErrors.cardholderName ? 'border-red-500' : 'border-gray-300'
+                                                        }`}
                                                 />
                                                 {validationErrors.cardholderName && (
                                                     <p className="text-red-500 text-sm mt-1">{validationErrors.cardholderName}</p>
@@ -1002,9 +988,8 @@ const ConfirmPackageBooking = () => {
                                                 onChange={(e) => setPaymentData({ ...paymentData, cvv: e.target.value.replace(/\D/g, '') })}
                                                 placeholder="123"
                                                 maxLength="4"
-                                                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${
-                                                    validationErrors.cvv ? 'border-red-500' : 'border-gray-300'
-                                                }`}
+                                                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 ${validationErrors.cvv ? 'border-red-500' : 'border-gray-300'
+                                                    }`}
                                             />
                                             {validationErrors.cvv && <p className="text-red-500 text-sm mt-1">{validationErrors.cvv}</p>}
                                         </div>

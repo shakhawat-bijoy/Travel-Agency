@@ -348,7 +348,7 @@ const Reviews = ({ className }) => {
         </div>
 
         {/* Trust Badges */}
-        <div className="mt-12 lg:mt-20 flex flex-wrap justify-center items-center gap-6 lg:gap-12 opacity-40 grayscale hover:grayscale-0 transition-all duration-500 px-4">
+        <div className="mt-12 lg:mt-20 flex flex-wrap justify-center items-center gap-6 lg:gap-12 opacity-40 px-4">
           <div className="flex items-center gap-1.5 lg:gap-2">
             <div className="w-6 h-6 lg:w-8 lg:h-8 rounded-full bg-blue-600 flex items-center justify-center">
               <span className="text-white font-bold text-[10px] lg:text-xs uppercase">G</span>

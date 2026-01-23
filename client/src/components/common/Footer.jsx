@@ -63,7 +63,7 @@ const Footer = () => {
                                 return (
                                     <a
                                         key={index}
-                                        href={social.href}
+                                        href={'/'}
                                         className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors duration-200"
                                         aria-label={social.label}
                                     >
