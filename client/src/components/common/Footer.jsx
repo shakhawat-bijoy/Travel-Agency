@@ -133,10 +133,17 @@ const Footer = () => {
 
                     {/* About Us */}
                     <div className="md:col-span-1">
-                        <Link to="/about">
-                            <h3 className="text-lg font-semibold mb-4">About Us</h3>
-                        </Link> 
+                        <div className="mb-4">
+                            <Link to="/about">
+                                <h3 className="text-lg font-semibold inline">About Us</h3>
+                            </Link>
+                        </div>
                         <ul className="space-y-2">
+                            <li>
+                                <Link to="/project-docs" className="text-sm hover:text-teal-100 transition-colors duration-200">
+                                    Project Documentation
+                                </Link>
+                            </li>
                             {footerData.aboutUs.map((item, index) => {
                                 const tab = item === "Our Story" ? "story" : "work";
                                 return (
@@ -196,7 +203,7 @@ const Footer = () => {
                                     <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500 animate-pulse" />
                                 </a>
                                 <a
-                                    href="https://www.linkedin.com/in/shakhawat-bijoy/" 
+                                    href="https://www.linkedin.com/in/shakhawat-bijoy/"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="w-8 h-8 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
@@ -230,7 +237,7 @@ const Footer = () => {
 
                 </div>
             </div>
-        </footer>
+        </footer >
     )
 }
 

@@ -18,6 +18,8 @@ import Places from './pages/Places'
 import TravelBlogs from './pages/TravelBlogs'
 import BlogDetail from './pages/BlogDetail'
 import About from './pages/About'
+import ProjectDocumentation from './pages/ProjectDocumentation'
+
 
 
 import {
@@ -75,6 +77,8 @@ const App = () => {
         <Route path="/blogs" element={<TravelBlogs />}></Route>
         <Route path="/blog/:id" element={<BlogDetail />}></Route>
         <Route path="/about" element={<About />}></Route>
+        <Route path="/project-docs" element={<ProjectDocumentation />}></Route>
+
 
         <Route path="/terms-and-conditions" element={<TermsAndConditions />}></Route>
         <Route path="/reviews" element={<AllReviews />}></Route>

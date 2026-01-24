@@ -227,7 +227,7 @@ NODE_ENV=development
 # Database
 MONGODB_URI=mongodb://localhost:27017/dream-holidays
 # or MongoDB Atlas:
-# MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/dream-holidays
+# MONGODB_URI=
 
 # JWT
 JWT_SECRET=your-super-secret-jwt-key

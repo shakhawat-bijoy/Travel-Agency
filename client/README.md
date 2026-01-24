@@ -1,16 +1,87 @@
-# React + Vite
+# Dream Holidays - Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the frontend client for the **Dream Holidays** travel booking application. It provides a modern, responsive user interface for booking flights, hotels, and holiday packages.
 
-Currently, two official plugins are available:
+## 🚀 Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Framework:** [React 19](https://react.dev/) with [Vite](https://vitejs.dev/)
+- **State Management:** [Redux Toolkit](https://redux-toolkit.js.org/)
+- **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
+- **Routing:** [React Router v7](https://reactrouter.com/)
+- **Authentication:** Auth0 React SDK
+- **Icons:** Lucide React & React Icons
+- **Maps:** Google Maps React & Leaflet
+- **Animations:** Framer Motion (implied/planned), CSS transitions
 
-## React Compiler
+## 🛠️ Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Prerequisites
 
-## Expanding the ESLint configuration
+- Node.js (v18 or higher)
+- npm or yarn
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Installation
+
+1. Navigate to the client directory:
+   ```bash
+   cd client
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Create a `.env` file in the root of the `client` directory (see Configuration below).
+
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+   The application will be available at `http://localhost:5173`.
+
+## 📁 Project Structure
+
+```
+client/
+├── public/             # Static assets
+├── src/
+│   ├── api/            # API service layers (Axios instances)
+│   ├── assets/         # Images, fonts, and local assets
+│   ├── components/     # Reusable UI components
+│   │   ├── common/     # Buttons, Inputs, Modals, Navbar, Footer
+│   │   ├── flights/    # Flight-specific components
+│   │   └── ...
+│   ├── data/           # Static data inputs (if any)
+│   ├── pages/          # Application views (Home, Account, Booking)
+│   ├── store/          # Redux store and slices
+│   ├── utils/          # Helper functions and formatters
+│   ├── App.jsx         # Main application component & Routing
+│   └── main.jsx        # Entry point
+└── package.json
+```
+
+## ✨ Key Features
+
+- **Flight Search & Booking:** Real-time flight availability integration and booking interface.
+- **Dynamic Packaging:** Book complete holiday packages with customizable options.
+- **User Dashboard:** Manage profile, view booking history, and handle payments.
+- **Responsive Design:** Fully optimized for mobile, tablet, and desktop devices.
+- **Interactive Maps:** Visual exploration of destinations using Google Maps and Leaflet.
+- **Project Documentation:** Built-in technical documentation page convertible to PDF.
+
+## 📜 Scripts
+
+- `npm run dev`: Starts the development server.
+- `npm run build`: Builds the app for production to the `dist` folder.
+- `npm run lint`: Runs ESLint to check for code quality issues.
+- `npm run preview`: Locally preview the production build.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/NewFeature`)
+3. Commit changes (`git commit -m 'Add NewFeature'`)
+4. Push to branch (`git push origin feature/NewFeature`)
+5. Open a Pull Request

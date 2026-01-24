@@ -43,15 +43,21 @@ const RootLayout = () => {
         />
       )}
 
-      {!shouldHideNavbar && <Navbar />}
+      <div className="print:hidden">
+        {!shouldHideNavbar && <Navbar />}
+      </div>
 
       <div className={isOtherRoute ? 'mt-0' : isHomePage ? 'mt-0' : 'mt-20'}>
         <Outlet />
       </div>
 
-      {!shouldHideFooter && <Footer />}
+      <div className="print:hidden">
+        {!shouldHideFooter && <Footer />}
+      </div>
 
-      <BackToTop />
+      <div className="print:hidden">
+        <BackToTop />
+      </div>
 
 
     </div>
