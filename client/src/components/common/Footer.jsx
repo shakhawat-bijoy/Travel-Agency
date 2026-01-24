@@ -133,18 +133,24 @@ const Footer = () => {
 
                     {/* About Us */}
                     <div className="md:col-span-1">
-                        <h3 className="text-lg font-semibold mb-4">About Us</h3>
+                        <Link to="/about">
+                            <h3 className="text-lg font-semibold mb-4">About Us</h3>
+                        </Link> 
                         <ul className="space-y-2">
-                            {footerData.aboutUs.map((item, index) => (
-                                <li key={index}>
-                                    <Link
-                                        to={`/about/${item.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
-                                        className="text-sm hover:text-teal-100 transition-colors duration-200"
-                                    >
-                                        {item}
-                                    </Link>
-                                </li>
-                            ))}
+                            {footerData.aboutUs.map((item, index) => {
+                                const tab = item === "Our Story" ? "story" : "work";
+                                return (
+                                    <li key={index}>
+                                        <Link
+                                            to="/about"
+                                            state={{ activeTab: tab }}
+                                            className="text-sm hover:text-teal-100 transition-colors duration-200"
+                                        >
+                                            {item}
+                                        </Link>
+                                    </li>
+                                )
+                            })}
                         </ul>
                     </div>
 
@@ -187,10 +193,10 @@ const Footer = () => {
                                         <Github className="w-4 h-4 transition-transform duration-500 group-hover:rotate-[360deg]" />
                                     </div>
                                     <span className="text-sm font-bold tracking-tight">Shakhawat Bijoy</span>
-                                    <Heart className="w-3.5 h-3.5 text-red-400 fill-red-400 animate-pulse" />
+                                    <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500 animate-pulse" />
                                 </a>
                                 <a
-                                    href="https://www.linkedin.com/in/shakhawat-bijoy/"
+                                    href="https://www.linkedin.com/in/shakhawat-bijoy/" 
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="w-8 h-8 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"

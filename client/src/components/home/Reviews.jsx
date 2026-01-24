@@ -97,7 +97,7 @@ const ReviewCard = ({ id, title, text, author, location, rating, image, color, i
       </div>
 
       {/* Hover Indicator */}
-      <div className={`absolute bottom-0 left-0 h-1 lg:h-1.5 transition-all duration-500 group-hover:w-full w-0 ${color || 'bg-teal-500'}`}></div>
+      <div className={`absolute bottom-0 left-0 h-1 lg:h-1 transition-all duration-500 group-hover:w-full w-0 ${color || 'bg-teal-500'}`}></div>
     </div>
   </div>
 );
@@ -330,6 +330,7 @@ const Reviews = ({ className }) => {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
             </div>
           ) : reviews.length > 0 ? (
+            <Link to={'/reviews'}>
             <Slider {...settings}>
               {reviews.map((review, index) => (
                 <ReviewCard
@@ -340,6 +341,7 @@ const Reviews = ({ className }) => {
                 />
               ))}
             </Slider>
+            </Link>
           ) : (
             <div className="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
               <p className="text-gray-500 font-montserrat">No reviews yet. Be the first to share your experience!</p>
@@ -348,7 +350,7 @@ const Reviews = ({ className }) => {
         </div>
 
         {/* Trust Badges */}
-        <div className="mt-12 lg:mt-20 flex flex-wrap justify-center items-center gap-6 lg:gap-12 opacity-40 px-4">
+        <div className="mt-8 lg:mt-12 flex flex-wrap justify-center items-center gap-6 lg:gap-12 opacity-40 px-4">
           <div className="flex items-center gap-1.5 lg:gap-2">
             <div className="w-6 h-6 lg:w-8 lg:h-8 rounded-full bg-blue-600 flex items-center justify-center">
               <span className="text-white font-bold text-[10px] lg:text-xs uppercase">G</span>

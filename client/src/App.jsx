@@ -17,6 +17,8 @@ import Packages from './pages/Packages'
 import Places from './pages/Places'
 import TravelBlogs from './pages/TravelBlogs'
 import BlogDetail from './pages/BlogDetail'
+import About from './pages/About'
+
 
 import {
   createRoutesFromElements,
@@ -72,6 +74,8 @@ const App = () => {
         </ProtectedRoute>}></Route>
         <Route path="/blogs" element={<TravelBlogs />}></Route>
         <Route path="/blog/:id" element={<BlogDetail />}></Route>
+        <Route path="/about" element={<About />}></Route>
+
         <Route path="/terms-and-conditions" element={<TermsAndConditions />}></Route>
         <Route path="/reviews" element={<AllReviews />}></Route>
         <Route path="/destinations" element={<ExploreListing type="destinations" />}></Route>

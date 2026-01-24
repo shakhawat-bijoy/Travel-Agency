@@ -15,7 +15,7 @@ const Home = () => {
       <TripPlan className={'md:mt-[380px]'} />
       <Packeges />
       <FlightHotelCard />
-      <Reviews />
+      <Reviews className={'md:mb-12 mb-8'} />
       <ExploreTabs />
     </div>
   )

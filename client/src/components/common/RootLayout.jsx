@@ -4,13 +4,15 @@ import { useDispatch } from 'react-redux'
 import Snowfall from 'react-snowfall'
 import Navbar from './Navbar'
 import Footer from './Footer'
+import BackToTop from './BackToTop'
+
 import { restoreSearchResults } from '../../store/slices/flightSlice'
 
 
 const RootLayout = () => {
   const location = useLocation()
   const dispatch = useDispatch()
-  
+
   const hideNavbarRoutes = ['/login', '/register', '/forgot-password', '/add-payment-method']
   const hideFooterRoutes = ['/login', '/register', '/forgot-password', '/add-payment-method', '/account']
   const shouldHideNavbar = hideNavbarRoutes.includes(location.pathname)
@@ -48,6 +50,9 @@ const RootLayout = () => {
       </div>
 
       {!shouldHideFooter && <Footer />}
+
+      <BackToTop />
+
 
     </div>
   )
