@@ -200,7 +200,7 @@ const Footer = () => {
                                         <Github className="w-4 h-4 transition-transform duration-500 group-hover:rotate-[360deg]" />
                                     </div>
                                     <span className="text-sm font-bold tracking-tight">Shakhawat Bijoy</span>
-                                    <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500 animate-pulse" />
+                                    {/* <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500 animate-pulse" /> */}
                                 </a>
                                 <a
                                     href="https://www.linkedin.com/in/shakhawat-bijoy/"

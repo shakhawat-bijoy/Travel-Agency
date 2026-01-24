@@ -260,7 +260,7 @@ const ProjectDocumentation = () => {
                                     <span className="text-xs opacity-75">Reasoning & Code</span>
                                 </div>
                                 <div className="bg-white/20 p-3 rounded-lg text-center backdrop-blur-sm">
-                                    <span className="block font-bold">OpenAI GPT</span>
+                                    <span className="block font-bold">OpenAI GPT / Copilot</span>
                                     <span className="text-xs opacity-75">Logic & Creative</span>
                                 </div>
                                 <div className="bg-white/20 p-3 rounded-lg text-center backdrop-blur-sm">
