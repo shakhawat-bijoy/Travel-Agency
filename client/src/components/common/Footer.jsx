@@ -167,12 +167,11 @@ const Footer = () => {
                         <ul className="space-y-2">
                             {footerData.contactUs.map((item, index) => (
                                 <li key={index}>
-                                    <Link
-                                        to={`/contact/${item.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+                                    <p
                                         className="text-sm hover:text-teal-100 transition-colors duration-200"
                                     >
                                         {item}
-                                    </Link>
+                                    </p>
                                 </li>
                             ))}
                         </ul>
