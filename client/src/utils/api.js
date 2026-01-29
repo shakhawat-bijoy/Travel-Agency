@@ -1,556 +1,606 @@
 // API base URL
 const API_BASE_URL = (() => {
-    // Check environment variables
-    const envUrl = import.meta.env.VITE_API_URL;
-    const isDevelopment = import.meta.env.DEV;
-    
-    // If VITE_API_URL is set and not empty
-    if (envUrl && envUrl.trim() && !envUrl.includes('your-backend')) {
-        return `${envUrl}/api`;
-    }
-    
-    // Default to localhost for development
-    if (isDevelopment) {
-        return 'http://localhost:5001/api';
-    }
-    
-    // If no valid URL found in production, log error
-    console.error('⚠️ VITE_API_URL not configured. Please set VITE_API_URL in your environment variables.');
-    // Fallback to current origin as last resort
-    return `${window.location.origin}/api`;
+  // Check environment variables
+  const envUrl = import.meta.env.VITE_API_URL;
+  const isDevelopment = import.meta.env.DEV;
+
+  // If VITE_API_URL is set and not empty
+  if (envUrl && envUrl.trim() && !envUrl.includes("your-backend")) {
+    return `${envUrl}/api`;
+  }
+
+  // Default to localhost for development
+  if (isDevelopment) {
+    return "http://localhost:5001/api";
+  }
+
+  // If no valid URL found in production, log error
+  console.error(
+    "⚠️ VITE_API_URL not configured. Please set VITE_API_URL in your environment variables.",
+  );
+  // Fallback to current origin as last resort
+  return `${window.location.origin}/api`;
 })();
 
-console.log('🔗 API Base URL:', API_BASE_URL);
-console.log('🔗 VITE_API_URL env:', import.meta.env.VITE_API_URL);
-console.log('🔗 Environment:', import.meta.env.MODE);
+console.log("🔗 API Base URL:", API_BASE_URL);
+console.log("🔗 VITE_API_URL env:", import.meta.env.VITE_API_URL);
+console.log("🔗 Environment:", import.meta.env.MODE);
 
 // Get token from localStorage
 const getToken = () => {
-    return localStorage.getItem('token');
+  return localStorage.getItem("token");
 };
 
 // API call helper function
 const apiCall = async (endpoint, options = {}) => {
-    const url = `${API_BASE_URL}${endpoint}`;
-    const token = getToken();
+  const url = `${API_BASE_URL}${endpoint}`;
+  const token = getToken();
 
-    const config = {
-        headers: {
-            'Content-Type': 'application/json',
-            ...(token && { Authorization: `Bearer ${token}` }),
-        },
-        ...options,
-    };
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
+    ...options,
+  };
 
-    try {
-        const response = await fetch(url, config);
-        
-        // Handle network errors
-        if (!response) {
-            throw new Error('No response from server. Please check your connection.');
-        }
+  try {
+    const response = await fetch(url, config);
 
-        // Try to parse JSON response
-        let data;
-        try {
-            data = await response.json();
-        } catch (parseError) {
-            console.error('Failed to parse response:', parseError);
-            throw new Error('Invalid response from server');
-        }
-
-        if (!response.ok) {
-            // Create error object with validation errors if available
-            const error = new Error(data.message || data.error || `Request failed with status ${response.status}`);
-            if (data.errors) {
-                error.errors = data.errors;
-            }
-            throw error;
-        }
-
-        return data;
-    } catch (error) {
-        // Handle network errors specifically
-        if (error.name === 'TypeError' && (error.message.includes('fetch') || error.message.includes('Failed to fetch'))) {
-            console.error('Network error:', error);
-            throw new Error('Unable to connect to server. Please check your internet connection.');
-        }
-        
-        console.error('API call error:', error);
-        throw error;
+    // Handle network errors
+    if (!response) {
+      throw new Error("No response from server. Please check your connection.");
     }
+
+    // Try to parse JSON response
+    let data;
+    try {
+      data = await response.json();
+    } catch (parseError) {
+      console.error("Failed to parse response:", parseError);
+      throw new Error("Invalid response from server");
+    }
+
+    if (!response.ok) {
+      // Create error object with validation errors if available
+      const error = new Error(
+        data.message ||
+          data.error ||
+          `Request failed with status ${response.status}`,
+      );
+      if (data.errors) {
+        error.errors = data.errors;
+      }
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    // Handle network errors specifically
+    if (
+      error.name === "TypeError" &&
+      (error.message.includes("fetch") ||
+        error.message.includes("Failed to fetch"))
+    ) {
+      console.error("Network error:", error);
+      throw new Error(
+        "Unable to connect to server. Please check your internet connection.",
+      );
+    }
+
+    console.error("API call error:", error);
+    throw error;
+  }
 };
 
 // Auth API functions
 export const authAPI = {
-    // Register user
-    register: (userData) => {
-        return apiCall('/auth/register', {
-            method: 'POST',
-            body: JSON.stringify(userData),
-        });
-    },
+  // Register user
+  register: (userData) => {
+    return apiCall("/auth/register", {
+      method: "POST",
+      body: JSON.stringify(userData),
+    });
+  },
 
-    // Login user
-    login: (credentials) => {
-        return apiCall('/auth/login', {
-            method: 'POST',
-            body: JSON.stringify(credentials),
-        });
-    },
+  // Login user
+  login: (credentials) => {
+    return apiCall("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(credentials),
+    });
+  },
 
-    // Get current user profile
-    getProfile: () => {
-        return apiCall('/auth/me');
-    },
+  // Get current user profile
+  getProfile: () => {
+    return apiCall("/auth/me");
+  },
 
-    // Forgot password
-    forgotPassword: (email) => {
-        return apiCall('/auth/forgot-password', {
-            method: 'POST',
-            body: JSON.stringify({ email }),
-        });
-    },
+  // Forgot password
+  forgotPassword: (email) => {
+    return apiCall("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  },
 
-    // Verify reset code
-    verifyResetCode: (email, code) => {
-        return apiCall('/auth/verify-reset-code', {
-            method: 'POST',
-            body: JSON.stringify({ email, code }),
-        });
-    },
+  // Verify reset code
+  verifyResetCode: (email, code) => {
+    return apiCall("/auth/verify-reset-code", {
+      method: "POST",
+      body: JSON.stringify({ email, code }),
+    });
+  },
 
-    // Reset password
-    resetPassword: (resetToken, newPassword, email) => {
-        return apiCall('/auth/reset-password', {
-            method: 'POST',
-            body: JSON.stringify({ resetToken, newPassword, email }),
-        });
-    },
+  // Reset password
+  resetPassword: (resetToken, newPassword, email) => {
+    return apiCall("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ resetToken, newPassword, email }),
+    });
+  },
 
-    // Change password
-    changePassword: (currentPassword, newPassword) => {
-        return apiCall('/auth/change-password', {
-            method: 'PUT',
-            body: JSON.stringify({ currentPassword, newPassword }),
-        });
-    },
+  // Change password
+  changePassword: (currentPassword, newPassword) => {
+    return apiCall("/auth/change-password", {
+      method: "PUT",
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+  },
 };
 
 // User management functions
 export const userAPI = {
-    // Update user profile
-    updateProfile: (userData) => {
-        return apiCall('/auth/profile', {
-            method: 'PUT',
-            body: JSON.stringify(userData),
-        });
-    },
+  // Update user profile
+  updateProfile: (userData) => {
+    return apiCall("/auth/profile", {
+      method: "PUT",
+      body: JSON.stringify(userData),
+    });
+  },
 
-    // Upload user image (profile or cover)
-    uploadImage: async (formData) => {
-        const token = getToken();
-        const uploadUrl = `${API_BASE_URL}/auth/upload-image`;
-        console.log('📤 Upload Request Details:');
-        console.log('  URL:', uploadUrl);
-        console.log('  Token Present:', !!token);
-        console.log('  FormData contents:', {
-            image: formData.get('image')?.name,
-            type: formData.get('type')
-        });
+  // Upload user image (profile or cover)
+  uploadImage: async (formData) => {
+    const token = getToken();
+    const uploadUrl = `${API_BASE_URL}/auth/upload-image`;
+    console.log("📤 Upload Request Details:");
+    console.log("  URL:", uploadUrl);
+    console.log("  Token Present:", !!token);
+    console.log("  FormData contents:", {
+      image: formData.get("image")?.name,
+      type: formData.get("type"),
+    });
 
-        try {
-            const response = await fetch(uploadUrl, {
-                method: 'POST',
-                // IMPORTANT: Do NOT set Content-Type header for FormData
-                // Browser will automatically set it to multipart/form-data with boundary
-                headers: {
-                    ...(token && { Authorization: `Bearer ${token}` }),
-                },
-                credentials: 'include', // Include credentials (cookies, auth)
-                body: formData,
-            });
+    try {
+      const response = await fetch(uploadUrl, {
+        method: "POST",
+        // IMPORTANT: Do NOT set Content-Type header for FormData
+        // Browser will automatically set it to multipart/form-data with boundary
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        credentials: "include", // Include credentials (cookies, auth)
+        body: formData,
+      });
 
-            console.log('📥 Upload Response Status:', response.status, response.statusText);
+      console.log(
+        "📥 Upload Response Status:",
+        response.status,
+        response.statusText,
+      );
 
-            // Get response text first to debug
-            const responseText = await response.text();
-            console.log('📋 Response Text:', responseText);
+      // Get response text first to debug
+      const responseText = await response.text();
+      console.log("📋 Response Text:", responseText);
 
-            // Parse JSON from response
-            let data;
-            try {
-                data = JSON.parse(responseText);
-            } catch {
-                console.error('Failed to parse response as JSON');
-                throw new Error(`Server error: ${response.status} ${response.statusText}`);
-            }
+      // Parse JSON from response
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        console.error("Failed to parse response as JSON");
+        throw new Error(
+          `Server error: ${response.status} ${response.statusText}`,
+        );
+      }
 
-            console.log('✅ Parsed Response Data:', data);
+      console.log("✅ Parsed Response Data:", data);
 
-            if (!response.ok) {
-                console.error('❌ Upload failed:', data);
-                throw new Error(data.message || `Upload failed with status ${response.status}`);
-            }
+      if (!response.ok) {
+        console.error("❌ Upload failed:", data);
+        throw new Error(
+          data.message || `Upload failed with status ${response.status}`,
+        );
+      }
 
-            console.log('✅ Upload successful');
-            return data;
-        } catch (error) {
-            console.error('❌ Upload API Error:', error);
-            throw error;
-        }
-    },
+      console.log("✅ Upload successful");
+      return data;
+    } catch (error) {
+      console.error("❌ Upload API Error:", error);
+      throw error;
+    }
+  },
 
-    // Delete user account
-    deleteAccount: () => {
-        return apiCall('/auth/delete-account', {
-            method: 'DELETE',
-        });
-    },
+  // Delete user account
+  deleteAccount: () => {
+    return apiCall("/auth/delete-account", {
+      method: "DELETE",
+    });
+  },
 };
 
 // Flight API functions
 export const flightAPI = {
-    // Search flights directly from Amadeus (no database storage)
-    searchFlightsDirect: (searchParams) => {
-        const queryString = new URLSearchParams(searchParams).toString();
-        return apiCall(`/flights/search-direct?${queryString}`);
-    },
+  // Search flights directly from Amadeus (no database storage)
+  searchFlightsDirect: (searchParams) => {
+    const queryString = new URLSearchParams(searchParams).toString();
+    return apiCall(`/flights/search-direct?${queryString}`);
+  },
 
-    // Search airports
-    searchAirports: (query, limit = 15) => {
-        return apiCall(`/flights/airports?query=${encodeURIComponent(query)}&limit=${limit}`);
-    },
+  // Search airports
+  searchAirports: (query, limit = 15) => {
+    return apiCall(
+      `/flights/airports?query=${encodeURIComponent(query)}&limit=${limit}`,
+    );
+  },
 
-    // Book a flight (only booking data goes to database)
-    bookFlight: (bookingData) => {
-        return apiCall('/flights/book', {
-            method: 'POST',
-            body: JSON.stringify(bookingData),
-        });
-    },
+  // Book a flight (only booking data goes to database)
+  bookFlight: (bookingData) => {
+    return apiCall("/flights/book", {
+      method: "POST",
+      body: JSON.stringify(bookingData),
+    });
+  },
 
-    // Get user bookings
-    getUserBookings: (userId, page = 1, limit = 20) => {
-        return apiCall(`/flights/bookings/${userId}?page=${page}&limit=${limit}`);
-    },
+  // Get user bookings
+  getUserBookings: (userId, page = 1, limit = 20) => {
+    return apiCall(`/flights/bookings/${userId}?page=${page}&limit=${limit}`);
+  },
 
-    // Get bookings by email (fallback)
-    getBookingsByEmail: (email, page = 1, limit = 20) => {
-        return apiCall(`/flights/bookings/email/${encodeURIComponent(email)}?page=${page}&limit=${limit}`);
-    },
+  // Get bookings by email (fallback)
+  getBookingsByEmail: (email, page = 1, limit = 20) => {
+    return apiCall(
+      `/flights/bookings/email/${encodeURIComponent(email)}?page=${page}&limit=${limit}`,
+    );
+  },
 
-    // Get all bookings directly from bookings table
-    getAllBookings: (page = 1, limit = 50) => {
-        return apiCall(`/flights/bookings/all?page=${page}&limit=${limit}`);
-    },
+  // Get all bookings directly from bookings table
+  getAllBookings: (page = 1, limit = 50) => {
+    return apiCall(`/flights/bookings/all?page=${page}&limit=${limit}`);
+  },
 
-    // Get multiple bookings by their IDs
-    getBookingsByIds: (bookingIds) => {
-        return apiCall('/flights/bookings/by-ids', {
-            method: 'POST',
-            body: JSON.stringify({ bookingIds }),
-        });
-    },
+  // Get multiple bookings by their IDs
+  getBookingsByIds: (bookingIds) => {
+    return apiCall("/flights/bookings/by-ids", {
+      method: "POST",
+      body: JSON.stringify({ bookingIds }),
+    });
+  },
 
-    // Link bookings with null userId to a user by email
-    linkUserBookings: (userId, email) => {
-        return apiCall('/flights/bookings/link-user', {
-            method: 'PUT',
-            body: JSON.stringify({ userId, email }),
-        });
-    },
+  // Link bookings with null userId to a user by email
+  linkUserBookings: (userId, email) => {
+    return apiCall("/flights/bookings/link-user", {
+      method: "PUT",
+      body: JSON.stringify({ userId, email }),
+    });
+  },
 
-    // Get booking details
-    getBookingDetails: (bookingId) => {
-        return apiCall(`/flights/booking/${bookingId}`);
-    },
+  // Get booking details
+  getBookingDetails: (bookingId) => {
+    return apiCall(`/flights/booking/${bookingId}`);
+  },
 
-    // Cancel booking
-    cancelBooking: (bookingId) => {
-        return apiCall(`/flights/booking/${bookingId}/cancel`, {
-            method: 'PUT',
-        });
-    },
+  // Cancel booking
+  cancelBooking: (bookingId) => {
+    return apiCall(`/flights/booking/${bookingId}/cancel`, {
+      method: "PUT",
+    });
+  },
 
-    // Delete booking
-    deleteBooking: (bookingId) => {
-        return apiCall(`/flights/booking/${bookingId}`, {
-            method: 'DELETE',
-        });
-    },
+  // Delete booking
+  deleteBooking: (bookingId) => {
+    return apiCall(`/flights/booking/${bookingId}`, {
+      method: "DELETE",
+    });
+  },
 
-    // Bangladesh airports
-    getBangladeshAirports: () => {
-        return apiCall('/flights/airports/bangladesh');
-    },
-
-
+  // Bangladesh airports
+  getBangladeshAirports: () => {
+    return apiCall("/flights/airports/bangladesh");
+  },
 };
 
 // Hotel API functions (Amadeus-backed)
 export const hotelAPI = {
-    // City autocomplete for hotel search (IATA city codes)
-    searchCities: (keyword, limit = 10) => {
-        return apiCall(`/hotels/cities/search?keyword=${encodeURIComponent(keyword)}&limit=${limit}`);
-    },
+  // City autocomplete for hotel search (IATA city codes)
+  searchCities: (keyword, limit = 10) => {
+    return apiCall(
+      `/hotels/cities/search?keyword=${encodeURIComponent(keyword)}&limit=${limit}`,
+    );
+  },
 
-    // Search hotel offers by city code
-    searchHotelOffers: (params) => {
-        const queryString = new URLSearchParams(params).toString();
-        return apiCall(`/hotels/search?${queryString}`);
-    },
+  // Search hotel offers by city code
+  searchHotelOffers: (params) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/hotels/search?${queryString}`);
+  },
 
-    // Get full offer details by offerId
-    getHotelOffer: (offerId) => {
-        return apiCall(`/hotels/offers/${encodeURIComponent(offerId)}`);
-    },
+  // Get full offer details by offerId
+  getHotelOffer: (offerId) => {
+    return apiCall(`/hotels/offers/${encodeURIComponent(offerId)}`);
+  },
 
-    // Get Amadeus hotel details by hotelId (geo/address for map)
-    getAmadeusHotel: (hotelId) => {
-        return apiCall(`/hotels/amadeus/${encodeURIComponent(hotelId)}`);
-    },
+  // Get Amadeus hotel details by hotelId (geo/address for map)
+  getAmadeusHotel: (hotelId) => {
+    return apiCall(`/hotels/amadeus/${encodeURIComponent(hotelId)}`);
+  },
 
-    // Get reviews for an external hotel id
-    getHotelReviews: (externalHotelId) => {
-        return apiCall(`/hotels/reviews/${encodeURIComponent(externalHotelId)}`);
-    },
+  // Get reviews for an external hotel id
+  getHotelReviews: (externalHotelId) => {
+    return apiCall(`/hotels/reviews/${encodeURIComponent(externalHotelId)}`);
+  },
+
+  // Book a hotel
+  bookHotel: (bookingData) => {
+    return apiCall("/hotels/book", {
+      method: "POST",
+      body: JSON.stringify(bookingData),
+    });
+  },
+
+  // Get user hotel bookings
+  getUserHotelBookings: (userId) => {
+    return apiCall(`/hotels/bookings/${userId}`);
+  },
+
+  // Delete a hotel booking
+  deleteHotelBooking: (id) => {
+    return apiCall(`/hotels/bookings/${id}`, {
+      method: "DELETE",
+    });
+  },
 };
 
 // Saved Cards API functions
 export const savedCardsAPI = {
-    // Get user's saved cards
-    getSavedCards: (userId) => {
-        return apiCall(`/saved-cards/${userId}`);
-    },
+  // Get user's saved cards
+  getSavedCards: (userId) => {
+    return apiCall(`/saved-cards/${userId}`);
+  },
 
-    // Save a new card
-    saveCard: (cardData) => {
-        return apiCall('/saved-cards', {
-            method: 'POST',
-            body: JSON.stringify(cardData),
-        });
-    },
+  // Save a new card
+  saveCard: (cardData) => {
+    return apiCall("/saved-cards", {
+      method: "POST",
+      body: JSON.stringify(cardData),
+    });
+  },
 
-    // Update saved card
-    updateCard: (cardId, cardData) => {
-        return apiCall(`/saved-cards/${cardId}`, {
-            method: 'PUT',
-            body: JSON.stringify(cardData),
-        });
-    },
+  // Update saved card
+  updateCard: (cardId, cardData) => {
+    return apiCall(`/saved-cards/${cardId}`, {
+      method: "PUT",
+      body: JSON.stringify(cardData),
+    });
+  },
 
-    // Delete saved card
-    deleteCard: (cardId) => {
-        return apiCall(`/saved-cards/${cardId}`, {
-            method: 'DELETE',
-        });
-    },
+  // Delete saved card
+  deleteCard: (cardId) => {
+    return apiCall(`/saved-cards/${cardId}`, {
+      method: "DELETE",
+    });
+  },
 
-    // Set card as default
-    setDefaultCard: (cardId) => {
-        return apiCall(`/saved-cards/${cardId}/set-default`, {
-            method: 'PUT',
-        });
-    },
+  // Set card as default
+  setDefaultCard: (cardId) => {
+    return apiCall(`/saved-cards/${cardId}/set-default`, {
+      method: "PUT",
+    });
+  },
 
-    // Update last used timestamp
-    updateLastUsed: (cardId) => {
-        return apiCall(`/saved-cards/${cardId}/update-last-used`, {
-            method: 'PUT',
-        });
-    },
+  // Update last used timestamp
+  updateLastUsed: (cardId) => {
+    return apiCall(`/saved-cards/${cardId}/update-last-used`, {
+      method: "PUT",
+    });
+  },
 };
 
 // Package Booking API functions
 export const packageAPI = {
-    // Book a package
-    bookPackage: (bookingData) => {
-        return apiCall('/packages/book', {
-            method: 'POST',
-            body: JSON.stringify(bookingData),
-        });
-    },
+  // Book a package
+  bookPackage: (bookingData) => {
+    return apiCall("/packages/book", {
+      method: "POST",
+      body: JSON.stringify(bookingData),
+    });
+  },
 
-    // Get user's package bookings
-    getUserPackageBookings: (userId, page = 1, limit = 20) => {
-        return apiCall(`/packages/bookings/${userId}?page=${page}&limit=${limit}`);
-    },
+  // Get user's package bookings
+  getUserPackageBookings: (userId, page = 1, limit = 20) => {
+    return apiCall(`/packages/bookings/${userId}?page=${page}&limit=${limit}`);
+  },
 
-    // Get all package bookings
-    getAllPackageBookings: (page = 1, limit = 50) => {
-        return apiCall(`/packages/bookings/all?page=${page}&limit=${limit}`);
-    },
+  // Get all package bookings
+  getAllPackageBookings: (page = 1, limit = 50) => {
+    return apiCall(`/packages/bookings/all?page=${page}&limit=${limit}`);
+  },
 
-    // Delete a package booking
-    deletePackageBooking: (bookingId) => {
-        return apiCall(`/packages/${bookingId}`, {
-            method: 'DELETE',
-        });
-    },
+  // Delete a package booking
+  deletePackageBooking: (bookingId) => {
+    return apiCall(`/packages/${bookingId}`, {
+      method: "DELETE",
+    });
+  },
 
-    // Submit a custom package request
-    submitCustomPackageRequest: (requestData) => {
-        return apiCall('/packages/custom-requests', {
-            method: 'POST',
-            body: JSON.stringify(requestData),
-        });
-    },
+  // Submit a custom package request
+  submitCustomPackageRequest: (requestData) => {
+    return apiCall("/packages/custom-requests", {
+      method: "POST",
+      body: JSON.stringify(requestData),
+    });
+  },
 
-    // Get a user's custom package requests
-    getUserCustomPackageRequests: (userId, page = 1, limit = 50) => {
-        return apiCall(`/packages/custom-requests/${userId}?page=${page}&limit=${limit}`);
-    },
+  // Get a user's custom package requests
+  getUserCustomPackageRequests: (userId, page = 1, limit = 50) => {
+    return apiCall(
+      `/packages/custom-requests/${userId}?page=${page}&limit=${limit}`,
+    );
+  },
 };
 
 // Review API functions
 export const reviewAPI = {
-    // Get all reviews
-    getReviews: () => {
-        return apiCall('/reviews');
-    },
+  // Get all reviews
+  getReviews: () => {
+    return apiCall("/reviews");
+  },
 
-    // Get user's reviews
-    getMyReviews: () => {
-        return apiCall('/reviews/my');
-    },
+  // Get user's reviews
+  getMyReviews: () => {
+    return apiCall("/reviews/my");
+  },
 
-    // Create a review
-    createReview: (reviewData) => {
-        return apiCall('/reviews', {
-            method: 'POST',
-            body: JSON.stringify(reviewData),
-        });
-    },
+  // Create a review
+  createReview: (reviewData) => {
+    return apiCall("/reviews", {
+      method: "POST",
+      body: JSON.stringify(reviewData),
+    });
+  },
 
-    // Delete a review
-    deleteReview: (reviewId) => {
-        return apiCall(`/reviews/${reviewId}`, {
-            method: 'DELETE',
-        });
-    },
+  // Delete a review
+  deleteReview: (reviewId) => {
+    return apiCall(`/reviews/${reviewId}`, {
+      method: "DELETE",
+    });
+  },
 };
 
 // Payment API functions
 export const paymentAPI = {
-    // Add payment method
-    addPaymentMethod: (paymentData) => {
-        return apiCall('/payment/add', {
-            method: 'POST',
-            body: JSON.stringify(paymentData),
-        });
-    },
+  // Add payment method
+  addPaymentMethod: (paymentData) => {
+    return apiCall("/payment/add", {
+      method: "POST",
+      body: JSON.stringify(paymentData),
+    });
+  },
 
-    // Get user's payment methods
-    getPaymentMethods: () => {
-        return apiCall('/payment/methods');
-    },
+  // Get user's payment methods
+  getPaymentMethods: () => {
+    return apiCall("/payment/methods");
+  },
 
-    // Set payment method as default
-    setDefaultPaymentMethod: (paymentId) => {
-        return apiCall(`/payment/${paymentId}/default`, {
-            method: 'PUT',
-        });
-    },
+  // Set payment method as default
+  setDefaultPaymentMethod: (paymentId) => {
+    return apiCall(`/payment/${paymentId}/default`, {
+      method: "PUT",
+    });
+  },
 
-    // Delete payment method
-    deletePaymentMethod: (paymentId) => {
-        return apiCall(`/payment/${paymentId}`, {
-            method: 'DELETE',
-        });
-    },
+  // Delete payment method
+  deletePaymentMethod: (paymentId) => {
+    return apiCall(`/payment/${paymentId}`, {
+      method: "DELETE",
+    });
+  },
 };
 
 // Authentication helpers
 export const auth = {
-    // Save user data to localStorage (excluding large image data to avoid quota issues)
-    saveUserData: (token, user) => {
-        try {
-            localStorage.setItem('token', token);
-            
-            // Create a lightweight version of user data without Base64 images
-            // This prevents localStorage quota exceeded errors
-            const lightweightUser = {
-                _id: user._id,
-                email: user.email,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                phoneNumber: user.phoneNumber,
-                name: user.name,
-                phone: user.phone,
-                address: user.address,
-                dateOfBirth: user.dateOfBirth,
-                bio: user.bio,
-                location: user.location,
-                website: user.website,
-                // Store only metadata for images, not the actual Base64 data
-                avatar: user.avatar ? {
-                    hasImage: !!user.avatar.url,
-                    mimeType: user.avatar.mimeType,
-                    size: user.avatar.size
-                } : null,
-                coverImage: user.coverImage ? {
-                    hasImage: !!user.coverImage.url,
-                    mimeType: user.coverImage.mimeType,
-                    size: user.coverImage.size
-                } : null
-            };
-            
-            localStorage.setItem('user', JSON.stringify(lightweightUser));
-        } catch (error) {
-            console.error('Failed to save user data to localStorage:', error);
-            
-            // If quota exceeded, clear old data and try with minimal user data
-            if (error.name === 'QuotaExceededError') {
-                console.log('LocalStorage quota exceeded, clearing old data...');
-                
-                // Clear non-essential items
-                const keysToKeep = ['token', 'user'];
-                const allKeys = Object.keys(localStorage);
-                allKeys.forEach(key => {
-                    if (!keysToKeep.includes(key)) {
-                        localStorage.removeItem(key);
-                    }
-                });
-                
-                // Try again with minimal user data
-                try {
-                    const minimalUser = {
-                        _id: user._id,
-                        email: user.email,
-                        firstName: user.firstName,
-                        lastName: user.lastName,
-                        phoneNumber: user.phoneNumber
-                    };
-                    localStorage.setItem('user', JSON.stringify(minimalUser));
-                } catch (retryError) {
-                    console.error('Failed to save even minimal user data:', retryError);
-                }
+  // Save user data to localStorage (excluding large image data to avoid quota issues)
+  saveUserData: (token, user) => {
+    try {
+      localStorage.setItem("token", token);
+
+      // Create a lightweight version of user data without Base64 images
+      // This prevents localStorage quota exceeded errors
+      const lightweightUser = {
+        _id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phoneNumber: user.phoneNumber,
+        name: user.name,
+        phone: user.phone,
+        address: user.address,
+        dateOfBirth: user.dateOfBirth,
+        bio: user.bio,
+        location: user.location,
+        website: user.website,
+        // Store only metadata for images, not the actual Base64 data
+        avatar: user.avatar
+          ? {
+              hasImage: !!user.avatar.url,
+              mimeType: user.avatar.mimeType,
+              size: user.avatar.size,
             }
+          : null,
+        coverImage: user.coverImage
+          ? {
+              hasImage: !!user.coverImage.url,
+              mimeType: user.coverImage.mimeType,
+              size: user.coverImage.size,
+            }
+          : null,
+      };
+
+      localStorage.setItem("user", JSON.stringify(lightweightUser));
+    } catch (error) {
+      console.error("Failed to save user data to localStorage:", error);
+
+      // If quota exceeded, clear old data and try with minimal user data
+      if (error.name === "QuotaExceededError") {
+        console.log("LocalStorage quota exceeded, clearing old data...");
+
+        // Clear non-essential items
+        const keysToKeep = ["token", "user"];
+        const allKeys = Object.keys(localStorage);
+        allKeys.forEach((key) => {
+          if (!keysToKeep.includes(key)) {
+            localStorage.removeItem(key);
+          }
+        });
+
+        // Try again with minimal user data
+        try {
+          const minimalUser = {
+            _id: user._id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            phoneNumber: user.phoneNumber,
+          };
+          localStorage.setItem("user", JSON.stringify(minimalUser));
+        } catch (retryError) {
+          console.error("Failed to save even minimal user data:", retryError);
         }
-    },
+      }
+    }
+  },
 
-    // Get user data from localStorage
-    getUserData: () => {
-        const token = localStorage.getItem('token');
-        const user = localStorage.getItem('user');
-        return {
-            token,
-            user: user ? JSON.parse(user) : null,
-        };
-    },
+  // Get user data from localStorage
+  getUserData: () => {
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+    return {
+      token,
+      user: user ? JSON.parse(user) : null,
+    };
+  },
 
-    // Check if user is authenticated
-    isAuthenticated: () => {
-        const token = localStorage.getItem('token');
-        return !!token;
-    },
+  // Check if user is authenticated
+  isAuthenticated: () => {
+    const token = localStorage.getItem("token");
+    return !!token;
+  },
 
-    // Logout user
-    logout: () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-    },
+  // Logout user
+  logout: () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+  },
 };
 
 export default apiCall;

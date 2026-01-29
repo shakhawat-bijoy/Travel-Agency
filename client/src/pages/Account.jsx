@@ -3,9 +3,9 @@ import {
   User, Mail, Phone, MapPin, Calendar, Camera,
   X, Check, CreditCard, History, Settings,
   Edit3, Bell, Shield, Globe, LogOut, Trash2, AlertTriangle, Plus, Star, Trash,
-  Plane, Download, Eye, RefreshCw, Lock, MapPin as LocationIcon, Backpack
+  Plane, Download, Eye, RefreshCw, Lock, MapPin as LocationIcon, Backpack, Building
 } from 'lucide-react'
-import { auth, authAPI, userAPI, paymentAPI, flightAPI, packageAPI, reviewAPI } from '../utils/api'
+import { auth, authAPI, userAPI, paymentAPI, flightAPI, packageAPI, reviewAPI, hotelAPI } from '../utils/api'
 import { Link } from 'react-router-dom'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
@@ -68,6 +68,14 @@ const Account = () => {
   const [isDeleteReviewModalOpen, setIsDeleteReviewModalOpen] = useState(false)
   const [reviewToDelete, setReviewToDelete] = useState(null)
   const [reviewDeleteConfirmText, setReviewDeleteConfirmText] = useState('')
+  const [hotelBookings, setHotelBookings] = useState([])
+  const [loadingHotelBookings, setLoadingHotelBookings] = useState(false)
+  const [hotelBookingError, setHotelBookingError] = useState('')
+  const [selectedHotelBooking, setSelectedHotelBooking] = useState(null)
+  const [showHotelBookingDetails, setShowHotelBookingDetails] = useState(false)
+  const [showDeleteHotelConfirmation, setShowDeleteHotelConfirmation] = useState(false)
+  const [hotelBookingToDelete, setHotelBookingToDelete] = useState(null)
+  const [deleteHotelConfirmationText, setDeleteHotelConfirmationText] = useState('')
 
   const profileImageRef = useRef(null)
   const coverImageRef = useRef(null)
@@ -120,6 +128,7 @@ const Account = () => {
     if (activeTab === 'history') {
       loadBookings()
       loadPackageBookings()
+      loadHotelBookings()
       loadCustomRequests()
     }
     if (activeTab === 'reviews') {
@@ -204,6 +213,28 @@ const Account = () => {
       setPackageBookingError('Error loading package bookings. Please try again.')
     } finally {
       setLoadingPackageBookings(false)
+    }
+  }
+
+  const loadHotelBookings = async () => {
+    try {
+      setLoadingHotelBookings(true)
+      setHotelBookingError('')
+
+      if (userId) {
+        const response = await hotelAPI.getUserHotelBookings(userId)
+
+        if (response.success) {
+          setHotelBookings(response.data || [])
+        } else {
+          setHotelBookingError(response.message || 'Failed to load hotel bookings')
+        }
+      }
+    } catch (error) {
+      console.error('Error loading hotel bookings:', error)
+      setHotelBookingError('Error loading hotel bookings. Please try again.')
+    } finally {
+      setLoadingHotelBookings(false)
     }
   }
 
@@ -330,6 +361,51 @@ const Account = () => {
   const handleClosePackageBookingDetails = () => {
     setSelectedPackageBooking(null)
     setShowPackageBookingDetails(false)
+  }
+
+  const handleViewHotelBookingDetails = (booking) => {
+    setSelectedHotelBooking(booking)
+    setShowHotelBookingDetails(true)
+  }
+
+  const handleCloseHotelBookingDetails = () => {
+    setSelectedHotelBooking(null)
+    setShowHotelBookingDetails(false)
+  }
+
+  const handleDeleteHotelBooking = (booking) => {
+    setHotelBookingToDelete(booking)
+    setShowDeleteHotelConfirmation(true)
+    setDeleteHotelConfirmationText('')
+  }
+
+  const cancelDeleteHotelBooking = () => {
+    setHotelBookingToDelete(null)
+    setShowDeleteHotelConfirmation(false)
+    setDeleteHotelConfirmationText('')
+  }
+
+  const confirmDeleteHotelBooking = async () => {
+    if (deleteHotelConfirmationText !== 'DELETE') return
+
+    try {
+      setLoading(true)
+      const response = await hotelAPI.deleteHotelBooking(hotelBookingToDelete._id)
+      if (response.success) {
+        setSaveMessage('Hotel booking deleted successfully!')
+        setTimeout(() => setSaveMessage(''), 3000)
+        loadHotelBookings()
+        setShowDeleteHotelConfirmation(false)
+        setHotelBookingToDelete(null)
+        setDeleteHotelConfirmationText('')
+      }
+    } catch (error) {
+      console.error('Error deleting hotel booking:', error)
+      setSaveMessage('Error deleting hotel booking.')
+      setTimeout(() => setSaveMessage(''), 3000)
+    } finally {
+      setLoading(false)
+    }
   }
 
   // ---------------------- Download Handlers ----------------------
@@ -815,6 +891,200 @@ const Account = () => {
 
     // Save PDF
     doc.save(`DreamHolidays-Package-${booking.bookingReference}.pdf`)
+  }
+
+  const handleDownloadHotelBooking = (booking) => {
+    const doc = new jsPDF()
+    const pageHeight = doc.internal.pageSize.getHeight()
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const margin = 15
+    const maxWidth = pageWidth - (margin * 2)
+
+    // Helper functions
+    const formatDate = (dateStr) => {
+      if (!dateStr) return 'N/A'
+      const date = new Date(dateStr)
+      const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+      return `${String(date.getDate()).padStart(2, '0')} ${months[date.getMonth()]} ${date.getFullYear()}`
+    }
+
+    // Colors
+    const teal = [20, 184, 166]
+    const darkBlue = [30, 58, 138]
+    const lightGray = [243, 244, 246]
+    const darkGray = [31, 41, 55]
+    const mediumGray = [107, 114, 128]
+    const white = [255, 255, 255]
+
+    let yPos = 10
+
+    // ===== Header Section =====
+    doc.setFillColor(...teal)
+    doc.rect(0, yPos, pageWidth, 30, 'F')
+
+    doc.setTextColor(...white)
+    doc.setFontSize(24)
+    doc.setFont('helvetica', 'bold')
+    doc.text('DREAM HOLIDAYS', pageWidth / 2, yPos + 10, { align: 'center' })
+
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'normal')
+    doc.text('Hotel Booking Confirmation', pageWidth / 2, yPos + 20, { align: 'center' })
+
+    yPos += 35
+
+    // ===== Booking Reference =====
+    doc.setFillColor(...darkBlue)
+    doc.rect(margin, yPos, maxWidth, 12, 'F')
+
+    doc.setTextColor(...white)
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'normal')
+    doc.text('BOOKING REFERENCE', margin + 5, yPos + 8)
+
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'bold')
+    doc.text(booking.bookingReference || 'N/A', pageWidth - margin - 5, yPos + 8, { align: 'right' })
+
+    yPos += 18
+
+    // ===== Hotel Information Section =====
+    doc.setTextColor(...darkGray)
+    doc.setFontSize(13)
+    doc.setFont('helvetica', 'bold')
+    doc.text(booking.hotel?.name || 'Hotel Stay', margin, yPos)
+
+    yPos += 7
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'normal')
+    const addressText = booking.hotel?.address?.cityName
+      ? `${booking.hotel.address.cityName}${booking.hotel.address.countryCode ? ', ' + booking.hotel.address.countryCode : ''}`
+      : booking.hotel?.cityCode || 'N/A'
+    doc.text(`Address: ${addressText}`, margin, yPos)
+
+    yPos += 5
+    doc.text(`City: ${booking.hotel?.cityCode || 'N/A'}`, margin, yPos)
+
+    yPos += 2
+    doc.setFontSize(8)
+    doc.text(`Status: ${booking.status?.toUpperCase() || 'PENDING'}`, margin, yPos + 5)
+
+    yPos += 12
+
+    // ===== Key Information Grid =====
+    doc.setFillColor(...lightGray)
+    doc.rect(margin, yPos, maxWidth, 24, 'F')
+
+    doc.setTextColor(...darkGray)
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'bold')
+
+    const colWidth = maxWidth / 4
+    doc.text('Check-in', margin + 3, yPos + 5)
+    doc.text('Check-out', margin + colWidth + 3, yPos + 5)
+    doc.text('Room Type', margin + colWidth * 2 + 3, yPos + 5)
+    doc.text('Total Price', margin + colWidth * 3 + 3, yPos + 5)
+
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(10)
+    doc.text(formatDate(booking.offer?.checkInDate), margin + 3, yPos + 14)
+    doc.text(formatDate(booking.offer?.checkOutDate), margin + colWidth + 3, yPos + 14)
+    doc.text(booking.offer?.room?.typeEstimated?.category || 'Standard', margin + colWidth * 2 + 3, yPos + 14)
+    doc.setFont('helvetica', 'bold')
+    doc.text(`$${booking.totalAmount?.toFixed(2) || '0.00'}`, margin + colWidth * 3 + 3, yPos + 14)
+
+    yPos += 35
+
+    // ===== Guest Information =====
+    doc.setTextColor(...white)
+    doc.setFillColor(...teal)
+    doc.rect(margin, yPos, maxWidth, 7, 'F')
+
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'bold')
+    doc.text('GUEST INFORMATION', margin + 3, yPos + 5)
+
+    yPos += 10
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(...darkGray)
+    doc.text(`${booking.guest?.firstName} ${booking.guest?.lastName}`, margin + 3, yPos)
+
+    yPos += 5
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`Email: ${booking.guest?.email}`, margin + 3, yPos)
+    doc.text(`Phone: ${booking.guest?.phone}`, margin + 60, yPos)
+
+    if (booking.guest?.passportNumber) {
+      yPos += 5
+      doc.text(`Passport: ${booking.guest.passportNumber} (${booking.guest.nationality})`, margin + 3, yPos)
+    }
+
+    yPos += 12
+
+    // ===== Room Information =====
+    doc.setTextColor(...white)
+    doc.setFillColor(...darkBlue)
+    doc.rect(margin, yPos, maxWidth, 7, 'F')
+
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'bold')
+    doc.text('ROOM DETAILS', margin + 3, yPos + 5)
+
+    yPos += 10
+    doc.setFontSize(8)
+    doc.setTextColor(...darkGray)
+    doc.setFont('helvetica', 'bold')
+    doc.text(`Room: ${booking.offer?.room?.typeEstimated?.bedType || ''} ${booking.offer?.room?.typeEstimated?.category || 'Luxury Room'}`, margin + 3, yPos)
+
+    yPos += 5
+    doc.setFont('helvetica', 'normal')
+    doc.text(`Quantity: ${booking.offer?.roomQuantity || 1}`, margin + 3, yPos)
+    doc.text(`Adults: ${booking.offer?.adults || 2}`, margin + 40, yPos)
+
+    if (booking.offer?.room?.description?.text) {
+      yPos += 5
+      const splitDescription = doc.splitTextToSize(`Description: ${booking.offer.room.description.text}`, maxWidth - 10)
+      doc.text(splitDescription, margin + 3, yPos)
+      yPos += (splitDescription.length * 4)
+    }
+
+    yPos += 10
+
+    // ===== Payment Information =====
+    doc.setTextColor(...white)
+    doc.setFillColor(...teal)
+    doc.rect(margin, yPos, maxWidth, 7, 'F')
+
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'bold')
+    doc.text('PAYMENT DETAILS', margin + 3, yPos + 5)
+
+    yPos += 10
+    doc.setFontSize(8)
+    doc.setTextColor(...darkGray)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`Cardholder Name: ${booking.payment?.cardholderName || 'N/A'}`, margin + 3, yPos)
+    doc.text(`Transaction ID: ${booking.payment?.transactionId || 'N/A'}`, margin + 60, yPos)
+
+    yPos += 5
+    doc.text(`Booked On: ${new Date(booking.createdAt).toLocaleDateString()}`, margin + 3, yPos)
+
+    // ===== Footer =====
+    yPos = pageHeight - 15
+    doc.setDrawColor(...mediumGray)
+    doc.setLineWidth(0.3)
+    doc.line(margin, yPos, pageWidth - margin, yPos)
+
+    yPos += 5
+    doc.setFontSize(7)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(...mediumGray)
+    doc.text('24/7 Customer Support: +880-1234-567890 | support@dreamholidays.com', pageWidth / 2, yPos, { align: 'center' })
+
+    // Save PDF
+    doc.save(`DreamHolidays-Hotel-${booking.bookingReference}.pdf`)
   }
 
   // ---------------------- Booking & Package Actions ----------------------
@@ -1997,6 +2267,153 @@ const Account = () => {
         )}
       </div>
 
+      {/* Hotel Bookings Section */}
+      <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl border border-gray-100 p-4 sm:p-6 lg:p-8 mt-6 sm:mt-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
+          <div className="flex-1">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">My Hotel Bookings</h2>
+            <p className="text-sm sm:text-base text-gray-500 mt-1">View and manage your hotel reservations</p>
+          </div>
+          <button
+            onClick={loadHotelBookings}
+            className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-teal-50 text-teal-600 rounded-lg hover:bg-teal-100 transition-colors text-sm whitespace-nowrap touch-manipulation"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </button>
+        </div>
+
+        {/* Loading State */}
+        {loadingHotelBookings ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your hotel bookings...</p>
+          </div>
+        ) : hotelBookingError ? (
+          /* Error State */
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <X className="w-8 h-8 text-red-500" />
+            </div>
+            <p className="text-red-600 font-medium mb-2">Error Loading Hotels</p>
+            <p className="text-gray-500 text-sm mb-4">{hotelBookingError}</p>
+            <button
+              onClick={loadHotelBookings}
+              className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : hotelBookings.length === 0 ? (
+          /* Empty State */
+          <div className="text-center py-12">
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Building className="w-12 h-12 text-gray-400" />
+            </div>
+            <p className="text-gray-500 text-lg mb-2">No hotel bookings found</p>
+            <p className="text-gray-400 text-sm mb-6">Your hotel reservations will appear here after you make a booking</p>
+            <Link
+              to="/hotels"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors font-medium"
+            >
+              <Building className="w-5 h-5" />
+              Book Your First Hotel
+            </Link>
+          </div>
+        ) : (
+          /* Hotel List */
+          <div className="space-y-4 sm:space-y-6">
+            {hotelBookings.map((booking) => (
+              <div key={booking._id} className="border border-gray-200 rounded-lg sm:rounded-xl p-4 sm:p-6 hover:shadow-lg transition-all duration-300">
+                {/* Hotel Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Building className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
+                        {booking.hotel?.name || 'Hotel Stay'}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-gray-500 truncate">
+                        Ref: <span className="font-medium text-gray-700">{booking.bookingReference}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-3 py-1 text-xs sm:text-sm font-medium rounded-full ${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                      booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                        booking.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                          'bg-gray-100 text-gray-700'
+                      }`}>
+                      {booking.status?.charAt(0).toUpperCase() + booking.status?.slice(1)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Hotel Details */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4 pb-4 border-b border-gray-200">
+                  <div>
+                    <p className="text-xs text-gray-500">Location</p>
+                    <p className="text-sm sm:text-base font-medium text-gray-900 flex items-center gap-1 mt-1">
+                      <LocationIcon className="w-4 h-4 text-teal-600" />
+                      {booking.hotel?.cityCode || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Check-in</p>
+                    <p className="text-sm sm:text-base font-medium text-gray-900 mt-1">
+                      {booking.offer?.checkInDate ? new Date(booking.offer.checkInDate).toLocaleDateString() : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Check-out</p>
+                    <p className="text-sm sm:text-base font-medium text-gray-900 mt-1">
+                      {booking.offer?.checkOutDate ? new Date(booking.offer.checkOutDate).toLocaleDateString() : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Total Price</p>
+                    <p className="text-sm sm:text-base font-bold text-teal-600 mt-1">
+                      ${booking.totalAmount?.toFixed(2) || '0.00'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex flex-wrap items-center gap-2 justify-end">
+                  <button
+                    onClick={() => handleViewHotelBookingDetails(booking)}
+                    className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-xs sm:text-sm font-medium touch-manipulation"
+                  >
+                    <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">View Details</span>
+                    <span className="sm:hidden">View</span>
+                  </button>
+                  <button
+                    onClick={() => handleDownloadHotelBooking(booking)}
+                    className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors text-xs sm:text-sm font-medium touch-manipulation"
+                  >
+                    <Download className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Download</span>
+                    <span className="sm:hidden">PDF</span>
+                  </button>
+                  <button
+                    onClick={() => handleDeleteHotelBooking(booking)}
+                    disabled={loading}
+                    className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-xs sm:text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                  >
+                    <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Delete</span>
+                    <span className="sm:hidden">Delete</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Custom Package Requests */}
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl border border-gray-100 p-4 sm:p-6 lg:p-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
@@ -2991,6 +3408,228 @@ const Account = () => {
                   className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm sm:text-base"
                 >
                   Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hotel Booking Details Modal */}
+      {showHotelBookingDetails && selectedHotelBooking && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto scrollbar-hide">
+            <div className="p-4 sm:p-6 lg:p-8">
+              {/* Modal Header */}
+              <div className="flex items-start justify-between mb-4 sm:mb-6 gap-2">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Hotel Reservation Details</h3>
+                  <p className="text-xs sm:text-sm text-gray-500 truncate">Ref: {selectedHotelBooking.bookingReference}</p>
+                </div>
+                <button
+                  onClick={handleCloseHotelBookingDetails}
+                  className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+                >
+                  <X className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500" />
+                </button>
+              </div>
+
+              {/* Hotel Header Card */}
+              <div className="bg-gradient-to-br from-blue-600 via-indigo-500 to-blue-700 rounded-lg sm:rounded-xl lg:rounded-2xl p-4 sm:p-6 lg:p-8 text-white mb-4 sm:mb-6 shadow-lg">
+                <div className="flex flex-col sm:flex-row items-start justify-between mb-4 sm:mb-6 gap-3">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">{selectedHotelBooking.hotel?.name || 'Hotel Stay'}</h4>
+                    <p className="text-blue-100 text-xs sm:text-sm flex items-center gap-1 mt-1">
+                      <LocationIcon className="w-4 h-4" />
+                      {selectedHotelBooking.hotel?.address?.cityName || selectedHotelBooking.hotel?.cityCode || 'N/A'}
+                    </p>
+                  </div>
+                  <div className={`px-4 py-2 rounded-full text-white font-semibold backdrop-blur-sm ${selectedHotelBooking.status === 'confirmed' ? 'bg-emerald-500/80' :
+                    selectedHotelBooking.status === 'pending' ? 'bg-amber-500/80' :
+                      selectedHotelBooking.status === 'cancelled' ? 'bg-rose-500/80' :
+                        'bg-gray-500/80'
+                    }`}>
+                    {selectedHotelBooking.status?.charAt(0).toUpperCase() + selectedHotelBooking.status?.slice(1)}
+                  </div>
+                </div>
+
+                {/* Key Details */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 bg-white/10 backdrop-blur-sm p-3 sm:p-4 rounded-lg sm:rounded-xl">
+                  <div>
+                    <div className="text-blue-100 text-[10px] sm:text-xs uppercase tracking-wide mb-1 font-semibold">Check-in</div>
+                    <div className="font-bold text-sm sm:text-base lg:text-lg">
+                      {selectedHotelBooking.offer?.checkInDate ? new Date(selectedHotelBooking.offer.checkInDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-blue-100 text-[10px] sm:text-xs uppercase tracking-wide mb-1 font-semibold">Check-out</div>
+                    <div className="font-bold text-sm sm:text-base lg:text-lg">
+                      {selectedHotelBooking.offer?.checkOutDate ? new Date(selectedHotelBooking.offer.checkOutDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-blue-100 text-xs uppercase tracking-wide mb-1 font-semibold">Room Type</div>
+                    <div className="font-bold">{selectedHotelBooking.offer?.room?.typeEstimated?.category || 'Standard'}</div>
+                  </div>
+                  <div>
+                    <div className="text-blue-100 text-xs uppercase tracking-wide mb-1 font-semibold">Total Price</div>
+                    <div className="font-semibold text-xl">${selectedHotelBooking.totalAmount?.toFixed(2) || '0.00'}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Guest & Room Info */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+                  <h5 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <User className="w-5 h-5 text-blue-600" />
+                    Guest Information
+                  </h5>
+                  <div className="space-y-3">
+                    <div className="bg-white p-4 rounded-lg border border-blue-100">
+                      <p className="font-semibold text-gray-900">
+                        {selectedHotelBooking.guest?.firstName} {selectedHotelBooking.guest?.lastName}
+                      </p>
+                      <p className="text-sm text-gray-600 truncate">{selectedHotelBooking.guest?.email}</p>
+                      <p className="text-sm text-gray-600">{selectedHotelBooking.guest?.phone}</p>
+                      {selectedHotelBooking.guest?.passportNumber && (
+                        <p className="text-xs text-gray-500 mt-2 pt-2 border-t border-gray-100">
+                          Passport: {selectedHotelBooking.guest.passportNumber} ({selectedHotelBooking.guest.nationality})
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl p-6 border border-indigo-200">
+                  <h5 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <Building className="w-5 h-5 text-indigo-600" />
+                    Room Details
+                  </h5>
+                  <div className="space-y-3">
+                    <div className="bg-white p-4 rounded-lg border border-indigo-100">
+                      <p className="font-semibold text-gray-900">{selectedHotelBooking.offer?.room?.typeEstimated?.bedType} {selectedHotelBooking.offer?.room?.typeEstimated?.category || 'Luxury Room'}</p>
+                      <p className="text-sm text-gray-600 mt-1">Quantity: {selectedHotelBooking.offer?.roomQuantity || 1}</p>
+                      <p className="text-sm text-gray-600">Adults: {selectedHotelBooking.offer?.adults || 2}</p>
+                      {selectedHotelBooking.offer?.room?.description?.text && (
+                        <p className="text-xs text-gray-500 mt-2 italic">"{selectedHotelBooking.offer.room.description.text}"</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Section */}
+              <div className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl p-6 mb-6 border border-violet-200">
+                <h5 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-violet-600" />
+                  Payment Information
+                </h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white p-4 rounded-lg border border-violet-100">
+                    <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">Card Holder</p>
+                    <p className="font-bold text-gray-900 uppercase">
+                      {selectedHotelBooking.payment?.cardholderName || 'N/A'}
+                    </p>
+                    <p className="text-sm text-gray-600 mt-1">Card: {selectedHotelBooking.payment?.cardNumber || '•••• •••• •••• ••••'}</p>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg border border-violet-100">
+                    <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">Transaction</p>
+                    <p className="font-bold text-gray-900">{selectedHotelBooking.payment?.transactionId || 'N/A'}</p>
+                    <p className="text-sm text-gray-600 mt-1 font-medium">Booked On: {new Date(selectedHotelBooking.createdAt).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <button
+                  onClick={handleCloseHotelBookingDetails}
+                  className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm sm:text-base order-3 sm:order-1"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    handleCloseHotelBookingDetails()
+                    handleDeleteHotelBooking(selectedHotelBooking)
+                  }}
+                  disabled={loading}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base order-2 sm:order-2"
+                >
+                  <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                  Delete Booking
+                </button>
+                <button
+                  onClick={() => handleDownloadHotelBooking(selectedHotelBooking)}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-colors font-medium shadow-md hover:shadow-lg text-sm sm:text-base order-1 sm:order-2"
+                >
+                  <Download className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="hidden sm:inline">Download Confirmation</span>
+                  <span className="sm:hidden">Download</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Hotel Booking Confirmation Modal */}
+      {showDeleteHotelConfirmation && hotelBookingToDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                  <AlertTriangle className="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Delete Hotel Booking</h3>
+                  <p className="text-sm text-gray-500">This action cannot be undone</p>
+                </div>
+              </div>
+
+              <div className="mb-6 bg-gray-50 rounded-lg p-4">
+                <div className="text-sm text-gray-600 mb-2">You are about to delete:</div>
+                <div className="font-semibold text-gray-900 mb-1">
+                  {hotelBookingToDelete.hotel?.name || 'Hotel Stay'}
+                </div>
+                <div className="text-sm text-gray-600">
+                  Reference: {hotelBookingToDelete.bookingReference}
+                </div>
+                <div className="text-sm text-gray-600">
+                  Dates: {new Date(hotelBookingToDelete.offer?.checkInDate).toLocaleDateString()} - {new Date(hotelBookingToDelete.offer?.checkOutDate).toLocaleDateString()}
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Type <span className="font-bold text-red-600">DELETE</span> to confirm:
+                </label>
+                <input
+                  type="text"
+                  value={deleteHotelConfirmationText}
+                  onChange={(e) => setDeleteHotelConfirmationText(e.target.value)}
+                  placeholder="Type DELETE"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  autoFocus
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={cancelDeleteHotelBooking}
+                  disabled={loading}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDeleteHotelBooking}
+                  disabled={loading || deleteHotelConfirmationText !== 'DELETE'}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Deleting...' : 'Delete Booking'}
                 </button>
               </div>
             </div>

@@ -19,6 +19,7 @@ import TravelBlogs from './pages/TravelBlogs'
 import BlogDetail from './pages/BlogDetail'
 import About from './pages/About'
 import ProjectDocumentation from './pages/ProjectDocumentation'
+import Error from './pages/Error'
 
 
 
@@ -38,6 +39,8 @@ import TermsAndConditions from './pages/TermsAndConditions'
 import AllReviews from './pages/AllReviews'
 import ExploreDetail from './pages/ExploreDetail'
 import ExploreListing from './pages/ExploreListing'
+import PropertyDetails from './pages/PropertyDetails'
+import ConfirmHotelBooking from './pages/ConfirmHotelBooking'
 
 
 const App = () => {
@@ -46,7 +49,7 @@ const App = () => {
       <Route
         path="/"
         element={<RootLayout />}
-      // errorElement={<Error />}
+        // errorElement={<Error />}
       >
         <Route index element={<Home />} ></Route>
         <Route path="/login" element={<Login />}></Route>
@@ -62,6 +65,10 @@ const App = () => {
         <Route path="/flights" element={<Flights />}></Route>
         <Route path='/hotels' element={<Hotels />}></Route>
         <Route path='/hotels/search' element={<HotelSearchResults />}></Route>
+        <Route path='/PropertyDetails' element={<PropertyDetails />}></Route>
+        <Route path="/confirm-hotel-booking" element={<ProtectedRoute>
+          <ConfirmHotelBooking />
+        </ProtectedRoute>}></Route>
         <Route path="/flight-results" element={<FlightResults />}></Route>
         <Route path="/book-flight" element={<FlightBooking />}></Route>
         <Route path="/confirm-booking" element={<ProtectedRoute>
